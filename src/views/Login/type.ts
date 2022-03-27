@@ -10,3 +10,9 @@ export type FormValueType = {
 export type errCode = {
   errCode: string;
 };
+
+// 重新设置密码表单
+export type resetPasswordFormType = {
+  password: string;
+  cPassword: string;
+};

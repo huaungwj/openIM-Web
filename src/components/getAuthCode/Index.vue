@@ -45,17 +45,40 @@
       />
     </div>
     <!-- 底部重新获取 -->
-    <div>
-      <span v-show="waitTimerShow">{{ waitTimer }}s后重新发送</span>
-      <span v-show="renewGetCode" @click="forgetPwdFun" class="pointer"
+    <div class="code_tip">
+      <span v-show="waitTimerShow"
+        ><span class="pointer">{{ waitTimer }}s</span> &nbsp;后重新发送</span
+      >
+      <span v-show="renewGetCode" @click="ReacquireCode" class="pointer"
         >重新获取</span
       >
     </div>
+
+    <!-- 提交按钮 -->
+    <n-button
+      attr-type="button"
+      type="primary"
+      :style="{
+        width: '100%',
+      }"
+      size="large"
+      @click="submitVerifyCode"
+    >
+      <!-- {{ $t(`login.contentRight.${pageStatus}ButtonText`) }} -->
+      下一步
+    </n-button>
+
+    {{ userStore.verificationCode }}
   </div>
 </template>
 
 <script lang="ts">
-import { defineComponent, ref } from 'vue';
+import { defineComponent, ref, onUpdated } from 'vue';
+import { APIVerifyCode } from '@/service/user/user';
+import type { responseType } from '@/service/response/common';
+import { useMessage } from 'naive-ui';
+import { debounce } from '@/tools/tools';
+import { useUserStore } from '@/stores/user';
 
 // 声明一个 ref 来存放该元素的引用
 // 必须和模板 ref 同名
@@ -70,32 +93,78 @@ export default defineComponent({
     'phone',
     'renewGetCode',
     'waitTimerShow',
-    'forgetPwdFun',
+    'changePageStatus',
+    'forgetPwdAndRegFun',
+    'isRegister',
   ],
 
   setup(props, context) {
+    const userStore = useUserStore();
+    const message = useMessage();
     console.log(props);
+
+    // 更新 生命周期钩子
+    onUpdated(() => {
+      console.log('更新了');
+    });
+
     function handleSubmit() {
       context.emit('input', value.value);
     }
+    // 下一步 提交验证码是否正确
+    const submitVerifyCode = debounce(async function () {
+      // 1. 提交输入的验证码是否正确
+      const res: responseType = await APIVerifyCode({
+        phoneNumber: props.phone,
+        verificationCode: value.value,
+        usedFor: props.isRegister ? 1 : 2,
+        operationID: new Date().getTime() + '',
+      });
+      console.log(res);
+      if (res.errCode !== 0) {
+        message.error('验证码错误!');
+      } else {
+        // 改变 pinia user.code
+        userStore.changeVeriCode(value.value);
+        // 切换页面
+        props.changePageStatus(props.isRegister ? 'setPwd' : 'setResetPwd');
+        // 清空 value
+        value.value = '';
+        message.success('验证成功');
+      }
+    }, 500);
 
     function handleInput(e: KeyboardEvent) {
       // input.value = value.value;
       console.log(value);
       if (value.value.length >= this.number) {
-        // hideKeyboard();
+        // 当输入满了之后自动调用
+        submitVerifyCode();
       }
       handleSubmit();
+    }
+
+    //重新获取验证码;
+    function ReacquireCode() {
+      //  1. 清空输入框
+      value.value = '';
+      // 2. pinia 状态 changeVeriCode 清空
+      userStore.changeVeriCode('');
+      // 调用 forgetPwdAndRegFun
+      props.forgetPwdAndRegFun();
     }
 
     function handleBlur() {
       context.emit('input', value.value);
     }
     return {
+      userStore,
       value,
       currentColor: '#57be6b',
       handleBlur,
       handleInput,
+      submitVerifyCode,
+      ReacquireCode,
     };
   },
 });
@@ -187,5 +256,9 @@ export default defineComponent({
   color: transparent;
   /* caret-color: transparent; */
   border: none;
+}
+
+.code_container > .code_tip {
+  padding-bottom: 20px;
 }
 </style>

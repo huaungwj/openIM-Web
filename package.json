@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "axios": "^0.26.1",
+    "md5": "^2.3.0",
     "normalize.css": "^8.0.1",
     "pinia": "^2.0.11",
     "vue": "^3.2.31",

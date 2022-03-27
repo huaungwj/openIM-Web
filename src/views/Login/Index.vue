@@ -15,24 +15,39 @@
         <!-- 返回按钮 -->
         <div
           class="form_back pointer"
-          v-if="pageStatus !== 'login'"
+          v-if="['login', 'setPassword'].every((item) => item !== pageStatus)"
           @click="backHistoryPage"
         >
           <i style="font-size: 23px" class="iconfont openIM-back"></i>
           <span>返回</span>
         </div>
         <div class="form_title">
-          {{ $t(`login.contentRight.${pageStatus}TitleText`) }}
+          <!-- 标题 -->
+          <div class="title">
+            {{ $t(`login.contentRight.${pageStatus}TitleText`) }}
+          </div>
+          <!-- 副标题 -->
+          <div
+            class="sub_title"
+            v-if="['setResetPwd', 'setPwd'].some((item) => item === pageStatus)"
+          >
+            {{ $t(`login.contentRight.${pageStatus}subTitleText`) }}
+          </div>
         </div>
         <!-- 表单 -->
         <n-form
-          v-if="pageStatus !== 'validateCode'"
+          v-if="
+            ['login', 'resetPwd', 'register'].some(
+              (item) => item === pageStatus
+            )
+          "
           ref="formRef"
           label-width="auto"
           :model="formValue"
           :rules="rules"
           :size="size"
         >
+          <!-- v-if="pageStatus !== 'validateCode'" -->
           <!-- 电话号码 -->
           <n-form-item :label="$t('login.contentRight.phoneText')" path="phone">
             <n-select
@@ -90,21 +105,32 @@
 
         <!-- 验证码 -->
         <signCode
-          v-else
+          v-else-if="pageStatus === 'validateCode'"
           :number="6"
           :wait-timer="waitTimer"
           :phone="formValue.phone"
           :renew-get-code="renewGetCode"
           :wait-timer-show="waitTimerShow"
-          :forget-pwd-fun="forgetPwdFun"
+          :forget-pwd-and-regFun="forgetPwdAndRegFun"
+          :change-page-status="changePageStatus"
+          :is-register="isRegister"
+        />
+
+        <set-password-form
+          v-else-if="
+            ['setResetPwd', 'setPwd'].some((item) => item === pageStatus)
+          "
+          :change-page-status="changePageStatus"
+          :phone="formValue.phone"
+          :is-register="isRegister"
         />
 
         <!-- 底部忘记密码部分 -->
         <div class="form_bottom" v-if="pageStatus === 'login'">
-          <span class="pointer" @click="formBottomFun('resetPwd', $event)"
+          <span class="pointer" @click="changePageStatus('resetPwd', $event)"
             >忘记密码</span
           >
-          <span class="pointer" @click="formBottomFun('register', $event)"
+          <span class="pointer" @click="changePageStatus('register', $event)"
             >立即注册</span
           >
         </div>
@@ -121,13 +147,15 @@ import type { FormInst, FormItemRule } from 'naive-ui';
 import { useMessage } from 'naive-ui';
 import type { FormValueType } from './type';
 import signCode from '@/components/getAuthCode/Index.vue';
-import { getCode } from '@/service/user/user';
+import { APIGetCode } from '@/service/user/user';
 // import type { getCodetype } from '@/service/user/type';
 import type { responseType } from '@/service/response/common';
+import SetPasswordForm from '@/views/Login/SetPasswordForm.vue';
 
 export default defineComponent({
   components: {
     signCode,
+    SetPasswordForm,
   },
   setup() {
     const formRef = ref<FormInst | null>(null);
@@ -137,7 +165,7 @@ export default defineComponent({
     // 页面历史状态
     const historyStatus = ref<string[]>([]);
     // 等待秒数，重新获取
-    let waitTimer = ref<number>(5);
+    let waitTimer = ref<number>(60);
     // 计时器状态
     const waitTimerShow = ref<boolean>(false);
     // 更新获取代码状态
@@ -149,30 +177,39 @@ export default defineComponent({
       password: '',
       checked: false,
     });
+    // 延时器
+    let timer_interval: number;
+    // 是否注册标识
+    const isRegister = ref<boolean>(false);
 
     // 登录 callback
     function loginFun() {}
+
     // 忘记密码
-    async function forgetPwdFun() {
+    async function forgetPwdAndRegFun() {
       renewGetCode.value = false; // 重新拉取验证码隐藏
       waitTimerShow.value = true; // 计时器显示
-      waitTimer.value = 4;
+      waitTimer.value = 59;
       // 1. 获取手机验证码
-      const res: responseType = await getCode({
+      isRegister.value = pageStatus.value === 'resetPwd' ? false : true;
+      const res: responseType = await APIGetCode({
         phoneNumber: formValue.value.phone,
-        usedFor: 2,
-        operationID: '1648274924901',
+        usedFor: isRegister.value ? 1 : 2,
+        operationID: new Date().getTime() + '',
       });
-      if (res.errCode !== 0) {
+      if (res.errCode === 10008) {
         message.error('发送手机验证码失败，请使用超级验证码！');
+      } else if (res.errCode === 10002 && isRegister) {
+        message.error('该手机号已被注册！');
+        return false;
       } else {
         message.success('验证码发送成功');
       }
+      pageStatus.value = 'validateCode'; // 页面状态
       // 2. 启动延时器
-      let timer_interval = setInterval(() => {
+      timer_interval = setInterval(() => {
         if (waitTimer.value > 0) {
           waitTimer.value--;
-          console.log(waitTimerShow);
         } else {
           waitTimerShow.value = false;
           renewGetCode.value = true;
@@ -180,10 +217,14 @@ export default defineComponent({
         }
       }, 1000);
     }
+    // 注册回调
     function registerFun() {}
+
     return {
+      // 是否点击了注册
+      isRegister,
       // 忘记密码事件函数
-      forgetPwdFun,
+      forgetPwdAndRegFun,
       // 是否重新拉取验证码
       renewGetCode,
       // 是否显示秒数
@@ -246,19 +287,20 @@ export default defineComponent({
         e.preventDefault();
         console.log(pageStatus);
 
-        formRef.value?.validate((errors) => {
+        formRef.value?.validate((errors: Array) => {
+          console.log(errors);
           if (!errors) {
-            message.success('验证通过');
+            // message.success('验证通过');
             if (pageStatus.value === 'login') {
               // 登录
               loginFun();
-            } else if (pageStatus.value === 'resetPwd') {
-              // 忘记密码
+            } else if (
+              pageStatus.value === 'resetPwd' ||
+              pageStatus.value === 'register'
+            ) {
+              // 忘记密码 和 注册 去获取验证码
               historyStatus.value.push(pageStatus.value); // 添加一条历史
-              pageStatus.value = 'validateCode'; // 页面状态
-              forgetPwdFun();
-            } else {
-              //注册
+              forgetPwdAndRegFun();
             }
           } else {
             console.log(errors);
@@ -266,14 +308,26 @@ export default defineComponent({
           }
         });
       },
-      // 忘记密码 和 注册点击函数
-      formBottomFun(type: string, e: MouseEvent) {
-        historyStatus.value.push(pageStatus.value);
+      // 改变 pageStatus
+      changePageStatus(type: string, e: MouseEvent) {
+        console.log(historyStatus.value);
+        if (type === 'login') {
+          // 如果是 login 则是返回第一页
+          historyStatus.value = historyStatus.value.slice(0, 0);
+        } else {
+          historyStatus.value.push(pageStatus.value);
+        }
         pageStatus.value = type;
       },
       // 返回上一个页面状态
       backHistoryPage() {
         // console.log(historyStatus.value.length);
+        if (timer_interval) {
+          // 有定时器则清除
+          waitTimerShow.value = false;
+          renewGetCode.value = true;
+          clearInterval(timer_interval);
+        }
         console.log(historyStatus.value);
         pageStatus.value = historyStatus.value[historyStatus.value.length - 1];
         // 返回上一个页面完，需要把最后的删除
@@ -326,22 +380,30 @@ export default defineComponent({
 
 /* ---------------- 右边登录框  ------------------- */
 .login_wapper > .login_form {
+  width: 400px;
+  height: 453px;
   background-color: var(--color-background-soft);
   padding: 3rem 4rem;
   border-radius: 1rem;
   box-shadow: 0 0 30px rgb(0 0 0 / 20%);
-  height: 453px;
 }
 /* -------------------------- 返回盒子 ---------------- */
 .login_form > .form_back {
-  display: flex;
+  display: inline-flex;
   align-items: center;
 }
 /* ---------------------- 登录框标题 ------------------- */
 .login_form > .form_title {
   padding-bottom: 24px;
+}
+.login_form > .form_title > .title {
   font-weight: 500;
   color: var(--color-heading);
+}
+/* --------------- 表单副标题 --------------------------- */
+.login_form > .form_title > .sub_title {
+  color: var(--im-theme-primary);
+  font-size: 13px;
 }
 /* ------------------------ 登录底部忘记密码 -------------- */
 .form_bottom {

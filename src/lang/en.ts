@@ -11,11 +11,19 @@ const en = {
       loginTitleText: 'Welcome to weichat',
       resetPwdTitleText: 'Forget password',
       registerTitleText: 'Welcome to weichat',
-      //
+      setResetPwdTitleText: 'Please set a new account password',
+      setPwdTitleText: 'Please set the account password',
+      // ------------ 副标题 ------------
+      setResetPwdsubTitleText:
+        'The login password is used to login to weichat account',
+      setPwdsubTitleText:
+        'The login password is used to login to weichat account',
+      // ---------- 输入框 -------------
       phoneText: 'phone',
       phonePlaceholderText: 'Enter mobile phoneNumber',
       passwordText: 'password',
       passwordPlaceholderText: 'Input password',
+      // ---------- 按钮 ----------
       loginButtonText: 'login',
       registerButtonText: 'register',
       resetPwdButtonText: 'Get verification code',
