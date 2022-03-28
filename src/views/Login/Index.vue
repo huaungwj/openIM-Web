@@ -15,7 +15,11 @@
         <!-- 返回按钮 -->
         <div
           class="form_back pointer"
-          v-if="['login', 'setPassword'].every((item) => item !== pageStatus)"
+          v-if="
+            ['login', 'setPassword', 'setUserInfo'].every(
+              (item) => item !== pageStatus
+            )
+          "
           @click="backHistoryPage"
         >
           <i style="font-size: 23px" class="iconfont openIM-back"></i>
@@ -29,7 +33,11 @@
           <!-- 副标题 -->
           <div
             class="sub_title"
-            v-if="['setResetPwd', 'setPwd'].some((item) => item === pageStatus)"
+            v-if="
+              ['setResetPwd', 'setPwd', 'setUserInfo'].some(
+                (item) => item === pageStatus
+              )
+            "
           >
             {{ $t(`login.contentRight.${pageStatus}subTitleText`) }}
           </div>
@@ -93,12 +101,12 @@
             path="checked"
           >
             <n-checkbox v-model:checked="formValue.checked" /> &nbsp; &nbsp;
-            <span>我已阅读并同意</span>
+            <span>{{ $t(`login.contentRight.agreementText1`) }}</span>
             <span class="pointer" style="color: var(--im-theme-dark-color)"
-              >&nbsp;用户协议&nbsp; </span
-            >和
+              >&nbsp;{{ $t(`login.contentRight.agreementText2`) }}&nbsp; </span
+            >{{ $t(`login.contentRight.agreementText3`) }}
             <span class="pointer" style="color: var(--im-theme-dark-color)">
-              &nbsp;隐私协议 &nbsp;
+              &nbsp;{{ $t(`login.contentRight.agreementText4`) }} &nbsp;
             </span>
           </n-form-item>
         </n-form>
@@ -115,7 +123,7 @@
           :change-page-status="changePageStatus"
           :is-register="isRegister"
         />
-
+        <!-- 设置密码组件 -->
         <set-password-form
           v-else-if="
             ['setResetPwd', 'setPwd'].some((item) => item === pageStatus)
@@ -123,16 +131,20 @@
           :change-page-status="changePageStatus"
           :phone="formValue.phone"
           :is-register="isRegister"
+          :im-login="imLogin"
         />
+
+        <!-- 设置用户信息 -->
+        <setInfo v-else-if="pageStatus === 'setUserInfo'" />
 
         <!-- 底部忘记密码部分 -->
         <div class="form_bottom" v-if="pageStatus === 'login'">
-          <span class="pointer" @click="changePageStatus('resetPwd', $event)"
-            >忘记密码</span
-          >
-          <span class="pointer" @click="changePageStatus('register', $event)"
-            >立即注册</span
-          >
+          <span class="pointer" @click="changePageStatus('resetPwd', $event)">{{
+            $t('login.contentRight.forgetPwdText')
+          }}</span>
+          <span class="pointer" @click="changePageStatus('register', $event)">{{
+            $t('login.contentRight.registerNowText')
+          }}</span>
         </div>
       </div>
     </div>
@@ -144,20 +156,30 @@
 <script lang="ts">
 import { defineComponent, ref } from 'vue';
 import type { FormInst, FormItemRule } from 'naive-ui';
+import SetPasswordForm from '@/views/Login/SetPasswordForm.vue';
+import signCode from '@/components/getAuthCode/Index.vue';
+import setInfo from '@/views/Login/SetInfo.vue';
 import { useMessage } from 'naive-ui';
 import type { FormValueType } from './type';
-import signCode from '@/components/getAuthCode/Index.vue';
 import { APIGetCode } from '@/service/user/user';
+import { IMURL } from '@/service/request/config';
 // import type { getCodetype } from '@/service/user/type';
 import type { responseType } from '@/service/response/common';
-import SetPasswordForm from '@/views/Login/SetPasswordForm.vue';
+import { uuid } from '@/tools/im/util';
+import { im } from '@/tools';
+import type { InitConfig } from '@/tools/im/types';
+import { useUserStore } from '@/stores/user';
+import { useCveStore } from '@/stores/cve';
+import { useContactsStore } from '@/stores/contacts';
+import i18n from '@/lang/i18n';
 
 export default defineComponent({
   components: {
     signCode,
     SetPasswordForm,
+    setInfo,
   },
-  setup() {
+  setup(props, context) {
     const formRef = ref<FormInst | null>(null);
     const message = useMessage();
     // 页面状态， 分别是：login，register，restPwd, 默认是 login
@@ -181,6 +203,12 @@ export default defineComponent({
     let timer_interval: number;
     // 是否注册标识
     const isRegister = ref<boolean>(false);
+    // userStore
+    const userStore = useUserStore();
+    // cveStore
+    const cveStore = useCveStore();
+    // useContactsStore
+    const contactsStore = useContactsStore();
 
     // 登录 callback
     function loginFun() {}
@@ -195,7 +223,7 @@ export default defineComponent({
       const res: responseType = await APIGetCode({
         phoneNumber: formValue.value.phone,
         usedFor: isRegister.value ? 1 : 2,
-        operationID: new Date().getTime() + '',
+        operationID: uuid('uuid'),
       });
       if (res.errCode === 10008) {
         message.error('发送手机验证码失败，请使用超级验证码！');
@@ -220,11 +248,59 @@ export default defineComponent({
     // 注册回调
     function registerFun() {}
 
+    const imLogin = async (userID: string, token: string) => {
+      localStorage.setItem(`improfile`, token);
+      localStorage.setItem(`curimuid`, userID);
+      //pc
+      localStorage.setItem(`lastimuid`, userID);
+      let platformID = 5;
+
+      const config: InitConfig = {
+        userID,
+        token,
+        url: IMURL,
+        platformID,
+      };
+
+      im.login(config)
+        .then((res) => {
+          // 1. 获取用户信息
+          userStore.getSelfInfo();
+          // 2. 获取会话列表
+          cveStore.getCveList();
+          // 3. 获取朋友列表
+          contactsStore.getFriendList();
+          // 4. 获取收到的好友申请列表
+          contactsStore.getRecvFriendApplicationList();
+          // 5. 获取发出的好友申请列表
+          contactsStore.getSentFriendApplicationList();
+          // 6. 获取群组列表
+          contactsStore.getGroupList();
+          // 7. 获取收到的入群申请
+          contactsStore.getRecvGroupApplicationList();
+          // 8. 获取发出的入群申请
+          contactsStore.getSentGroupApplicationList();
+          // 9. 获取未读数量
+          contactsStore.getUnReadCount();
+          // 10. 获取黑名单列表
+          contactsStore.getBlackList();
+          // 11. 获取 userToken
+          userStore.getAdminToken(userID);
+          // if (lastType.current === 'success') {
+          //   navigate('/', { replace: true });
+          // }
+        })
+        .catch((err) => {
+          console.log(err);
+        });
+    };
+
     return {
       // 是否点击了注册
       isRegister,
       // 忘记密码事件函数
       forgetPwdAndRegFun,
+      imLogin,
       // 是否重新拉取验证码
       renewGetCode,
       // 是否显示秒数
@@ -256,18 +332,29 @@ export default defineComponent({
           validator(rule: FormItemRule, value: string) {
             // 自定义rules
             if (!value) {
-              return new Error('请输入手机号码');
+              return new Error(
+                i18n.global.t('login.contentRight.phoneVerText1')
+              );
             } else if (!/^1[3|4|5|6|7|8|9][0-9]{9}$/.test(value)) {
-              return new Error('手机号码的格式不正确！');
+              return new Error(
+                i18n.global.t('login.contentRight.phoneVerText2')
+              );
             }
             return true;
           },
         },
         password: {
           // 密码
-          required: true,
-          message: '请输入密码',
           trigger: ['input'],
+          validator(rule: FormItemRule, value: string) {
+            console.log(i18n);
+            if (!value) {
+              return new Error(i18n.global.t('login.contentRight.pwdVerText1'));
+            } else if (value.length > 20 || value.length < 6) {
+              return new Error(i18n.global.t('login.contentRight.pwdVerText2'));
+            }
+            return true;
+          },
         },
         checked: {
           // 用户协议
@@ -276,7 +363,9 @@ export default defineComponent({
           validator(rule: FormItemRule, value: string) {
             // 自定义rules
             if (!value) {
-              return new Error('请勾选用户协议');
+              return new Error(
+                i18n.global.t('login.contentRight.agreementVertext')
+              );
             }
             return true;
           },
@@ -381,7 +470,7 @@ export default defineComponent({
 /* ---------------- 右边登录框  ------------------- */
 .login_wapper > .login_form {
   width: 400px;
-  height: 453px;
+  height: 470px;
   background-color: var(--color-background-soft);
   padding: 3rem 4rem;
   border-radius: 1rem;

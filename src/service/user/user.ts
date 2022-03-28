@@ -1,4 +1,4 @@
-import cvRequest from '../index';
+import { cvRequest, adminRequest } from '../index';
 import type {
   getCodetype,
   verifyCodeType,
@@ -66,9 +66,14 @@ export function APISetRegisterPwd(data: setRegPwdType) {
     data,
   });
 }
-
-export function APIGetUserCode(data: setRegPwdType) {
-  return cvRequest.instance({
+/**
+ * 获取用户 token
+ * @param data
+ * @type setRegPwdType
+ * @returns
+ */
+export function APIGetAuthToken(data: getUserTokenType) {
+  return adminRequest.instance({
     method: 'POST',
     url: '/auth/user_token',
     data,

@@ -5,6 +5,7 @@
     :model="formValue"
     :rules="rules"
     size="large"
+    :show-file-list="false"
   >
     <!-- 密码 -->
     <n-form-item :label="$t('login.contentRight.passwordText')" path="password">
@@ -44,19 +45,20 @@
 import { defineComponent, ref } from 'vue';
 import type { resetPasswordFormType } from './type';
 import type { responseType } from '@/service/response/common';
-import type { FormItemRule } from 'naive-ui';
+import type { FormItemRule, FormInst } from 'naive-ui';
 import { useMessage } from 'naive-ui';
 import {
   APIResetPassword,
   APISetRegisterPwd,
-  APIGetUserCode,
+  APIGetAuthToken,
 } from '@/service/user/user';
 import { useUserStore } from '@/stores/user';
 import md5 from 'md5';
-import { MD5_KEY, SECRET } from '@/tools/tools';
+import { MD5_KEY } from '@/tools/tools';
+import { uuid } from '@/tools/im/util';
 
 export default defineComponent({
-  props: ['changePageStatus', 'phone', 'isRegister'],
+  props: ['changePageStatus', 'phone', 'isRegister', 'imLogin'],
 
   setup(props, context) {
     const formRef = ref<FormInst | null>(null);
@@ -75,7 +77,7 @@ export default defineComponent({
         verificationCode: userStore.verificationCode,
         newPassword: md5(md5(formValue.value.cPassword) + MD5_KEY),
         platform: 5,
-        operationID: new Date().getTime() + '',
+        operationID: uuid('uuid'),
       });
       console.log(res);
       if (res.errCode === 0) {
@@ -91,25 +93,26 @@ export default defineComponent({
 
     // 注册
     async function registerFun() {
-      console.log('注册');
       // 1. 保存密码
       const passwordRes: responseType = await APISetRegisterPwd({
         phoneNumber: props.phone,
         verificationCode: userStore.verificationCode,
-        password: formValue.value.cPassword,
+        password: md5(md5(formValue.value.cPassword) + MD5_KEY),
         platform: 5,
-        operationID: new Date().getDate() + '',
+        operationID: uuid('uuid'),
       });
       console.log(passwordRes);
       if (passwordRes.errCode !== 0) {
         message.error('无法设置密码！请联系管理员');
         return false;
       }
-      // 2. 获取用户token
-      const getUserToken = await APIGetUserCode({
-        secret: SECRET,
-      });
+      console.log(passwordRes);
+      // 2. 登录
+      props.imLogin(passwordRes.data.userID, passwordRes.data.token);
       // 3.获取IM注册的所有用户(userID)
+
+      // 4.切换页面状态 设置 userInfo
+      props.changePageStatus('setUserInfo');
     }
 
     // 提交表单

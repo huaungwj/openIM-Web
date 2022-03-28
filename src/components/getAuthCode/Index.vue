@@ -79,6 +79,7 @@ import type { responseType } from '@/service/response/common';
 import { useMessage } from 'naive-ui';
 import { debounce } from '@/tools/tools';
 import { useUserStore } from '@/stores/user';
+import { uuid } from '@/tools/im/util/index';
 
 // 声明一个 ref 来存放该元素的引用
 // 必须和模板 ref 同名
@@ -118,7 +119,7 @@ export default defineComponent({
         phoneNumber: props.phone,
         verificationCode: value.value,
         usedFor: props.isRegister ? 1 : 2,
-        operationID: new Date().getTime() + '',
+        operationID: uuid('uuid'),
       });
       console.log(res);
       if (res.errCode !== 0) {

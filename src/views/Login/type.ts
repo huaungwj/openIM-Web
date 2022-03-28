@@ -16,3 +16,10 @@ export type resetPasswordFormType = {
   password: string;
   cPassword: string;
 };
+
+// 用户信息
+export type InfoField = {
+  userID: string;
+  nickname: string;
+  faceURL: string;
+};

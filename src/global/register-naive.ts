@@ -9,6 +9,8 @@ import {
   NMessageProvider,
   NSelect,
   NCheckbox,
+  NAvatar,
+  NUpload,
 } from 'naive-ui';
 
 const naive = create({
@@ -22,6 +24,8 @@ const naive = create({
     NMessageProvider,
     NSelect,
     NCheckbox,
+    NAvatar,
+    NUpload,
   ],
 });
 export function registerNaive(app: any) {
