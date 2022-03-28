@@ -30,6 +30,7 @@ const en = {
       registerButtonText: 'register',
       resetPwdButtonText: 'Get verification code',
       validateCodeTitleText: 'Verify mobile number',
+      backButtonText: 'back',
 
       // -------------- 底部忘记密码部分协议 ------------------
       agreementText1: 'I have read and agree',
@@ -46,6 +47,10 @@ const en = {
       pwdVerText1: 'Please input a password',
       pwdVerText2: '6-20 characters required',
       agreementVertext: 'Please check the user agreement',
+      verMsgText: 'Please complete the verification!',
+
+      // 验证码 明天要英译
+      // --------- verCode -------
     },
   },
 };

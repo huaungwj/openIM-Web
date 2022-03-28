@@ -27,6 +27,7 @@ const zh = {
       registerButtonText: '注册',
       resetPwdButtonText: '获取验证码',
       validateCodeTitleText: '验证手机号',
+      backButtonText: '返回',
 
       // -------------- 底部忘记密码部分和洗衣 ------------------
       agreementText1: '我已阅读并同意',
@@ -43,6 +44,7 @@ const zh = {
       pwdVerText1: '请输入密码',
       pwdVerText2: '需要6-20个字符',
       agreementVertext: '请勾选用户协议',
+      verMsgText: '请完成验证！',
     },
   },
 };

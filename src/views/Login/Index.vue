@@ -23,7 +23,7 @@
           @click="backHistoryPage"
         >
           <i style="font-size: 23px" class="iconfont openIM-back"></i>
-          <span>返回</span>
+          <span>{{ $t('login.contentRight.backButtonText') }}</span>
         </div>
         <div class="form_title">
           <!-- 标题 -->
@@ -393,7 +393,7 @@ export default defineComponent({
             }
           } else {
             console.log(errors);
-            message.error('请完成验证！');
+            message.error(i18n.global.t('login.contentRight.verMsgText'));
           }
         });
       },
