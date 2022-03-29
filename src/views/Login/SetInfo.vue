@@ -21,7 +21,7 @@
           display: userInfo.faceURL === '' ? 'block' : 'none',
         }"
       >
-        点击上传
+        {{ $t('login.contetnRight.clickUploadText') }}
       </div>
     </n-upload>
 
@@ -34,10 +34,14 @@
       require-mark-placement="right-hanging"
       size="medium"
     >
-      <n-form-item label="你的姓名" path="nickname" label-width="auto">
+      <n-form-item
+        :label="$t('login.contentRight.yourNameText')"
+        path="nickname"
+        label-width="auto"
+      >
         <n-input
           v-model:value="userInfo.nickname"
-          placeholder="请填写真实姓名"
+          :placeholder="$t('login.contentRight.yourNamePlaceholderText')"
           :minlength="3"
           :maxlength="10"
         />
@@ -52,7 +56,7 @@
           size="large"
           @click="handleSubmit"
         >
-          进入 weiChat
+          {{ $t('login.contentRight.goWeiChatButtonText') }}
         </n-button>
       </n-form-item>
     </n-form>
@@ -70,6 +74,7 @@ import { UploadRequestOption } from 'rc-upload/lib/interface';
 import { useUserStore } from '@/stores/user';
 import type { InfoField } from './type';
 import { im } from '@/tools';
+import i18n from '@/lang/i18n';
 
 export default defineComponent({
   components: {
@@ -94,7 +99,7 @@ export default defineComponent({
 
     // 自定义上传头像
     const cusromUpload = async (data: UploadRequestOption) => {
-      console.log('执行了', data);
+      // console.log('执行了', data);
       await getCosAuthorization();
       cosUpload(data.file)
         .then((res) => {
@@ -108,20 +113,19 @@ export default defineComponent({
     const deleteAvatar = () => {
       userInfo.value.faceURL = `ic_avatar_0${Math.ceil(Math.random() * 6)}`;
     };
+
     // 保存用户资料
     const setIMInfo = (values: InfoField) => {
-      console.log(userStore.selfInfo);
       values.userID = userStore.selfInfo.userID;
-      console.log();
+      // API 接口保存
       im.setSelfInfo(values)
         .then((res) => {
           userStore.setSelfInfo(values);
-          console.log(router);
           // 跳转页面
           router.push('/');
         })
         .catch((err) => {
-          message.error('出错啦！');
+          message.error(i18n.global.t('login.contentRight.errMsgText'));
         });
     };
 
@@ -130,13 +134,13 @@ export default defineComponent({
       infoFormRef.value?.validate((errors: Array) => {
         console.log(errors);
         if (!errors) {
-          message.success('验证通过');
+          message.success(i18n.global.t('login.contentRight.verCodeMsgText3'));
           // 1. 保存用户资料
           setIMInfo(userInfo.value);
           // 2. 切换页面状态 success
         } else {
           console.log(errors);
-          message.error('请完成验证！');
+          message.error(i18n.global.t('login.contentRight.verMsgText'));
         }
       });
     };
@@ -150,9 +154,13 @@ export default defineComponent({
           trigger: ['blur', 'input'],
           validator: (rule: FormItemRule, value: string) => {
             if (!value) {
-              return new Error('请输入姓名');
+              return new Error(
+                i18n.global.t('login.contentRight.userInfoVerText1')
+              );
             } else if (value.length < 3) {
-              return new Error('姓名长度不能小于3位');
+              return new Error(
+                i18n.global.t('login.contentRight.userInfoVerText2')
+              );
             }
           },
         },

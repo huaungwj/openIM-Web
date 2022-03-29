@@ -226,12 +226,14 @@ export default defineComponent({
         operationID: uuid('uuid'),
       });
       if (res.errCode === 10008) {
-        message.error('发送手机验证码失败，请使用超级验证码！');
+        message.error(i18n.global.t('login.contentRight.sendCodeVerMsgText1'));
       } else if (res.errCode === 10002 && isRegister) {
-        message.error('该手机号已被注册！');
+        message.error(i18n.global.t('login.contentRight.sendCodeVerMsgText2'));
         return false;
       } else {
-        message.success('验证码发送成功');
+        message.success(
+          i18n.global.t('login.contentRight.sendCodeVerMsgText3')
+        );
       }
       pageStatus.value = 'validateCode'; // 页面状态
       // 2. 启动延时器
@@ -347,7 +349,6 @@ export default defineComponent({
           // 密码
           trigger: ['input'],
           validator(rule: FormItemRule, value: string) {
-            console.log(i18n);
             if (!value) {
               return new Error(i18n.global.t('login.contentRight.pwdVerText1'));
             } else if (value.length > 20 || value.length < 6) {
@@ -364,7 +365,7 @@ export default defineComponent({
             // 自定义rules
             if (!value) {
               return new Error(
-                i18n.global.t('login.contentRight.agreementVertext')
+                i18n.global.t('login.contentRight.agreementVerText')
               );
             }
             return true;
@@ -374,10 +375,9 @@ export default defineComponent({
       // submit callback
       handleSubmit(e: MouseEvent) {
         e.preventDefault();
-        console.log(pageStatus);
+        // console.log(pageStatus);
 
         formRef.value?.validate((errors: Array) => {
-          console.log(errors);
           if (!errors) {
             // message.success('验证通过');
             if (pageStatus.value === 'login') {
@@ -392,14 +392,14 @@ export default defineComponent({
               forgetPwdAndRegFun();
             }
           } else {
-            console.log(errors);
+            // console.log(errors);
             message.error(i18n.global.t('login.contentRight.verMsgText'));
           }
         });
       },
       // 改变 pageStatus
       changePageStatus(type: string, e: MouseEvent) {
-        console.log(historyStatus.value);
+        // console.log(historyStatus.value);
         if (type === 'login') {
           // 如果是 login 则是返回第一页
           historyStatus.value = historyStatus.value.slice(0, 0);
@@ -417,7 +417,6 @@ export default defineComponent({
           renewGetCode.value = true;
           clearInterval(timer_interval);
         }
-        console.log(historyStatus.value);
         pageStatus.value = historyStatus.value[historyStatus.value.length - 1];
         // 返回上一个页面完，需要把最后的删除
         historyStatus.value.pop();

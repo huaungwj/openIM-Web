@@ -1,3 +1,10 @@
+/**
+ * @author [黄伟绩]
+ * @email [1835773652@qq.com]
+ * @create date 2022-03-29 08:36:02
+ * @modify date 2022-03-29 08:36:02
+ * @desc [description]
+ */
 const en = {
   name: 'name',
   login: {
@@ -24,13 +31,19 @@ const en = {
       phoneText: 'phone',
       phonePlaceholderText: 'Enter mobile phoneNumber',
       passwordText: 'password',
+      confirmPwdText: 'Confirm password',
       passwordPlaceholderText: 'Input password',
+      // 输入框 用户信息
+      yourNameText: 'Your name',
+      yourNamePlaceholderText: 'Please fill in your real name',
       // ---------- 按钮 ----------
       loginButtonText: 'login',
       registerButtonText: 'register',
       resetPwdButtonText: 'Get verification code',
       validateCodeTitleText: 'Verify mobile number',
       backButtonText: 'back',
+      nextStepButtonText: 'next step',
+      goWeiChatButtonText: 'get into weiChat',
 
       // -------------- 底部忘记密码部分协议 ------------------
       agreementText1: 'I have read and agree',
@@ -46,11 +59,34 @@ const en = {
       phoneVerText2: 'The format of the mobile phone number is incorrect!',
       pwdVerText1: 'Please input a password',
       pwdVerText2: '6-20 characters required',
-      agreementVertext: 'Please check the user agreement',
-      verMsgText: 'Please complete the verification!',
+      agreementVerText: 'Please check the user agreement',
+      // 修改密码changePwd1VerText2
+      changePwd1VerText1: 'Please input a password',
+      changePwd1VerText2: '6-20 characters required',
+      changePwd2VerText1: 'Confirm password is required',
+      changePwd2VerText2: 'The passwords entered twice are inconsistent',
+      changePwd2VerText3: '6-20 characters required',
 
-      // 验证码 明天要英译
-      // --------- verCode -------
+      // message 框
+      verMsgText: 'Please complete the verification!',
+      // --------------- 发送验证码 ----------
+      sendCodeVerMsgText1:
+        'Please use the verification code of the mobile phone, please send the verification code!',
+      sendCodeVerMsgText2: 'The mobile phone number has been registered!',
+      sendCodeVerMsgText3: 'Verification code sent successfully',
+      // -------------- 验证验证码 ---------
+      verCodeMsgText1: 'Please enter the verification code!',
+      verCodeMsgText2: 'Verification code error!',
+      verCodeMsgText3: 'Verification succeeded!',
+
+      // 页面文字
+      // --------- 验证码页面 -------
+      verCodeText1: 'Please enter send to',
+      verCodeText2: '6-digit verification code, valid for 10 minutes',
+      verCodeText3: 'Resend after',
+      verCodeText4: 'Reacquire',
+      // ---------- setUserInfo --------
+      clickUploadText: 'Click upload',
     },
   },
 };

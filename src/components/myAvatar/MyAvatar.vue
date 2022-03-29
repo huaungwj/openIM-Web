@@ -17,7 +17,6 @@ import ic_avatar_06 from '@/assets/images/ic_avatar_06.png';
 export default defineComponent({
   props: ['size', 'src'],
   setup(props, context) {
-    console.log(props);
     const localList = reactive({
       ic_avatar_01,
       ic_avatar_02,

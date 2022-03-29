@@ -1,8 +1,9 @@
 <template>
   <div class="code_container">
     <span class="sub_tip"
-      >请输入发送至
-      <span> +86 {{ phone }}</span> 的6位验证码，有效期十分钟。</span
+      >{{ $t('login.contentRight.verCodeText1') }}
+      <span> +86 {{ phone }}</span>
+      {{ $t('login.contentRight.verCodeText2') }}</span
     >
     <!-- 验证码框 -->
     <div class="verificationCodeBox">
@@ -47,11 +48,13 @@
     <!-- 底部重新获取 -->
     <div class="code_tip">
       <span v-show="waitTimerShow"
-        ><span class="pointer">{{ waitTimer }}s</span> &nbsp;后重新发送</span
+        ><span class="pointer">{{ waitTimer }}s</span> &nbsp;{{
+          $t('login.contentRight.verCodeText3')
+        }}</span
       >
-      <span v-show="renewGetCode" @click="ReacquireCode" class="pointer"
-        >重新获取</span
-      >
+      <span v-show="renewGetCode" @click="ReacquireCode" class="pointer">{{
+        $t('login.contentRight.verCodeText4')
+      }}</span>
     </div>
 
     <!-- 提交按钮 -->
@@ -65,7 +68,7 @@
       @click="submitVerifyCode"
     >
       <!-- {{ $t(`login.contentRight.${pageStatus}ButtonText`) }} -->
-      下一步
+      {{ $t('login.contentRight.nextStepButtonText') }}
     </n-button>
 
     {{ userStore.verificationCode }}
@@ -80,6 +83,7 @@ import { useMessage } from 'naive-ui';
 import { debounce } from '@/tools/tools';
 import { useUserStore } from '@/stores/user';
 import { uuid } from '@/tools/im/util/index';
+import i18n from '@/lang/i18n';
 
 // 声明一个 ref 来存放该元素的引用
 // 必须和模板 ref 同名
@@ -102,11 +106,10 @@ export default defineComponent({
   setup(props, context) {
     const userStore = useUserStore();
     const message = useMessage();
-    console.log(props);
 
     // 更新 生命周期钩子
     onUpdated(() => {
-      console.log('更新了');
+      // console.log('更新了');
     });
 
     function handleSubmit() {
@@ -114,6 +117,11 @@ export default defineComponent({
     }
     // 下一步 提交验证码是否正确
     const submitVerifyCode = debounce(async function () {
+      // 验证码是否为空
+      if (!value.value) {
+        message.error(i18n.global.t('login.contentRight.verCodeMsgText1'));
+        return false;
+      }
       // 1. 提交输入的验证码是否正确
       const res: responseType = await APIVerifyCode({
         phoneNumber: props.phone,
@@ -121,9 +129,9 @@ export default defineComponent({
         usedFor: props.isRegister ? 1 : 2,
         operationID: uuid('uuid'),
       });
-      console.log(res);
+      // console.log(res);
       if (res.errCode !== 0) {
-        message.error('验证码错误!');
+        message.error(i18n.global.t('login.contentRight.verCodeMsgText2'));
       } else {
         // 改变 pinia user.code
         userStore.changeVeriCode(value.value);
@@ -131,13 +139,13 @@ export default defineComponent({
         props.changePageStatus(props.isRegister ? 'setPwd' : 'setResetPwd');
         // 清空 value
         value.value = '';
-        message.success('验证成功');
+        message.success(i18n.global.t('login.contentRight.verCodeMsgText3'));
       }
     }, 500);
 
     function handleInput(e: KeyboardEvent) {
       // input.value = value.value;
-      console.log(value);
+      // console.log(value);
       if (value.value.length >= this.number) {
         // 当输入满了之后自动调用
         submitVerifyCode();

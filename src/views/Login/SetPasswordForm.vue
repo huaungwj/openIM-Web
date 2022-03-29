@@ -16,7 +16,10 @@
         :placeholder="$t('login.contentRight.passwordPlaceholderText')"
       />
     </n-form-item>
-    <n-form-item label="确认密码" path="cPassword">
+    <n-form-item
+      :label="$t('login.contentRight.confirmPwdText')"
+      path="cPassword"
+    >
       <n-input
         v-model:value="formValue.cPassword"
         type="password"
@@ -35,7 +38,7 @@
         size="large"
         @click="handleSubmit"
       >
-        下一步
+        {{ $t('login.contentRight.nextStepButtonText') }}
       </n-button>
     </n-form-item>
   </n-form>
@@ -56,6 +59,7 @@ import { useUserStore } from '@/stores/user';
 import md5 from 'md5';
 import { MD5_KEY } from '@/tools/tools';
 import { uuid } from '@/tools/im/util';
+import i18n from '@/lang/i18n';
 
 export default defineComponent({
   props: ['changePageStatus', 'phone', 'isRegister', 'imLogin'],
@@ -68,7 +72,6 @@ export default defineComponent({
     });
     const message = useMessage();
     const userStore = useUserStore();
-    console.log(props);
 
     // 重置密码
     async function resetPasswordFun() {
@@ -79,13 +82,12 @@ export default defineComponent({
         platform: 5,
         operationID: uuid('uuid'),
       });
-      console.log(res);
       if (res.errCode === 0) {
         // 修改成功
-        message.info('密码重置成功，请前往登录！');
+        message.info(i18n.global.t('login.contentRight.setPwdSuccMesText'));
       } else {
         // 修改失败
-        message.error('修改失败,请重新修改');
+        message.error(i18n.global.t('login.contentRight.errSetPwdMsgText'));
       }
       // 跳转登录页
       props.changePageStatus('login');
@@ -101,12 +103,10 @@ export default defineComponent({
         platform: 5,
         operationID: uuid('uuid'),
       });
-      console.log(passwordRes);
       if (passwordRes.errCode !== 0) {
-        message.error('无法设置密码！请联系管理员');
+        message.error(i18n.global.t('login.contentRight.errSetPwdRegMsgText'));
         return false;
       }
-      console.log(passwordRes);
       // 2. 登录
       props.imLogin(passwordRes.data.userID, passwordRes.data.token);
       // 3.获取IM注册的所有用户(userID)
@@ -130,7 +130,7 @@ export default defineComponent({
           }
         } else {
           console.log(errors);
-          message.error('请完成验证！');
+          message.error(i18n.global.t('login.contentRight.verMsgText'));
         }
       });
     }
@@ -145,9 +145,13 @@ export default defineComponent({
           trigger: ['input', 'blur'],
           validator(rule: FormItemRule, value: string) {
             if (!value) {
-              return new Error('请输入密码');
+              return new Error(
+                i18n.global.t('login.contentRight.changePwd1VerText1')
+              );
             } else if (value.length > 20 || value.length < 6) {
-              return new Error('需要6-20个字符');
+              return new Error(
+                i18n.global.t('login.contentRight.changePwd1VerText2')
+              );
             }
           },
         },
@@ -157,11 +161,17 @@ export default defineComponent({
           validator(rule: FormItemRule, value: string) {
             // 自定义rules
             if (!value) {
-              return new Error('确认密码是必填项');
+              return new Error(
+                i18n.global.t('login.contentRight.changePwd2VerText1')
+              );
             } else if (value !== formValue.value.password) {
-              return new Error('两次输入的密码不一致');
+              return new Error(
+                i18n.global.t('login.contentRight.changePwd2VerText2')
+              );
             } else if (value.length > 20 || value.length < 6) {
-              return new Error('需要6-20个字符');
+              return new Error(
+                i18n.global.t('login.contentRight.changePwd2VerText3')
+              );
             }
             return true;
           },
