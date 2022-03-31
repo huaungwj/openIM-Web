@@ -1,5 +1,6 @@
 import { createRouter, createWebHistory } from 'vue-router';
 import HomeView from '@/views/HomeView.vue';
+import Home from '@/views/Home/Home.vue';
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -7,22 +8,49 @@ const router = createRouter({
     {
       path: '/',
       name: 'home',
-      component: HomeView,
+      component: Home,
+      redirect: '/cve',
+      children: [
+        // 会话
+        {
+          path: '/cve',
+          name: 'cve',
+          components: {
+            default: () => import('@/views/Home/Cve/CveList.vue'),
+            right: () => import('@/views/Home/Cve/ChatPage.vue'),
+          },
+        },
+        {
+          path: '/contacts',
+          name: 'contacts',
+          components: {
+            default: () => import('@/views/Home/Contact/ContactList.vue'),
+            right: () => import('@/views/Home/Contact/ContactRight.vue'),
+          },
+        },
+      ],
     },
-    {
-      path: '/about',
-      name: 'about',
-      // route level code-splitting
-      // this generates a separate chunk (About.[hash].js) for this route
-      // which is lazy-loaded when the route is visited.
-      component: () => import('@/views/AboutView.vue'),
-    },
+
     {
       path: '/login',
       name: 'login',
       component: () => import('@/views/Login/Index.vue'),
     },
   ],
+});
+
+const allowPath = ['/', '/cve', '/contacts'];
+
+router.beforeEach((to, from, next) => {
+  const isLogin = localStorage.getItem(`improfile`)!;
+  if (to.path === '/login' && isLogin) {
+    // 登陆了不允许再进去 登录页面
+    next('/cve');
+  } else if (allowPath.some((item) => item === to.path) && !isLogin) {
+    next('/login');
+  } else {
+    next();
+  }
 });
 
 export default router;

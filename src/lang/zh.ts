@@ -82,6 +82,10 @@ const zh = {
       errSetPwdRegMsgText: '无法设置密码！请联系管理员',
       setPwdSuccMesText: '密码重置成功，请前往登录！',
       errSetPwdMsgText: '修改失败,请重新修改',
+      // login
+      errPwdMsgText: '登录失败，密码错误',
+      errNotRegMsgText: '登录失败，账号未注册',
+      errUnknownMsgText: '登录失败，请联系管理员',
 
       // 页面文字
       // --------- verCode 验证码 -------

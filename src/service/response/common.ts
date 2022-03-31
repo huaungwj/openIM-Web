@@ -1,6 +1,6 @@
 // 响应接口
-export type responseType = {
+export interface responseType {
   errMsg: string;
   errCode: number;
-  data?: object;
-};
+  data?: Record<string, string>;
+}

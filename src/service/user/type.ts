@@ -38,3 +38,9 @@ export type getUserTokenType = {
   userID: string; // 用户id
   operationID: string; //操作ID，保持唯一，建议用当前时间微秒+随机数
 };
+
+// 登录
+export type loginType = {
+  phoneNumber: string;
+  password: string;
+};

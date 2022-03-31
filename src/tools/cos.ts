@@ -70,7 +70,7 @@ export const cosUploadNomal = (
 };
 
 export const cosUpload = (
-  data: UploadRequestOption,
+  data: UploadRequestOption['file'],
   pcb?: COS.onProgress
 ): Promise<COS.PutObjectResult & { url: string }> => {
   const dpcb = () => {};

@@ -5,148 +5,165 @@
       <!-- 左边图片部分 -->
       <div class="left_container">
         <div class="title">{{ $t('login.contentLeft.titleText') }}</div>
+
         <span class="sub_title">{{
           $t('login.contentLeft.subTitleText')
         }}</span>
         <img src="@/assets/login/left-img.png " />
       </div>
-      <!-- 登录表单部分 -->
-      <div class="login_form">
-        <!-- 返回按钮 -->
-        <div
-          class="form_back pointer"
-          v-if="
-            ['login', 'setPassword', 'setUserInfo'].every(
-              (item) => item !== pageStatus
-            )
-          "
-          @click="backHistoryPage"
-        >
-          <i style="font-size: 23px" class="iconfont openIM-back"></i>
-          <span>{{ $t('login.contentRight.backButtonText') }}</span>
-        </div>
-        <div class="form_title">
-          <!-- 标题 -->
-          <div class="title">
-            {{ $t(`login.contentRight.${pageStatus}TitleText`) }}
-          </div>
-          <!-- 副标题 -->
+      <n-spin :show="pageStatus === 'success'">
+        <!-- 登录表单部分 -->
+        <div class="login_form">
+          <!-- 返回按钮 -->
           <div
-            class="sub_title"
+            class="form_back pointer"
             v-if="
-              ['setResetPwd', 'setPwd', 'setUserInfo'].some(
+              ['login', 'setPassword', 'setUserInfo', 'success'].every(
+                (item) => item !== pageStatus
+              )
+            "
+            @click="backHistoryPage"
+          >
+            <i style="font-size: 23px" class="iconfont openIM-back"></i>
+            <span>{{ $t('login.contentRight.backButtonText') }}</span>
+          </div>
+          <div class="form_title">
+            <!-- 标题 -->
+            <div class="title" v-if="pageStatus !== 'success'">
+              {{ $t(`login.contentRight.${pageStatus}TitleText`) }}
+            </div>
+            <!-- 副标题 -->
+            <div
+              class="sub_title"
+              v-if="
+                ['setResetPwd', 'setPwd', 'setUserInfo'].some(
+                  (item) => item === pageStatus
+                )
+              "
+            >
+              {{ $t(`login.contentRight.${pageStatus}subTitleText`) }}
+            </div>
+          </div>
+          <!-- 表单 -->
+          <n-form
+            v-if="
+              ['login', 'resetPwd', 'register'].some(
                 (item) => item === pageStatus
               )
             "
+            ref="formRef"
+            label-width="auto"
+            :model="formValue"
+            :rules="rules"
+            :size="size"
           >
-            {{ $t(`login.contentRight.${pageStatus}subTitleText`) }}
+            <!-- v-if="pageStatus !== 'validateCode'" -->
+            <!-- 电话号码 -->
+            <n-form-item
+              :label="$t('login.contentRight.phoneText')"
+              path="phone"
+            >
+              <n-select
+                v-model:value="formValue.areaCode"
+                :style="{ width: '33%', borderTopRightRadius: '0px' }"
+                :options="AreaCodes"
+              />
+              <n-input
+                default-value=""
+                v-model:value="formValue.phone"
+                :placeholder="$t('login.contentRight.phonePlaceholderText')"
+                :maxlength="11"
+                autocomplete="off"
+              />
+            </n-form-item>
+            <!-- 密码 -->
+            <n-form-item
+              v-if="pageStatus === 'login'"
+              :label="$t('login.contentRight.passwordText')"
+              path="password"
+            >
+              <n-input
+                v-model:value="formValue.password"
+                default-value=""
+                type="password"
+                @keydown.enter="handleSubmit"
+                show-password-on="mousedown"
+                :placeholder="$t('login.contentRight.passwordPlaceholderText')"
+              />
+            </n-form-item>
+            <!-- 提交按钮 -->
+            <n-form-item :style="{ gridTemplateRows: '0' }" label-width="auto">
+              <n-button
+                attr-type="button"
+                type="primary"
+                :style="{
+                  width: '100%',
+                }"
+                size="large"
+                @click="handleSubmit"
+              >
+                {{ $t(`login.contentRight.${pageStatus}ButtonText`) }}
+              </n-button>
+            </n-form-item>
+            <!-- 用户协议 -->
+            <n-form-item
+              v-if="pageStatus === 'login' || pageStatus === 'register'"
+              :style="{ gridTemplateRows: '0', fontSize: '12px' }"
+              path="checked"
+            >
+              <n-checkbox v-model:checked="formValue.checked" /> &nbsp; &nbsp;
+              <span>{{ $t(`login.contentRight.agreementText1`) }}</span>
+              <span class="pointer" style="color: var(--im-theme-dark-color)"
+                >&nbsp;{{
+                  $t(`login.contentRight.agreementText2`)
+                }}&nbsp; </span
+              >{{ $t(`login.contentRight.agreementText3`) }}
+              <span class="pointer" style="color: var(--im-theme-dark-color)">
+                &nbsp;{{ $t(`login.contentRight.agreementText4`) }} &nbsp;
+              </span>
+            </n-form-item>
+          </n-form>
+
+          <!-- 验证码 -->
+          <signCode
+            v-else-if="pageStatus === 'validateCode'"
+            :number="6"
+            :wait-timer="waitTimer"
+            :phone="formValue.phone"
+            :renew-get-code="renewGetCode"
+            :wait-timer-show="waitTimerShow"
+            :forget-pwd-and-regFun="forgetPwdAndRegFun"
+            :change-page-status="changePageStatus"
+            :is-register="isRegister"
+          />
+          <!-- 设置密码组件 -->
+          <set-password-form
+            v-else-if="
+              ['setResetPwd', 'setPwd'].some((item) => item === pageStatus)
+            "
+            :change-page-status="changePageStatus"
+            :phone="formValue.phone"
+            :is-register="isRegister"
+          />
+
+          <!-- 设置用户信息 -->
+          <setInfo v-else-if="pageStatus === 'setUserInfo'" />
+
+          <!-- 底部忘记密码部分 -->
+          <div class="form_bottom" v-if="pageStatus === 'login'">
+            <span
+              class="pointer"
+              @click="changePageStatus('resetPwd', $event)"
+              >{{ $t('login.contentRight.forgetPwdText') }}</span
+            >
+            <span
+              class="pointer"
+              @click="changePageStatus('register', $event)"
+              >{{ $t('login.contentRight.registerNowText') }}</span
+            >
           </div>
         </div>
-        <!-- 表单 -->
-        <n-form
-          v-if="
-            ['login', 'resetPwd', 'register'].some(
-              (item) => item === pageStatus
-            )
-          "
-          ref="formRef"
-          label-width="auto"
-          :model="formValue"
-          :rules="rules"
-          :size="size"
-        >
-          <!-- v-if="pageStatus !== 'validateCode'" -->
-          <!-- 电话号码 -->
-          <n-form-item :label="$t('login.contentRight.phoneText')" path="phone">
-            <n-select
-              v-model:value="formValue.areaCode"
-              :style="{ width: '33%', borderTopRightRadius: '0px' }"
-              :options="AreaCodes"
-            />
-            <n-input
-              v-model:value="formValue.phone"
-              :placeholder="$t('login.contentRight.phonePlaceholderText')"
-              :maxlength="11"
-            />
-          </n-form-item>
-          <!-- 密码 -->
-          <n-form-item
-            v-if="pageStatus === 'login'"
-            :label="$t('login.contentRight.passwordText')"
-            path="password"
-          >
-            <n-input
-              v-model:value="formValue.password"
-              :placeholder="$t('login.contentRight.passwordPlaceholderText')"
-            />
-          </n-form-item>
-          <!-- 提交按钮 -->
-          <n-form-item :style="{ gridTemplateRows: '0' }" label-width="auto">
-            <n-button
-              attr-type="button"
-              type="primary"
-              :style="{
-                width: '100%',
-              }"
-              size="large"
-              @click="handleSubmit"
-            >
-              {{ $t(`login.contentRight.${pageStatus}ButtonText`) }}
-            </n-button>
-          </n-form-item>
-          <!-- 用户协议 -->
-          <n-form-item
-            v-if="pageStatus === 'login' || pageStatus === 'register'"
-            :style="{ gridTemplateRows: '0', fontSize: '12px' }"
-            path="checked"
-          >
-            <n-checkbox v-model:checked="formValue.checked" /> &nbsp; &nbsp;
-            <span>{{ $t(`login.contentRight.agreementText1`) }}</span>
-            <span class="pointer" style="color: var(--im-theme-dark-color)"
-              >&nbsp;{{ $t(`login.contentRight.agreementText2`) }}&nbsp; </span
-            >{{ $t(`login.contentRight.agreementText3`) }}
-            <span class="pointer" style="color: var(--im-theme-dark-color)">
-              &nbsp;{{ $t(`login.contentRight.agreementText4`) }} &nbsp;
-            </span>
-          </n-form-item>
-        </n-form>
-
-        <!-- 验证码 -->
-        <signCode
-          v-else-if="pageStatus === 'validateCode'"
-          :number="6"
-          :wait-timer="waitTimer"
-          :phone="formValue.phone"
-          :renew-get-code="renewGetCode"
-          :wait-timer-show="waitTimerShow"
-          :forget-pwd-and-regFun="forgetPwdAndRegFun"
-          :change-page-status="changePageStatus"
-          :is-register="isRegister"
-        />
-        <!-- 设置密码组件 -->
-        <set-password-form
-          v-else-if="
-            ['setResetPwd', 'setPwd'].some((item) => item === pageStatus)
-          "
-          :change-page-status="changePageStatus"
-          :phone="formValue.phone"
-          :is-register="isRegister"
-          :im-login="imLogin"
-        />
-
-        <!-- 设置用户信息 -->
-        <setInfo v-else-if="pageStatus === 'setUserInfo'" />
-
-        <!-- 底部忘记密码部分 -->
-        <div class="form_bottom" v-if="pageStatus === 'login'">
-          <span class="pointer" @click="changePageStatus('resetPwd', $event)">{{
-            $t('login.contentRight.forgetPwdText')
-          }}</span>
-          <span class="pointer" @click="changePageStatus('register', $event)">{{
-            $t('login.contentRight.registerNowText')
-          }}</span>
-        </div>
-      </div>
+      </n-spin>
     </div>
     <!-- 底部 绿条 -->
     <div class="login_bottom"></div>
@@ -155,23 +172,21 @@
 
 <script lang="ts">
 import { defineComponent, ref } from 'vue';
-import type { FormInst, FormItemRule } from 'naive-ui';
+import { useRouter } from 'vue-router';
+import { useMessage } from 'naive-ui';
 import SetPasswordForm from '@/views/Login/SetPasswordForm.vue';
 import signCode from '@/components/getAuthCode/Index.vue';
 import setInfo from '@/views/Login/SetInfo.vue';
-import { useMessage } from 'naive-ui';
+import type { FormValidationError, FormInst, FormItemRule } from 'naive-ui';
 import type { FormValueType } from './type';
-import { APIGetCode } from '@/service/user/user';
-import { IMURL } from '@/service/request/config';
+import { APIGetCode, APILogin } from '@/service/user/user';
 // import type { getCodetype } from '@/service/user/type';
 import type { responseType } from '@/service/response/common';
 import { uuid } from '@/tools/im/util';
-import { im } from '@/tools';
-import type { InitConfig } from '@/tools/im/types';
-import { useUserStore } from '@/stores/user';
-import { useCveStore } from '@/stores/cve';
-import { useContactsStore } from '@/stores/contacts';
 import i18n from '@/lang/i18n';
+import md5 from 'md5';
+import { MD5_KEY } from '@/tools/tools';
+import { useImLogin } from '@/hooks/useImLogin';
 
 export default defineComponent({
   components: {
@@ -179,7 +194,10 @@ export default defineComponent({
     SetPasswordForm,
     setInfo,
   },
+
   setup(props, context) {
+    // router
+    const router = useRouter();
     const formRef = ref<FormInst | null>(null);
     const message = useMessage();
     // 页面状态， 分别是：login，register，restPwd, 默认是 login
@@ -203,15 +221,40 @@ export default defineComponent({
     let timer_interval: number;
     // 是否注册标识
     const isRegister = ref<boolean>(false);
-    // userStore
-    const userStore = useUserStore();
-    // cveStore
-    const cveStore = useCveStore();
-    // useContactsStore
-    const contactsStore = useContactsStore();
+
+    // useImLogin
+    const { imLogin } = useImLogin();
 
     // 登录 callback
-    function loginFun() {}
+    async function loginFun() {
+      // 1. 登录 换取 token
+      const res: responseType<ILogin> = await APILogin({
+        phoneNumber: formValue.value.phone,
+        password: md5(md5(formValue.value.password) + MD5_KEY),
+      });
+      console.log(res);
+      // 2. ws 登录
+      if (res.errCode === 0) {
+        console.log(res);
+        // loading 关闭
+        pageStatus.value = '';
+        // 跳转主页面
+        router.replace({ path: '/' });
+      } else if (res.errCode === 10004) {
+        message.error(i18n.global.t('login.contentRight.errPwdMsgText'));
+        pageStatus.value = 'login';
+        return false;
+      } else if (res.errCode === 10003) {
+        message.error(i18n.global.t('login.contetnRight.errNotRegMsgText'));
+        pageStatus.value = 'login';
+        return false;
+      } else {
+        message.error(i18n.global.t('login.contetnRight.errUnknownMsgText'));
+        pageStatus.value = 'login';
+        return false;
+      }
+      imLogin(res.data?.userID, res.data.token);
+    }
 
     // 忘记密码
     async function forgetPwdAndRegFun() {
@@ -247,62 +290,12 @@ export default defineComponent({
         }
       }, 1000);
     }
-    // 注册回调
-    function registerFun() {}
-
-    const imLogin = async (userID: string, token: string) => {
-      localStorage.setItem(`improfile`, token);
-      localStorage.setItem(`curimuid`, userID);
-      //pc
-      localStorage.setItem(`lastimuid`, userID);
-      let platformID = 5;
-
-      const config: InitConfig = {
-        userID,
-        token,
-        url: IMURL,
-        platformID,
-      };
-
-      im.login(config)
-        .then((res) => {
-          // 1. 获取用户信息
-          userStore.getSelfInfo();
-          // 2. 获取会话列表
-          cveStore.getCveList();
-          // 3. 获取朋友列表
-          contactsStore.getFriendList();
-          // 4. 获取收到的好友申请列表
-          contactsStore.getRecvFriendApplicationList();
-          // 5. 获取发出的好友申请列表
-          contactsStore.getSentFriendApplicationList();
-          // 6. 获取群组列表
-          contactsStore.getGroupList();
-          // 7. 获取收到的入群申请
-          contactsStore.getRecvGroupApplicationList();
-          // 8. 获取发出的入群申请
-          contactsStore.getSentGroupApplicationList();
-          // 9. 获取未读数量
-          contactsStore.getUnReadCount();
-          // 10. 获取黑名单列表
-          contactsStore.getBlackList();
-          // 11. 获取 userToken
-          userStore.getAdminToken(userID);
-          // if (lastType.current === 'success') {
-          //   navigate('/', { replace: true });
-          // }
-        })
-        .catch((err) => {
-          console.log(err);
-        });
-    };
 
     return {
       // 是否点击了注册
       isRegister,
       // 忘记密码事件函数
       forgetPwdAndRegFun,
-      imLogin,
       // 是否重新拉取验证码
       renewGetCode,
       // 是否显示秒数
@@ -376,11 +369,14 @@ export default defineComponent({
       handleSubmit(e: MouseEvent) {
         e.preventDefault();
         // console.log(pageStatus);
-
-        formRef.value?.validate((errors: Array) => {
+        // const cb: FormValidateCallback
+        formRef.value?.validate((errors?: Array<FormValidationError>) => {
+          console.log(errors);
           if (!errors) {
             // message.success('验证通过');
             if (pageStatus.value === 'login') {
+              // 改变 pageStatus 的状态
+              pageStatus.value = 'success';
               // 登录
               loginFun();
             } else if (
@@ -467,7 +463,7 @@ export default defineComponent({
 }
 
 /* ---------------- 右边登录框  ------------------- */
-.login_wapper > .login_form {
+.login_wapper .login_form {
   width: 400px;
   height: 470px;
   background-color: var(--color-background-soft);

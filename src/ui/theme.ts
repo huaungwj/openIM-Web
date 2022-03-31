@@ -3,16 +3,6 @@
  * @type import('naive-ui').GlobalThemeOverrides
  */
 import type { GlobalThemeOverrides } from 'naive-ui';
-const themeOverrides: GlobalThemeOverrides = {
-  common: {
-    // primaryColorHover: '#4098FC',
-    // primaryColorPressed: '#1060C9',
-    // primaryColorSuppl: '#4098FC',
-  },
-  // Button: {
-  //     textColor: '#FF0000'
-  // }
-};
 
 const lightThemeOverrides: GlobalThemeOverrides = {
   common: {
@@ -22,6 +12,9 @@ const lightThemeOverrides: GlobalThemeOverrides = {
   Button: {
     // textColor: '#000  ',
   },
+  Layout: {
+    siderColor: '#e5e5e5',
+  },
 };
 const darkThemeOverrides: GlobalThemeOverrides = {
   common: {
@@ -30,6 +23,9 @@ const darkThemeOverrides: GlobalThemeOverrides = {
   },
   Button: {
     // textColor: '#000',
+  },
+  Layout: {
+    siderColor: '#2b2a2b',
   },
 };
 

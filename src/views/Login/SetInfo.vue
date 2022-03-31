@@ -46,7 +46,7 @@
           :maxlength="10"
         />
       </n-form-item>
-      <n-form-item :style="{ gridTemplateRows: '0' }" label-width="auto">
+      <n-form-item label-width="auto">
         <n-button
           attr-type="button"
           type="primary"
@@ -64,13 +64,13 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, ref } from 'vue';
+import { defineComponent, ref, reactive } from 'vue';
 import { useRouter } from 'vue-router';
 import { useMessage } from 'naive-ui';
-import type { FormInst, FormItemRule } from 'naive-ui';
+import type { FormInst, FormItemRule, FormValidationError } from 'naive-ui';
 import MyAvatar from '@/components/myAvatar/MyAvatar.vue';
 import { getCosAuthorization, cosUpload } from '@/tools/cos';
-import { UploadRequestOption } from 'rc-upload/lib/interface';
+import type { UploadRequestOption } from 'rc-upload/lib/interface';
 import { useUserStore } from '@/stores/user';
 import type { InfoField } from './type';
 import { im } from '@/tools';
@@ -97,7 +97,10 @@ export default defineComponent({
     const router = useRouter();
     // console.log(props);
 
-    // 自定义上传头像
+    /**
+     * 自定义上传头像
+     * @param data
+     */
     const cusromUpload = async (data: UploadRequestOption) => {
       // console.log('执行了', data);
       await getCosAuthorization();
@@ -114,7 +117,10 @@ export default defineComponent({
       userInfo.value.faceURL = `ic_avatar_0${Math.ceil(Math.random() * 6)}`;
     };
 
-    // 保存用户资料
+    /**
+     * 保存用户资料
+     * @param values
+     */
     const setIMInfo = (values: InfoField) => {
       values.userID = userStore.selfInfo.userID;
       // API 接口保存
@@ -122,16 +128,19 @@ export default defineComponent({
         .then((res) => {
           userStore.setSelfInfo(values);
           // 跳转页面
-          router.push('/');
+          router.replace('/');
         })
         .catch((err) => {
           message.error(i18n.global.t('login.contentRight.errMsgText'));
         });
     };
 
-    // 提交进入
+    /**
+     * 提交表单 进入im
+     * @param
+     */
     const handleSubmit = () => {
-      infoFormRef.value?.validate((errors: Array) => {
+      infoFormRef.value?.validate((errors?: Array<FormValidationError>) => {
         console.log(errors);
         if (!errors) {
           message.success(i18n.global.t('login.contentRight.verCodeMsgText3'));

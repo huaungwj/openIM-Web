@@ -25,6 +25,25 @@
 
   /* 主题颜色 黑夜 */
   --im-theme-dark-color: #58bf6a;
+
+  /* 左边 sider栏背景 */
+  --im-siderBg-dark-color: #2b2a2b;
+  --im-siderBg-light-color: #e6e5e5;
+
+  /* topSearch */
+  --im-topSearch-dark-color: #191919;
+  --im-topSearch-light-color: #f7f7f7;
+
+  /* cve 会话 */
+  /* 会话item */
+  --im-cveItem-dark-color: #202020;
+  --im-cveItem-light-color: #ebebeb;
+  /* chat_page */
+  --im-chatPage-dark-color: #111111;
+  --im-chatPage-light-color: #f3f3f3;
+  /* chat_page_header_solid */
+  --im-chatPageSolid-light-color: #dfdfdf;
+  --im-chatPageSolid-dark-color: #1d1d1d;
 }
 
 /* semantic color variables for this project */
@@ -45,7 +64,18 @@
   /* --im-theme-button: var(---im-theme-light-color); */
   /* 默认样式 */
   --im-theme-primary: var(--im-theme-light-color);
-  /* --n-label-text-color */
+  /* sider背景 */
+  --im-theme-siderBg: var(--im-siderBg-light-color);
+  /* topSearch */
+  --im-theme-topSearchBg: var(--im-topSearch-light-color);
+
+  /* cve 会话 */
+  /* 会话item */
+  --im-theme-cveItemBg: var(--im-cveItem-light-color);
+  /* chat_page */
+  --im-theme-chatPageBg: var(--im-chatPage-light-color);
+  /* chat_page_header_solid */
+  --im-theme-chatPageSolid: var(--im-chatPageSolid-light-color);
 }
 
 @media (prefers-color-scheme: dark) {
@@ -63,6 +93,18 @@
     /* 按钮 */
     /* --im-theme-button: var(--im-theme-dark-color); */
     --im-theme-primary: var(--im-theme-dark-color);
+    /* sider背景 */
+    --im-theme-siderBg: var(--im-siderBg-dark-color);
+    /* topSearch */
+    --im-theme-topSearchBg: var(--im-topSearch-dark-color);
+
+    /* cve 会话 */
+    /* 会话item */
+    --im-theme-cveItemBg: var(--im-cveItem-dark-color);
+    /* chat_page */
+    --im-theme-chatPageBg: var(--im-chatPage-dark-color);
+    /* chat_page_header_solid */
+    --im-theme-chatPageSolid: var(--im-chatPageSolid-dark-color);
   }
 }
 
@@ -73,6 +115,17 @@
   margin: 0;
   position: relative;
   font-weight: normal;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+  display: block;
+  border: none;
+  -webkit-tap-highlight-color: rgba(255, 255, 255, 0);
+  -webkit-user-select: none;
+  -moz-user-focus: none;
+  -moz-user-select: none;
 }
 
 body {

@@ -1,10 +1,13 @@
+import type { AxiosPromise } from 'axios';
 import { cvRequest, adminRequest } from '../index';
+import type { ILogin, responseType } from '../response/common';
 import type {
   getCodetype,
   verifyCodeType,
   resetPwdType,
   setRegPwdType,
   getUserTokenType,
+  loginType,
 } from './type';
 
 /**
@@ -16,6 +19,7 @@ import type {
 //   });
 // }
 
+let platform = 5;
 /**
  *  发送验证码
  * @param data
@@ -77,5 +81,23 @@ export function APIGetAuthToken(data: getUserTokenType) {
     method: 'POST',
     url: '/auth/user_token',
     data,
+  });
+}
+
+/**
+ * 登录
+ * @param data
+ * @type loginType
+ * @returns
+ */
+export function APILogin(data: loginType) {
+  return cvRequest.instance({
+    method: 'POST',
+    url: '/auth/login',
+    data: {
+      platform,
+      operationID: Date.now() + '',
+      ...data,
+    },
   });
 }

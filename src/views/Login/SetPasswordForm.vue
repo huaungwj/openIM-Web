@@ -50,19 +50,16 @@ import type { resetPasswordFormType } from './type';
 import type { responseType } from '@/service/response/common';
 import type { FormItemRule, FormInst } from 'naive-ui';
 import { useMessage } from 'naive-ui';
-import {
-  APIResetPassword,
-  APISetRegisterPwd,
-  APIGetAuthToken,
-} from '@/service/user/user';
+import { APIResetPassword, APISetRegisterPwd } from '@/service/user/user';
 import { useUserStore } from '@/stores/user';
 import md5 from 'md5';
 import { MD5_KEY } from '@/tools/tools';
 import { uuid } from '@/tools/im/util';
 import i18n from '@/lang/i18n';
+import { useImLogin } from '@/hooks/useImLogin';
 
 export default defineComponent({
-  props: ['changePageStatus', 'phone', 'isRegister', 'imLogin'],
+  props: ['changePageStatus', 'phone', 'isRegister'],
 
   setup(props, context) {
     const formRef = ref<FormInst | null>(null);
@@ -72,6 +69,7 @@ export default defineComponent({
     });
     const message = useMessage();
     const userStore = useUserStore();
+    const { imLogin } = useImLogin();
 
     // 重置密码
     async function resetPasswordFun() {
@@ -108,9 +106,8 @@ export default defineComponent({
         return false;
       }
       // 2. 登录
-      props.imLogin(passwordRes.data.userID, passwordRes.data.token);
+      imLogin(passwordRes.data.userID, passwordRes.data.token);
       // 3.获取IM注册的所有用户(userID)
-
       // 4.切换页面状态 设置 userInfo
       props.changePageStatus('setUserInfo');
     }

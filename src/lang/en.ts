@@ -66,6 +66,10 @@ const en = {
       changePwd2VerText1: 'Confirm password is required',
       changePwd2VerText2: 'The passwords entered twice are inconsistent',
       changePwd2VerText3: '6-20 characters required',
+      // login
+      errPwdMsgText: 'Login failed, password error',
+      errNotRegMsgText: 'Login failed, account not registered',
+      errUnknownMsgText: 'Login failed, please contact the administrator',
 
       // message 框
       verMsgText: 'Please complete the verification!',
