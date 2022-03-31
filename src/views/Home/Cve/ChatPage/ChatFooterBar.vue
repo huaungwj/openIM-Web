@@ -32,6 +32,7 @@
       :contenteditable="true"
       v-model="chatInputContext"
       :noHTML="false"
+      :noNL="true"
     />
   </footer>
 </template>
@@ -41,7 +42,7 @@ import { h, ref, watch } from 'vue';
 // import EmojiContent from './EmojiContent.vue';
 import { faceMap } from '@/tools/face';
 import { NImage } from 'naive-ui';
-import contenteditable from 'vue-contenteditable';
+import contenteditable from '@/views/Home/Cve/ChatPage/components/Contenteditable.vue';
 
 // 聊天框内容
 const chatInputContext = ref<string>(``);
