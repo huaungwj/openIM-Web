@@ -19,6 +19,10 @@ import {
   NScrollbar,
   NDropdown,
   NImage,
+  NModal,
+  NEmpty,
+  NIcon,
+  NBadge,
 } from 'naive-ui';
 
 const naive = create({
@@ -42,6 +46,10 @@ const naive = create({
     NScrollbar,
     NDropdown,
     NImage,
+    NModal,
+    NEmpty,
+    NIcon,
+    NBadge,
   ],
 });
 export function registerNaive(app: any) {

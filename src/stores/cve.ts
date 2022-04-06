@@ -7,6 +7,7 @@
  * @desc [description]
  */
 import { defineStore, acceptHMRUpdate } from 'pinia';
+import type { ConversationItem } from '@/tools/im/types';
 import { im } from '@/tools';
 
 const lastUid = localStorage.getItem('lastimuid') || '';
@@ -42,6 +43,14 @@ export const useCveStore = defineStore({
           console.log(err);
           this.cveInitLoading = false;
         });
+    },
+    // 设置当前会话的数据
+    setCurCve(value: ConversationItem | null) {
+      this.curCve = value;
+    },
+    // 设置所有会话列表
+    setCveList(value: ConversationItem[]) {
+      this.cves = value;
     },
   },
 });

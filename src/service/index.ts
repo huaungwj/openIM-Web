@@ -2,13 +2,15 @@
 import CVRequest from './request';
 import { AXIOS_URL, TIME_OUT, ADMINURL } from './request/config';
 
+// const userStore = useUserStore();
+
 // 创建实例的时候传递拦截器,可根据业务需求自行更改
 const interceptors = {
   requestInterceptors: (config: any) => {
-    const token = localStorage.getItem('improfile');
-    if (token) {
-      config.headers.token = token;
-    }
+    // const token = localStorage.getItem('improfile');
+    // if (token) {
+    //   config.headers.token = token;
+    // }
     return config;
   },
   requestInterceptorsCatch: (err: any) => {

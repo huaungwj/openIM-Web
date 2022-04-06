@@ -5,6 +5,12 @@ import App from './App.vue';
 import router from './router';
 import 'normalize.css/normalize.css';
 import i18n from './lang/i18n';
+import dayjs from 'dayjs';
+import relativeTime from 'dayjs/plugin/relativeTime';
+import 'dayjs/locale/zh-cn';
+dayjs.locale('zh-cn');
+
+dayjs.extend(relativeTime);
 
 const isDark: any = ref<boolean>(
   window.matchMedia('(prefers-color-scheme: dark)').matches
@@ -28,12 +34,11 @@ window.matchMedia('(prefers-color-scheme: light)').addListener(listeners.light);
 
 const app = createApp(App);
 app.config.globalProperties.$isDark = isDark;
-console.log(app.config.globalProperties);
+app.config.globalProperties.$day = dayjs;
 
 app.use(createPinia());
 app.use(router);
 app.use(i18n);
 registerApp(app);
-console.log(app);
 
 app.mount('#app');

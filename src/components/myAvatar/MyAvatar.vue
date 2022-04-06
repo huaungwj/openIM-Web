@@ -2,8 +2,12 @@
   <n-avatar
     :size="size ? size : '42'"
     :src="localList[src] ? localList[src] : src"
-    style="border-radius: 5px"
-  />
+    object-fit="cover"
+  >
+    <n-icon v-if="!src">
+      <PersonOutline />
+    </n-icon>
+  </n-avatar>
 </template>
 
 <script lang="ts">
@@ -14,7 +18,11 @@ import ic_avatar_03 from '@/assets/images/ic_avatar_03.png';
 import ic_avatar_04 from '@/assets/images/ic_avatar_04.png';
 import ic_avatar_05 from '@/assets/images/ic_avatar_05.png';
 import ic_avatar_06 from '@/assets/images/ic_avatar_06.png';
+import { PersonOutline } from '@vicons/ionicons5';
 export default defineComponent({
+  components: {
+    PersonOutline,
+  },
   props: ['size', 'src'],
   setup(props, context) {
     const localList = reactive({
@@ -28,6 +36,7 @@ export default defineComponent({
 
     return {
       localList,
+      PersonOutline,
     };
   },
 });

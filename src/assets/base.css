@@ -148,3 +148,15 @@ body {
   cursor: pointer;
   color: var(--im-theme-primary);
 }
+
+li {
+  list-style: none;
+}
+
+.title {
+  color: var(--color-heading);
+}
+
+.sub_title {
+  font-size: 12px;
+}

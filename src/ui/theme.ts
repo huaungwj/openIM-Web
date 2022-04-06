@@ -8,6 +8,7 @@ const lightThemeOverrides: GlobalThemeOverrides = {
   common: {
     primaryColor: '#57be6b',
     primaryColorHover: '#31c24a',
+    borderRadius: '8px',
   },
   Button: {
     // textColor: '#000  ',
@@ -20,6 +21,7 @@ const darkThemeOverrides: GlobalThemeOverrides = {
   common: {
     primaryColor: '#58bf6a',
     primaryColorHover: '#53b464',
+    borderRadius: '8px',
   },
   Button: {
     // textColor: '#000',

@@ -67,10 +67,11 @@ export const useUserStore = defineStore({
     async getAdminToken(uid: string) {
       APIGetAuthToken({
         secret: SECRET ?? 'weiChat',
-        platform: 5,
-        userID: uid,
+        platform: 8,
+        userID: 'openIM123456', // 只有管理员身份才能获取用户在线状态
         operationID: uuid('uuid'),
       }).then((res) => {
+        // ws 连接token
         this.adminToken = res.data.token;
       });
     },

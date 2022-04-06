@@ -1,3 +1,6 @@
 // import type { Ref } from 'vue';
 
-declare const $isDark;
+declare namespace golbal {
+  const $isDark;
+  const $day;
+}

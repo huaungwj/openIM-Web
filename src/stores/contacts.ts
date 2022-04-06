@@ -8,7 +8,11 @@
 import { defineStore, acceptHMRUpdate } from 'pinia';
 import type { GroupItem } from './types/contacts';
 import { im } from '@/tools';
-import type { FriendItem, TotalUserStruct } from '@/tools/im/types';
+import type {
+  FriendItem,
+  TotalUserStruct,
+  GetGroupMemberParams,
+} from '@/tools/im/types';
 
 const lastUid = localStorage.getItem('lastimuid') || '';
 const lastConsStore = localStorage.getItem(`${lastUid}consStore`);
@@ -95,8 +99,27 @@ export const useContactsStore = defineStore({
         this.blackList = JSON.parse(res.data);
       });
     },
+    // 设置未读消息数量
+    setUnReadCount(value: number) {
+      this.unReadCount = value;
+    },
+    // 获取群聊信息
+    async getGroupInfo(gid: string) {
+      im.getGroupsInfo([gid])
+        .then((res) => {
+          this.groupInfo = JSON.parse(res.data)[0];
+        })
+        .catch((err) => (this.groupInfo = {} as GroupItem));
+    },
+    //获取群成员列表
+    async getGroupMemberList(options: GetGroupMemberParams) {
+      this.groupMemberLoading = true;
+      im.getGroupMemberList(options).then((res) => {
+        this.groupMemberList = JSON.parse(res.data);
+        this.groupMemberLoading = false;
+      });
+    },
   },
-  //
 });
 
 if (import.meta.hot) {

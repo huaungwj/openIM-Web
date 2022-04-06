@@ -232,7 +232,6 @@ export default defineComponent({
         phoneNumber: formValue.value.phone,
         password: md5(md5(formValue.value.password) + MD5_KEY),
       });
-      console.log(res);
       // 2. ws 登录
       if (res.errCode === 0) {
         console.log(res);

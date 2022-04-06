@@ -532,3 +532,20 @@ export type VideoElem = {
   snapshotWidth: number;
   snapshotHeight: number;
 };
+
+export type OnLineResType = {
+  errCode: number;
+  errMsg: string;
+  data: ResItemType[];
+};
+
+export type ResItemType = {
+  status: string;
+  userID: string;
+  detailPlatformStatus?: DetailType[];
+};
+
+export type DetailType = {
+  platform: string;
+  status: string;
+};

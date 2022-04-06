@@ -15,11 +15,13 @@
         >
           <template #trigger>
             <li>
-              <i
-                :class="`iconfont openIM-message2 ${
-                  $route.path === '/cve' ? 'active' : ''
-                }`"
-              ></i>
+              <n-badge :value="contactsStore.unReadCount" :max="99">
+                <i
+                  :class="`iconfont openIM-message2 ${
+                    $route.path === '/cve' ? 'active' : ''
+                  }`"
+                ></i>
+              </n-badge>
             </li>
           </template>
           消息
@@ -50,6 +52,9 @@
 <script lang="ts" setup>
 import MyAvatar from '../myAvatar/MyAvatar.vue';
 import { RouterLink } from 'vue-router';
+import { useContactsStore } from '@/stores/contacts';
+
+const contactsStore = useContactsStore();
 </script>
 
 <style>
@@ -77,7 +82,8 @@ import { RouterLink } from 'vue-router';
   cursor: pointer;
 }
 .sider_nav li i {
-  font-size: 22px;
+  font-size: 23px;
+  color: var(--color-heading);
 }
 
 .sider_nav .active {
