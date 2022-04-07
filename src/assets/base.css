@@ -44,6 +44,9 @@
   /* chat_page_header_solid */
   --im-chatPageSolid-light-color: #dfdfdf;
   --im-chatPageSolid-dark-color: #1d1d1d;
+
+  /* 消息气泡框背景 */
+  --im-chatMsgBg-dark-color: #2c2c2c;
 }
 
 /* semantic color variables for this project */
@@ -76,6 +79,8 @@
   --im-theme-chatPageBg: var(--im-chatPage-light-color);
   /* chat_page_header_solid */
   --im-theme-chatPageSolid: var(--im-chatPageSolid-light-color);
+  /* 消息气泡框背景 */
+  --im-theme-chatMsgBg: var(--vt-c-white);
 }
 
 @media (prefers-color-scheme: dark) {
@@ -105,6 +110,8 @@
     --im-theme-chatPageBg: var(--im-chatPage-dark-color);
     /* chat_page_header_solid */
     --im-theme-chatPageSolid: var(--im-chatPageSolid-dark-color);
+    /* 消息气泡框背景 */
+    --im-theme-chatMsgBg: var(--im-chatMsgBg-dark-color);
   }
 }
 
@@ -159,4 +166,8 @@ li {
 
 .sub_title {
   font-size: 12px;
+}
+
+a {
+  color: var(--im-theme-primary);
 }

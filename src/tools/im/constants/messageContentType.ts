@@ -1,18 +1,18 @@
 export enum messageTypes {
   TEXTMESSAGE = 101,
-  PICTUREMESSAGE = 102,
-  VOICEMESSAGE = 103,
-  VIDEOMESSAGE = 104,
-  FILEMESSAGE = 105,
-  ATTEXTMESSAGE = 106,
-  MERGERMESSAGE = 107,
-  CARDMESSAGE = 108,
-  LOCATIONMESSAGE = 109,
-  CUSTOMMESSAGE = 110,
-  REVOKEMESSAGE = 111,
-  HASREADRECEIPTMESSAGE = 112,
-  TYPINGMESSAGE = 113,
-  QUOTEMESSAGE = 114,
+  PICTUREMESSAGE = 102, // 图片消息
+  VOICEMESSAGE = 103, //	音频消息
+  VIDEOMESSAGE = 104, // 	视频消息
+  FILEMESSAGE = 105, // 文件消息
+  ATTEXTMESSAGE = 106, // 	群聊中的@类型消息
+  MERGERMESSAGE = 107, // 	合并转发类型消息
+  CARDMESSAGE = 108, // 	名片消息
+  LOCATIONMESSAGE = 109, // 地理位置类型消息
+  CUSTOMMESSAGE = 110, // 自定义消息
+  REVOKEMESSAGE = 111, // 撤回类型消息
+  HASREADRECEIPTMESSAGE = 112, // 已读回执类型消息
+  TYPINGMESSAGE = 113, // 正在输入
+  QUOTEMESSAGE = 114, //	引用类型消息
 }
 
 export enum tipsTypes {
@@ -59,6 +59,6 @@ export const notOssMessageTypes = [
 ];
 
 export enum SessionType {
-  SINGLECVE = 1,
-  GROUPCVE = 2,
+  SINGLECVE = 1, // 单聊
+  GROUPCVE = 2, // 群聊
 }

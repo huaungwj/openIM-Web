@@ -2,6 +2,7 @@ import type { ConversationItem, MessageItem } from './im/types';
 import {
   messageTypes,
   tipsTypes,
+  SessionType,
 } from '@/tools/im/constants/messageContentType';
 
 export const cveSort = (cveList: ConversationItem[]) => {
@@ -42,8 +43,6 @@ export const parseMessageType = (
 ): string => {
   const isSelf = (id: string) => id === curUid;
 
-  console.log(pmsg);
-
   switch (pmsg.contentType) {
     case messageTypes.TEXTMESSAGE:
       return pmsg.senderNickname + ':  ' + pmsg.content;
@@ -66,7 +65,7 @@ export const parseMessageType = (
     case messageTypes.REVOKEMESSAGE:
       return `${
         isSelf(pmsg.sendID) ? '你' : pmsg.senderNickname
-      }${'[合并信息]'}`;
+      }${'撤回了一条消息'}`;
     case messageTypes.CUSTOMMESSAGE:
       return '[自定义消息]';
     case messageTypes.QUOTEMESSAGE:
@@ -123,5 +122,36 @@ export const parseMessageType = (
       }修改了群信息`;
     default:
       return pmsg.notificationElem.defaultTips;
+  }
+};
+
+export const createNotification = (
+  message: MessageItem,
+  click?: (id: string, type: SessionType) => void,
+  tag?: string
+) => {
+  if (Notification && document.hidden) {
+    const title =
+      message.contentType === tipsTypes.FRIENDADDED
+        ? '新朋友'
+        : message.senderNickname;
+    const notification = new Notification(title, {
+      dir: 'auto',
+      tag: tag ?? (message.groupID === '' ? message.sendID : message.groupID),
+      renotify: true,
+      icon: message.senderFaceUrl,
+      body: parseMessageType(message),
+      requireInteraction: true,
+    });
+    const id =
+      message.sessionType === SessionType.SINGLECVE
+        ? message.contentType === tipsTypes.FRIENDADDED
+          ? message.recvID
+          : message.sendID
+        : message.groupID;
+    notification.onclick = () => {
+      click && click(id, message.sessionType);
+      notification.close();
+    };
   }
 };

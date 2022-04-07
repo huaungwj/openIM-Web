@@ -6,17 +6,18 @@
   >
     <n-layout-sider
       style="backgournd: 'none'"
-      :width="55"
+      :width="60"
       ref="siderRef"
       bordered
     >
       <left-sider />
     </n-layout-sider>
-    <n-layout-content ref="contentRef" :native-scrollbar="false">
+    <n-layout-content :native-scrollbar="false">
       <router-view />
     </n-layout-content>
-    <n-layout-content ref="contentRef" :native-scrollbar="false">
-      <router-view name="right" />
+
+    <n-layout-content ref="contentRef" :on-scroll="scrollChange">
+      <router-view name="right" :native-scrollbar="false" />
     </n-layout-content>
   </n-layout>
 </template>
@@ -52,6 +53,12 @@ if (token && userID) {
     });
 }
 
+// 滚动
+const scrollChange = (e: Event) => {
+  // 获取更多历史信息
+  // console.log(e.target.scrollTop);
+};
+
 // 未读消息发生变化触发
 im.on(CbEvents.ONTOTALUNREADMESSAGECOUNTCHANGED, (data) => {
   // dispatch(setUnReadCount(Number(data.data)));
@@ -64,10 +71,12 @@ const conversationChnageHandler = (data: WsResponse) => {
   let tmpCves = cveStore.cves;
   let filterArr: ConversationItem[] = [];
   const changes: ConversationItem[] = JSON.parse(data.data);
+  // 最近一条消息
   const ms = JSON.parse(changes[0].latestMsg);
   console.log('conversationChnageHandler: ', ms);
   const chids = changes.map((ch) => ch.conversationID);
   filterArr = tmpCves.filter((tc) => !chids.includes(tc.conversationID));
+  // 查找当前会话的信息 进行替换
   const idx = changes.findIndex(
     (c) => c.conversationID === cveStore.curCve?.conversationID
   );
@@ -86,18 +95,28 @@ const newConversationHandler = (data: WsResponse) => {
   cveStore.setCveList(cveSort(result));
 };
 
-// 监听会话
-watch([() => cveStore.curCve, () => cveStore.cves], (nCurCve, nCves) => {
-  console.log('更新了');
-  im.on(CbEvents.ONCONVERSATIONCHANGED, conversationChnageHandler);
-  im.on(CbEvents.ONNEWCONVERSATION, newConversationHandler); // 有新的会话过来会触发
-});
+im.on(CbEvents.ONCONVERSATIONCHANGED, conversationChnageHandler);
+im.on(CbEvents.ONNEWCONVERSATION, newConversationHandler);
+
+// // 监听会话
+// watch([() => cveStore.curCve, () => cveStore.cves], () => {
+//   console.log('更新了');
+//   // 有新的会话过来会触发
+// });
 
 // 组件销毁
 onBeforeUnmount(() => {
+  console.log('销毁了， conversationChnageHandler');
   im.off(CbEvents.ONCONVERSATIONCHANGED, conversationChnageHandler);
   im.off(CbEvents.ONNEWCONVERSATION, newConversationHandler);
 });
+
+window.urlClick = (url: string) => {
+  if (url.indexOf('http') === -1 && url.indexOf('https') === -1) {
+    url = `http://${url}`;
+  }
+  window.open(url, '_blank');
+};
 </script>
 
 <style></style>

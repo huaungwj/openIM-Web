@@ -1,10 +1,7 @@
 <template>
-  <div class="cve_item" @click="openCveWindowFun">
+  <div class="cve_item" @click="openCveWindow(cve)">
     <div class="left">
-      <n-badge
-        :value="isRecv(cve.recvMsgOpt) ? cve.unreadCount : null"
-        show-zero
-      >
+      <n-badge :value="isRecv(cve.recvMsgOpt) ? cve.unreadCount : null">
         <MyAvatar :src="cve.faceURL" :size="40" />
       </n-badge>
       <div class="cve_info">
@@ -26,7 +23,7 @@ import { parseMessageType } from '@/tools/imT';
 import { useUserStore } from '@/stores/user';
 import { useCveStore } from '@/stores/cve';
 import { useContactsStore } from '@/stores/contacts';
-import { isSingleCve } from '@/tools';
+import { useOpenCveWindow } from '@/hooks/useOpenCveWindow';
 
 const props = defineProps<{
   cve: ConversationItem;
@@ -35,6 +32,7 @@ const props = defineProps<{
 const userStore = useUserStore();
 const cveStore = useCveStore();
 const contactsStore = useContactsStore();
+const { openCveWindow } = useOpenCveWindow();
 const isRecv = (opt: OptType) => opt === OptType.Nomal;
 
 // 消息类型处理
@@ -63,28 +61,6 @@ const parseLastMessage = (recvMsgOpt) => {
     : props.cve.unreadCount > 0
     ? `[${props.cve.unreadCount + ''}] ${parseLatestMsg(props.cve.latestMsg)}`
     : parseLatestMsg(props.cve.latestMsg);
-};
-
-// 打开会话窗口
-const openCveWindowFun = () => {
-  if (props.cve.conversationID === cveStore.curCve?.conversationID) return;
-  cveStore.setCurCve(props.cve);
-  // 获取群员信息
-  getInfo(props.cve);
-};
-
-const getInfo = (cve: ConversationItem) => {
-  if (!isSingleCve(cve)) {
-    contactsStore.getGroupInfo(cve.groupID);
-    const options = {
-      groupID: cve.groupID,
-      offset: 0,
-      filter: 0,
-      count: 2000,
-    };
-    // 获取群成员列表
-    contactsStore.getGroupMemberList(options);
-  }
 };
 
 console.log(JSON.parse(props.cve.latestMsg));

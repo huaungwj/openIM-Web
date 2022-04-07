@@ -7,7 +7,7 @@
  * @desc [description]
  */
 import { defineStore, acceptHMRUpdate } from 'pinia';
-import type { ConversationItem } from '@/tools/im/types';
+import type { ConversationItem, MessageItem } from '@/tools/im/types';
 import { im } from '@/tools';
 
 const lastUid = localStorage.getItem('lastimuid') || '';
@@ -27,6 +27,7 @@ export const useCveStore = defineStore({
           cves: [], // 会话列表
           curCve: null, // 当前使用的会话列表
           cveInitLoading: true, // 初始加载
+          historyMsgList: [], // 历史消息
         },
   getters: {},
   actions: {
@@ -51,6 +52,22 @@ export const useCveStore = defineStore({
     // 设置所有会话列表
     setCveList(value: ConversationItem[]) {
       this.cves = value;
+    },
+    // 获取历史信息
+    async getMsg(config: any) {
+      im.getHistoryMessageList(config).then((res) => {
+        if (
+          JSON.stringify(this.historyMsgList[this.historyMsgList.length - 1]) ==
+          JSON.stringify(JSON.parse(res.data).reverse()[0])
+        ) {
+          this.historyMsgList.pop();
+        }
+        this.historyMsgList = [...JSON.parse(res.data).reverse()];
+        // this.historyMsgList = JSON.parse(res.data);
+      });
+    },
+    setHistoryMsgList(data: MessageItem) {
+      this.historyMsgList = data;
     },
   },
 });

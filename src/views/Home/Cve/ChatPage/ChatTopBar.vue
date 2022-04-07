@@ -7,7 +7,13 @@
         <!-- 用户昵称 -->
         <span class="cur_status_nick">{{ cveStore.curCve.showName }}</span>
         <div class="cur_status_update" v-if="isSingleCve(cveStore.curCve)">
-          <span class="icon"></span
+          <span
+            class="icon"
+            :style="{
+              backgroundColor:
+                onlineStatus === '离线' ? 'rgb(149 149 149)' : '',
+            }"
+          ></span
           ><span class="online">{{ onlineStatus }}</span>
         </div>
 
@@ -33,7 +39,7 @@
 </template>
 
 <script lang="ts" setup>
-import { ref, watch } from 'vue';
+import { ref, watch, onMounted } from 'vue';
 import MyAvatar from '@/components/myAvatar/MyAvatar.vue';
 import { useCveStore } from '@/stores/cve';
 import { useContactsStore } from '@/stores/contacts';
@@ -84,8 +90,15 @@ const getGroupOnline = () => {
 };
 
 const initInfo = () => {
-  lastCve.value = cveStore.curCve;
+  if (
+    (cveStore.curCve.conversationID == lastCve.value?.conversationID &&
+      cveStore.curCve?.faceURL === lastCve.value?.faceURL &&
+      cveStore.curCve?.showName === lastCve.value?.showName) ||
+    contactsStore.groupMemberLoading
+  )
+    return;
 
+  lastCve.value = cveStore.curCve;
   if (isSingleCve(cveStore.curCve)) {
     getOnline([cveStore.curCve.userID], userStore.adminToken).then((res) => {
       const statusItem = res.data[0];
@@ -102,7 +115,9 @@ const initInfo = () => {
   }
 };
 
-initInfo();
+onMounted(() => {
+  initInfo();
+});
 
 watch(
   [
@@ -112,13 +127,6 @@ watch(
     () => lastCve.value,
   ],
   () => {
-    if (
-      (cveStore.curCve.conversationID == lastCve.value?.conversationID &&
-        cveStore.curCve?.faceURL === lastCve.value?.faceURL &&
-        cveStore.curCve?.showName === lastCve.value?.showName) ||
-      contactsStore.groupMemberLoading
-    )
-      return;
     initInfo();
   }
 );
