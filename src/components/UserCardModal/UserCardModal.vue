@@ -115,7 +115,7 @@ const changeCardTypeStatusFun = (type: string) => {
 };
 
 watch(
-  [contactsStore.friendList, () => props.userCardIsShow],
+  [() => contactsStore.friendList, () => props.userCardIsShow],
   ([nFriendList, nUserCardIsShow]) => {
     if ((props.friendData as FriendItem).remark !== undefined) {
       isFriend.value = true;

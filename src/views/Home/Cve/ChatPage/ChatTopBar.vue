@@ -161,7 +161,7 @@ const switchOnline = (oType: string, details?: DetailType[]) => {
   background-color: var(--im-theme-chatPageBg);
   border-bottom: 1px solid var(--im-theme-chatPageSolid);
   position: fixed;
-  z-index: 1;
+  z-index: 116;
 }
 .chat_hearder_container > .chat_header_left {
   display: flex;

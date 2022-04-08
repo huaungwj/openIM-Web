@@ -12,7 +12,9 @@ import { im } from '@/tools';
 
 const lastUid = localStorage.getItem('lastimuid') || '';
 const lastCveStore = localStorage.getItem(`${lastUid}cveStore`);
+
 let tmp: any;
+
 if (lastCveStore) {
   const tmp = JSON.parse(lastCveStore!);
   tmp.curCve = null; // 当前会话清空
@@ -28,6 +30,10 @@ export const useCveStore = defineStore({
           curCve: null, // 当前使用的会话列表
           cveInitLoading: true, // 初始加载
           historyMsgList: [], // 历史消息
+          cveContentRef: null, // 会话内容盒子 ref
+          hasMore: true, // 会话列表历史记录是否到底
+          isPullMore: false, // 是否正在拉取
+          cveCScHeight: 0, // 内容区域可滚动区域高度
         },
   getters: {},
   actions: {
@@ -56,19 +62,50 @@ export const useCveStore = defineStore({
     // 获取历史信息
     async getMsg(config: any) {
       im.getHistoryMessageList(config).then((res) => {
+        if (config.startClientMsgID) this.isPullMore = true;
+
+        if (JSON.parse(res.data).length === 0) {
+          // 最近一次获取如果数量是0的话则没有了
+          this.isPullMore = false;
+          this.hasMore = false;
+          return;
+        }
         if (
           JSON.stringify(this.historyMsgList[this.historyMsgList.length - 1]) ==
           JSON.stringify(JSON.parse(res.data).reverse()[0])
         ) {
           this.historyMsgList.pop();
         }
-        this.historyMsgList = [...JSON.parse(res.data).reverse()];
+        this.historyMsgList = [
+          ...this.historyMsgList,
+          ...JSON.parse(res.data).reverse(),
+        ];
         // this.historyMsgList = JSON.parse(res.data);
+        this.hasMore = !(JSON.parse(res.data).length < 20);
       });
     },
     setHistoryMsgList(data: MessageItem) {
       this.historyMsgList = data;
     },
+
+    // setCveContentRef
+    setCveContentRef(data: any) {
+      this.cveContentRef = data;
+    },
+
+    // setCveCScHeigth
+    setCveCScHeiht(height: number) {
+      this.cveCScHeight = height;
+    },
+    // setisPullMore
+    setIsPullMore(status: boolean) {
+      this.isPullMore = status;
+    },
+
+    // // setHasMore
+    // setHasMore(status: boolean) {
+    //   this.hasMore = status;
+    // },
   },
 });
 

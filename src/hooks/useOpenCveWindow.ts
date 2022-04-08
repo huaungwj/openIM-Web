@@ -35,8 +35,13 @@ const getHistoryMsg = (uid?: string, gid?: string, sMsg?: MessageItem) => {
 
 export function useOpenCveWindow() {
   const openCveWindow = (cve: ConversationItem) => {
-    console.log(cve);
+    // console.log(cve);
     if (cve.conversationID === cveStore.curCve?.conversationID) return;
+    // 到这里说明切换新的会话了
+    // 拉取状态
+    cveStore.setIsPullMore(false);
+    // 清除旧的历史信息
+    cveStore.setHistoryMsgList([]);
     // 设置新的会话
     cveStore.setCurCve(cve);
     // 获取群员信息

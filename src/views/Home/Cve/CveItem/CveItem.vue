@@ -1,5 +1,10 @@
 <template>
-  <div class="cve_item" @click="openCveWindow(cve)">
+  <div
+    :class="`cve_item ${
+      cve.conversationID === cveStore.curCve?.conversationID ? 'active_cve' : ''
+    }`"
+    @click="clickCveItem"
+  >
     <div class="left">
       <n-badge :value="isRecv(cve.recvMsgOpt) ? cve.unreadCount : null">
         <MyAvatar :src="cve.faceURL" :size="40" />
@@ -15,7 +20,7 @@
 </template>
 
 <script lang="ts" setup>
-import { defineProps } from 'vue';
+import { defineProps, nextTick, watch } from 'vue';
 import MyAvatar from '@/components/myAvatar/MyAvatar.vue';
 import type { ConversationItem, MessageItem } from '@/tools/im/types';
 import { OptType } from '@/tools/im/types';
@@ -24,6 +29,7 @@ import { useUserStore } from '@/stores/user';
 import { useCveStore } from '@/stores/cve';
 import { useContactsStore } from '@/stores/contacts';
 import { useOpenCveWindow } from '@/hooks/useOpenCveWindow';
+import { useScroll } from '@/hooks/useScroll';
 
 const props = defineProps<{
   cve: ConversationItem;
@@ -33,6 +39,7 @@ const userStore = useUserStore();
 const cveStore = useCveStore();
 const contactsStore = useContactsStore();
 const { openCveWindow } = useOpenCveWindow();
+const { scrollTo } = useScroll();
 const isRecv = (opt: OptType) => opt === OptType.Nomal;
 
 // 消息类型处理
@@ -54,6 +61,10 @@ const parseLatestMsg = (lmsg: string): string => {
   return parseMessageType(pmsg, userStore.selfInfo.userID);
 };
 
+const clickCveItem = () => {
+  openCveWindow(props.cve);
+};
+
 // 消息的推送状态
 const parseLastMessage = (recvMsgOpt) => {
   return isRecv(recvMsgOpt)
@@ -62,6 +73,22 @@ const parseLastMessage = (recvMsgOpt) => {
     ? `[${props.cve.unreadCount + ''}] ${parseLatestMsg(props.cve.latestMsg)}`
     : parseLatestMsg(props.cve.latestMsg);
 };
+
+watch([() => cveStore.historyMsgList], () => {
+  // 跳到底部
+  if (cveStore.isPullMore && cveStore.cveContentRef.scrollHeight !== 0) {
+    console.log(cveStore.cveContentRef.scrollHeight - cveStore.cveCScHeight);
+
+    return nextTick(() => {
+      cveStore.cveContentRef.scrollTop =
+        cveStore.cveContentRef.scrollHeight - cveStore.cveCScHeight;
+    });
+  }
+
+  nextTick(() => {
+    scrollTo('bottom');
+  });
+});
 
 console.log(JSON.parse(props.cve.latestMsg));
 </script>
@@ -77,7 +104,7 @@ console.log(JSON.parse(props.cve.latestMsg));
   cursor: pointer;
 }
 .cve_item:hover {
-  background-color: var(--color-border);
+  background-color: var(--im-theme-activeCveBg);
 }
 .cve_item > p {
   color: var(--color-text);
@@ -99,5 +126,9 @@ console.log(JSON.parse(props.cve.latestMsg));
 }
 .cve_info > .info_msg {
   color: var(--color-text);
+}
+
+.active_cve {
+  background-color: var(--im-theme-activeCveBg);
 }
 </style>

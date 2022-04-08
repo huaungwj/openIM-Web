@@ -16,17 +16,22 @@
       <router-view />
     </n-layout-content>
 
-    <n-layout-content ref="contentRef" :on-scroll="scrollChange">
+    <n-layout-content
+      ref="cveContentRef"
+      :native-scrollbar="false"
+      :on-scroll="scrollChange"
+    >
       <router-view name="right" :native-scrollbar="false" />
     </n-layout-content>
   </n-layout>
 </template>
 
 <script setup lang="ts">
-import { ref, watch, onBeforeUnmount } from 'vue';
+import { ref, watch, onBeforeUnmount, onMounted, nextTick } from 'vue';
 import type { LayoutInst, LayoutSiderInst } from 'naive-ui';
 import LeftSider from '@/components/LeftSider/LeftSider.vue';
 import { im, cveSort } from '@/tools';
+import { throttle } from '@/tools/tools';
 import { useImLogin } from '@/hooks/useImLogin';
 import { useCveStore } from '@/stores/cve';
 import { useContactsStore } from '@/stores/contacts';
@@ -37,7 +42,7 @@ const token = localStorage.getItem(`improfile`)!;
 const userID = localStorage.getItem('lastimuid')!;
 const { imLogin } = useImLogin();
 const siderRef = ref<LayoutSiderInst | null>(null);
-const contentRef = ref<LayoutInst | null>(null);
+const cveContentRef = ref<LayoutInst | null>(null);
 const cveStore = useCveStore();
 const contactsStore = useContactsStore();
 // 是否登录
@@ -54,10 +59,28 @@ if (token && userID) {
 }
 
 // 滚动
-const scrollChange = (e: Event) => {
-  // 获取更多历史信息
-  // console.log(e.target.scrollTop);
-};
+const scrollChange = throttle(
+  (e: Event) => {
+    if (cveStore.cveCScHeight !== cveStore.cveContentRef.scrollHeight) {
+      cveStore.setCveCScHeiht(cveStore.cveContentRef.scrollHeight);
+    }
+    // 获取更多历史信息
+    if (cveStore.cveContentRef.scrollTop < 100 && cveStore.hasMore) {
+      // 到顶
+      const config = {
+        userID: cveStore.curCve.userID ?? '',
+        groupID: cveStore.curCve.groupID ?? '',
+        count: 20,
+        startClientMsgID:
+          cveStore.historyMsgList[cveStore.historyMsgList.length - 1]
+            .clientMsgID,
+      };
+      cveStore.getMsg(config);
+    }
+  },
+  500,
+  2
+);
 
 // 未读消息发生变化触发
 im.on(CbEvents.ONTOTALUNREADMESSAGECOUNTCHANGED, (data) => {
@@ -103,6 +126,14 @@ im.on(CbEvents.ONNEWCONVERSATION, newConversationHandler);
 //   console.log('更新了');
 //   // 有新的会话过来会触发
 // });
+
+onMounted(() => {
+  nextTick(() => {
+    cveStore.setCveContentRef(
+      cveContentRef.value?.$el?.children[0].childNodes[0]
+    );
+  });
+});
 
 // 组件销毁
 onBeforeUnmount(() => {

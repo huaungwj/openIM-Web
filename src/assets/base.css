@@ -81,6 +81,8 @@
   --im-theme-chatPageSolid: var(--im-chatPageSolid-light-color);
   /* 消息气泡框背景 */
   --im-theme-chatMsgBg: var(--vt-c-white);
+  /* 当前cve会话活跃背景 */
+  --im-theme-activeCveBg: #d3d3d3;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -112,6 +114,8 @@
     --im-theme-chatPageSolid: var(--im-chatPageSolid-dark-color);
     /* 消息气泡框背景 */
     --im-theme-chatMsgBg: var(--im-chatMsgBg-dark-color);
+    /* 当前cve会话活跃背景 */
+    --im-theme-activeCveBg: var(--vt-c-divider-dark-2);
   }
 }
 
@@ -170,4 +174,15 @@ li {
 
 a {
   color: var(--im-theme-primary);
+  display: inline-block;
+  cursor: pointer;
+}
+
+/* 西瓜播放器默认样式修改啊 */
+.xgplayer-skin-default .xgplayer-progress-played {
+  background-image: linear-gradient(
+    -90deg,
+    var(--im-theme-primary),
+    var(--im-theme-primary)
+  ) !important;
 }

@@ -30,42 +30,99 @@
       />
     </div>
     <!-- 视频消息 -->
+    <div
+      :id="msg.videoElem.snapshotUUID"
+      v-if="msg.contentType === messageTypes.VIDEOMESSAGE"
+    ></div>
     <!-- 文件消息 -->
+    <div class="file_type" v-if="msg.contentType === messageTypes.FILEMESSAGE">
+      文件消息
+    </div>
     <!-- 群聊中的@类型消息 -->
+    <div class="at_type" v-if="msg.contentType === messageTypes.ATTEXTMESSAGE">
+      艾特消息
+    </div>
     <!-- 合并转发类型消息 -->
+    <div
+      class="merger_type"
+      v-if="msg.contentType === messageTypes.MERGERMESSAGE"
+    >
+      合并消息
+    </div>
     <!-- 名片消息 -->
+    <div class="card_type" v-if="msg.contentType === messageTypes.CARDMESSAGE">
+      名片消息
+    </div>
     <!-- 地理位置类型消息 -->
+    <div
+      class="location_type"
+      v-if="msg.contentType === messageTypes.LOCATIONMESSAGE"
+    >
+      地理消息
+    </div>
     <!-- 自定义消息 -->
+    <div
+      class="custom_type"
+      v-if="msg.contentType === messageTypes.CARDMESSAGE"
+    >
+      自定义消息
+    </div>
     <!-- 撤回类型消息 -->
+    <div
+      class="revoke_type"
+      v-if="msg.contentType === messageTypes.REVOKEMESSAGE"
+    >
+      撤回消息
+    </div>
     <!-- 已读回执类型消息 -->
+    <div
+      class="read_type"
+      v-if="msg.contentType === messageTypes.HASREADRECEIPTMESSAGE"
+    >
+      已读回执
+    </div>
     <!-- 引用类型消息 -->
+    <div
+      class="quqte_type"
+      v-if="msg.contentType === messageTypes.QUOTEMESSAGE"
+    >
+      引用类型
+    </div>
   </div>
 </template>
 
 <script lang="ts" setup>
-import { defineProps } from 'vue';
+import { defineProps, ref, onMounted, nextTick } from 'vue';
 import { messageTypes } from '@/tools/im/constants/messageContentType';
 import type { MessageItem } from '@/tools/im/types';
 import { useCveStore } from '@/stores/cve';
 import { isSingleCve } from '@/tools';
 import { faceMap } from '@/tools/face';
 import { useContactsStore } from '@/stores/contacts';
+import Player from 'xgplayer/dist/simple_player';
+import volume from 'xgplayer/dist/controls/volume';
+import playbackRate from 'xgplayer/dist/controls/playbackRate';
+import pip from 'xgplayer/dist/controls/pip';
 
 const cveStore = useCveStore();
 const contactsStore = useContactsStore();
+const isImage = ref<boolean>(false);
 
 const props = defineProps<{ msg: MessageItem }>();
 
 const parseEmojiFace = (mstr: string) => {
   faceMap.map((f) => {
     const idx = mstr.indexOf(f.context);
+
     if (idx > -1) {
       mstr = mstr.replaceAll(
         f.context,
         `<img style="padding-right:2px" width="24px" src=${f.src} />`
       );
+      isImage.value = true;
     }
   });
+
   return mstr;
 };
 
@@ -99,6 +156,7 @@ const parseAt = (mstr: string) => {
   return mstr;
 };
 
+// 换行转换
 const parseBr = (mstr: string) => {
   const text = mstr.replaceAll('\\n', '<br>');
   return text.replaceAll('\n', '<br>');
@@ -119,18 +177,36 @@ const parseUrl = (mstr: string) => {
 
 // 对文本进行重排
 const parseTextFun = (): string => {
-  console.log(props.msg.atElem);
   let atMsg = props.msg.content;
   atMsg = parseEmojiFace(atMsg);
-  atMsg = parseUrl(atMsg);
+
+  if (!isImage.value) atMsg = parseUrl(atMsg);
+
   atMsg = parseBr(atMsg);
   return atMsg;
 };
+
+onMounted(() => {
+  if (props.msg.videoElem.videoUrl) {
+    console.log(props.msg.videoElem.videoUrl);
+
+    let player = new Player({
+      id: props.msg.videoElem.snapshotUUID,
+      url: props.msg.videoElem.videoUrl,
+      controlPlugins: [volume, playbackRate, pip],
+      pip: true,
+      playbackRate: [0.5, 0.75, 1, 1.5, 2], //传入倍速可选数组
+      lang: 'zh-cn',
+      videoInit: true,
+    });
+  }
+});
 </script>
 
 <style>
 /* 右边内容部分 */
 .chat_msg_content {
+  /* position: relative; */
   padding-left: 20px;
   display: flex;
   flex-direction: column;
@@ -151,7 +227,12 @@ const parseTextFun = (): string => {
   flex-direction: column;
 }
 
-.chat_msg_content .chat_msg_info::before {
+.reversal_msg .chat_msg_content .chat_msg_info {
+  background-color: var(--im-theme-primary) !important;
+  color: var(--im-cveItem-dark-color);
+}
+
+.default_msg > .chat_msg_content .chat_msg_info::before {
   position: absolute;
   top: 10px;
   left: -15px;
@@ -166,17 +247,39 @@ const parseTextFun = (): string => {
 
 /* 消息文本 */
 .chat_msg_content .chat_msg_info .chat_msg_text {
-  color: var(--color-heading);
   font-size: 14px;
 }
 
 /* 时间 */
 .chat_msg_content .chat_msg_info .chat_msg_time {
   font-size: 12px;
-  color: var(--color-text);
   position: absolute;
   right: 6px;
   top: 18px;
   transform: scale(0.9);
+}
+
+/* 自我 */
+.reversal_msg > .chat_msg_content .chat_msg_info::before {
+  right: -15px;
+
+  position: absolute;
+  top: 10px;
+  content: '';
+  width: 0;
+  height: 0;
+  border-bottom: 8px solid transparent;
+  border-left: 8px solid var(--im-theme-primary);
+  border-right: 8px solid transparent;
+  border-top: 8px solid transparent;
+}
+
+.reversal_msg .chat_msg_content {
+  padding-left: 0;
+  padding-right: 15px;
+}
+.reversal_msg .chat_msg_content {
+  justify-content: flex-end;
+  align-items: flex-end;
 }
 </style>
