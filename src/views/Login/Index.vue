@@ -24,7 +24,9 @@
             "
             @click="backHistoryPage"
           >
-            <i style="font-size: 23px" class="iconfont openIM-back"></i>
+            <svg class="icon" aria-hidden="true">
+              <use xlink:href="#openIM-back"></use>
+            </svg>
             <span>{{ $t('login.contentRight.backButtonText') }}</span>
           </div>
           <div class="form_title">

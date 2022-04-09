@@ -173,7 +173,7 @@ li {
 }
 
 a {
-  color: var(--im-theme-primary);
+  /* color: var(--im-theme-primary); */
   display: inline-block;
   cursor: pointer;
 }
@@ -185,4 +185,8 @@ a {
     var(--im-theme-primary),
     var(--im-theme-primary)
   ) !important;
+}
+
+.xgplayer-skin-default .xgplayer-drag {
+  background: var(--im-theme-primary) !important;
 }

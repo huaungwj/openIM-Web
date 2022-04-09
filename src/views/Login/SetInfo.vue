@@ -102,10 +102,11 @@ export default defineComponent({
      * @param data
      */
     const cusromUpload = async (data: UploadRequestOption) => {
-      // console.log('执行了', data);
+      console.log('执行了', data);
       await getCosAuthorization();
       cosUpload(data.file)
         .then((res) => {
+          console.log(res);
           userInfo.value.faceURL = res.url;
         })
         .catch((err) => {

@@ -16,11 +16,12 @@
           <template #trigger>
             <li>
               <n-badge :value="contactsStore.unReadCount" :max="99">
-                <i
-                  :class="`iconfont openIM-message2 ${
-                    $route.path === '/cve' ? 'active' : ''
-                  }`"
-                ></i>
+                <svg
+                  :class="`icon ${$route.path === '/cve' ? 'active' : ''}`"
+                  aria-hidden="true"
+                >
+                  <use :xlink:href="`#openIM-message2`"></use>
+                </svg>
               </n-badge>
             </li>
           </template>
@@ -35,11 +36,12 @@
         >
           <template #trigger>
             <li>
-              <i
-                :class="`iconfont openIM-tongxunlu1 ${
-                  $route.path === '/contacts' ? 'active' : ''
-                }`"
-              ></i>
+              <svg
+                :class="`icon ${$route.path === '/contacts' ? 'active' : ''}`"
+                aria-hidden="true"
+              >
+                <use :xlink:href="`#openIM-tongxunlu1`"></use>
+              </svg>
             </li>
           </template>
           联系人

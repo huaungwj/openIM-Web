@@ -17,7 +17,9 @@
           <!-- 左边盒子 -->
           <div class="left_container">
             <span class="title">{{ groupData.groupName }}</span>
-            <i class="iconfont openIM-time"><span>2020-4-1</span></i>
+            <svg class="icon" aria-hidden="true">
+              <use :xlink:href="`#openIM-time`"></use>
+            </svg>
           </div>
           <!-- 右边盒子 -->
           <div class="right_container">

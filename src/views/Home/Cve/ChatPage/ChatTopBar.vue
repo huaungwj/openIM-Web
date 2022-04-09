@@ -19,7 +19,9 @@
 
         <div v-else class="group_container">
           <div className="num">
-            <i class="iconfont openIM-people3geren"></i>
+            <svg class="im-icon" aria-hidden="true">
+              <use xlink:href="#openIM-people3geren"></use>
+            </svg>
             <span>{{ contactsStore.groupInfo.memberCount }}</span>
           </div>
           <div className="num">
@@ -31,9 +33,15 @@
     </div>
     <!-- 右边电话、视频、设置 -->
     <div class="chat_header_right">
-      <i class="iconfont openIM-phone"></i>
-      <i class="iconfont openIM-video"></i>
-      <i class="iconfont openIM-setting"></i>
+      <svg class="icon" aria-hidden="true">
+        <use xlink:href="#openIM-phone"></use>
+      </svg>
+      <svg class="icon openIM-video" aria-hidden="true">
+        <use xlink:href="#openIM-video"></use>
+      </svg>
+      <svg class="icon" aria-hidden="true">
+        <use xlink:href="#openIM-setting"></use>
+      </svg>
     </div>
   </header>
 </template>
@@ -205,16 +213,15 @@ const switchOnline = (oType: string, details?: DetailType[]) => {
 .chat_hearder_container > .chat_header_right {
   margin-right: 30px;
 }
-.chat_hearder_container > .chat_header_right > .iconfont:hover {
+.chat_hearder_container > .chat_header_right > .icon:hover {
   color: var(--im-theme-primary);
 }
 /* 所有图标 */
-.chat_hearder_container > .chat_header_right > .iconfont {
-  font-size: 23px;
+.chat_hearder_container > .chat_header_right > .icon {
   cursor: pointer;
 }
 /* 视频图标 */
 .chat_hearder_container > .chat_header_right > .openIM-video {
-  padding: 0 35px;
+  margin: 0 35px;
 }
 </style>

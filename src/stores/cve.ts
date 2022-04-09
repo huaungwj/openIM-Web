@@ -9,6 +9,7 @@
 import { defineStore, acceptHMRUpdate } from 'pinia';
 import type { ConversationItem, MessageItem } from '@/tools/im/types';
 import { im } from '@/tools';
+import type { RcFile } from 'rc-upload/lib/interface';
 
 const lastUid = localStorage.getItem('lastimuid') || '';
 const lastCveStore = localStorage.getItem(`${lastUid}cveStore`);
@@ -34,6 +35,7 @@ export const useCveStore = defineStore({
           hasMore: true, // 会话列表历史记录是否到底
           isPullMore: false, // 是否正在拉取
           cveCScHeight: 0, // 内容区域可滚动区域高度
+          fileInfo: {}, //当前正在上传的文件对象
         },
   getters: {},
   actions: {
@@ -100,6 +102,10 @@ export const useCveStore = defineStore({
     // setisPullMore
     setIsPullMore(status: boolean) {
       this.isPullMore = status;
+    },
+    //setFileInfo
+    setFileInfo(file: RcFile) {
+      this.fileInfo = file;
     },
 
     // // setHasMore

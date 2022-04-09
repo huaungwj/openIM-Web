@@ -18,8 +18,10 @@
           <div class="user_c_modal_header_info">
             <!-- 左边盒子 -->
             <div class="left_container">
-              <span class="title">{{ friendData?.nickname }}</span
-              ><i class="iconfont openIM-zhanghu"></i>
+              <span class="title">{{ friendData?.nickname }}</span>
+              <svg class="icon" aria-hidden="true">
+                <use xlink:href="#openIM-zhanghu"></use>
+              </svg>
             </div>
             <!-- 右边盒子 -->
             <div class="right_container">

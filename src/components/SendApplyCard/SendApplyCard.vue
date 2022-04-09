@@ -2,7 +2,9 @@
   <!-- 发送好友请求 -->
   <div>
     <div class="user_c_modal_header2 pointer" @click="changePageFun('default')">
-      <i class="iconfont openIM-back"> </i>
+      <svg class="icon" aria-hidden="true">
+        <use xlink:href="#openIM-back"></use>
+      </svg>
       <span>好友验证</span>
     </div>
     <!-- 卡片信息 -->

@@ -6,21 +6,29 @@
     <div class="chat_input_tools">
       <!-- 表情 -->
       <n-dropdown trigger="hover" placement="top" :options="emojiOptions">
-        <div class="input_tools_emoji">
-          <i class="iconfont openIM-emoji"></i>
+        <div class="input_tools_emoji iconfont">
+          <svg class="icon" aria-hidden="true">
+            <use xlink:href="#openIM-emoji"></use>
+          </svg>
         </div>
       </n-dropdown>
       <!-- 发送文件、图片、视频 -->
       <div class="input_tools_files">
-        <i class="iconfont openIM-file-open"></i>
+        <svg class="icon iconfont" aria-hidden="true">
+          <use xlink:href="#openIM-file-open"></use>
+        </svg>
       </div>
       <!-- 信息搜索 -->
       <div class="input_tools_sear_msg">
-        <i class="iconfont openIM-message"></i>
+        <svg class="icon iconfont" aria-hidden="true">
+          <use xlink:href="#openIM-message"></use>
+        </svg>
       </div>
       <!-- 名片 -->
       <div class="input_tools_scard">
-        <i class="iconfont openIM-zhanghu"></i>
+        <svg class="icon iconfont" aria-hidden="true">
+          <use xlink:href="#openIM-zhanghu"></use>
+        </svg>
       </div>
     </div>
 
@@ -39,34 +47,24 @@
 </template>
 
 <script setup lang="ts">
-import { h, ref, watch, nextTick } from 'vue';
+import { h, ref } from 'vue';
 import contenteditable from '@/views/Home/Cve/ChatPage/components/Contenteditable.vue';
 // import EmojiContent from './EmojiContent.vue';
 import { faceMap } from '@/tools/face';
 import { NImage, useMessage } from 'naive-ui';
 import { im } from '@/tools';
-import { uuid } from '@/tools/im';
-import {
-  messageTypes,
-  notOssMessageTypes,
-} from '@/tools/im/constants/messageContentType';
-import type { WsResponse } from '@/tools/im/types';
+import { messageTypes } from '@/tools/im/constants/messageContentType';
 import { useCveStore } from '@/stores/cve';
 import { useScroll } from '@/hooks/useScroll';
-
-type NMsgMap = {
-  oid: string;
-  mid: string;
-  flag: boolean;
-};
+import { useUploadFile } from '@/hooks/useUploadFile';
 
 //use
 const cveStore = useCveStore();
 const { scrollTo } = useScroll();
 const message = useMessage();
+const { sendMsg } = useUploadFile();
 // 聊天框内容
 const chatInputContext = ref<string>(``);
-let nMsgMaps: NMsgMap[] = [];
 
 function faceClick(face, e) {
   e.preventDefault();
@@ -166,84 +164,6 @@ const sendTextMsg = async (text: string) => {
   sendMsg(data, messageTypes.TEXTMESSAGE);
   // 重置状态
   resetData();
-};
-
-const sendMsg = async (
-  nMsg: string,
-  type: messageTypes,
-  uid?: string,
-  gid?: string
-) => {
-  const operationID = uuid();
-  if (
-    (uid && cveStore.curCve?.userID === uid) ||
-    (gid && cveStore.curCve?.groupID === gid) ||
-    (!uid && !gid)
-  ) {
-    const parsedMsg = JSON.parse(nMsg);
-    const tMsgMap = {
-      oid: operationID,
-      mid: parsedMsg.clientMsgID,
-      flag: false,
-    };
-    console.log(parsedMsg);
-    nMsgMaps = [...nMsgMaps, tMsgMap]; // 保存发送过的信息
-    parsedMsg.status = 2;
-    cveStore.setHistoryMsgList([parsedMsg, ...cveStore.historyMsgList]); // 更新historyMsg
-    setTimeout(() => {
-      const item = nMsgMaps.find((n) => n.mid === parsedMsg.clientMsgID);
-      if (item && !item.flag) {
-        cveStore.historyMsgList.find((h) => {
-          if (h.clientMsgID === item.mid) {
-            h.status = 1;
-          }
-        });
-      }
-    }, 2000);
-    // nextTick(() => {
-    //   scrollTo();
-    // });
-  }
-  const offlinePushInfo = {
-    title: '你有一条新消息',
-    desc: '',
-    ex: '',
-    iOSPushSound: '+1',
-    iOSBadgeCount: true,
-  };
-  const sendOption = {
-    recvID: uid ?? cveStore.curCve.userID,
-    groupID: gid ?? cveStore.curCve.groupID,
-    offlinePushInfo,
-    message: nMsg,
-  };
-  nMsgMaps = nMsgMaps.filter((f) => !f.flag);
-  if (notOssMessageTypes.includes(type)) {
-    im.sendMessageNotOss(sendOption, operationID)
-      .then((res) => sendMsgCB(res, type))
-      .catch((err) => sendMsgCB(err, type, true));
-  } else {
-    im.sendMessage(sendOption, operationID)
-      .then((res) => sendMsgCB(res, type))
-      .catch((err) => sendMsgCB(err, type, true));
-  }
-};
-
-const sendMsgCB = (res: WsResponse, type: messageTypes, err?: boolean) => {
-  nMsgMaps.map((tn) => {
-    if (tn.oid === res.operationID) {
-      const idx = cveStore.historyMsgList.findIndex(
-        (his) => his.clientMsgID === tn?.mid
-      );
-      if (idx !== -1) {
-        tn.flag = true;
-        err
-          ? (cveStore.historyMsgList[idx].status = 3)
-          : (cveStore.historyMsgList[idx] = JSON.parse(res.data));
-      }
-    }
-  });
-  if (type === messageTypes.MERGERMESSAGE) message.success('发送成功');
 };
 
 const resetData = () => {

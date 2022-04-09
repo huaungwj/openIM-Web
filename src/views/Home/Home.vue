@@ -37,6 +37,7 @@ import { useCveStore } from '@/stores/cve';
 import { useContactsStore } from '@/stores/contacts';
 import { CbEvents } from '@/tools/im';
 import type { ConversationItem, WsResponse } from '@/tools/im/types';
+import { useRoute } from 'vue-router';
 
 const token = localStorage.getItem(`improfile`)!;
 const userID = localStorage.getItem('lastimuid')!;
@@ -45,6 +46,7 @@ const siderRef = ref<LayoutSiderInst | null>(null);
 const cveContentRef = ref<LayoutInst | null>(null);
 const cveStore = useCveStore();
 const contactsStore = useContactsStore();
+const route = useRoute();
 // 是否登录
 if (token && userID) {
   im.getLoginStatus()
@@ -65,7 +67,11 @@ const scrollChange = throttle(
       cveStore.setCveCScHeiht(cveStore.cveContentRef.scrollHeight);
     }
     // 获取更多历史信息
-    if (cveStore.cveContentRef.scrollTop < 100 && cveStore.hasMore) {
+    if (
+      cveStore.cveContentRef.scrollTop < 100 &&
+      cveStore.hasMore &&
+      route.path === '/cve'
+    ) {
       // 到顶
       const config = {
         userID: cveStore.curCve.userID ?? '',

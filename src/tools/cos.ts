@@ -70,7 +70,7 @@ export const cosUploadNomal = (
 };
 
 export const cosUpload = (
-  data: UploadRequestOption['file'],
+  data: UploadRequestOption | UploadRequestOption[file],
   pcb?: COS.onProgress
 ): Promise<COS.PutObjectResult & { url: string }> => {
   const dpcb = () => {};
@@ -88,7 +88,7 @@ export const cosUpload = (
         //@ts-ignore
         Key: data.id + data.name /* 必须 */,
         // StorageClass: 'STANDARD',
-        Body: data.file, // 上传文件对象
+        Body: data.file ?? data, // 上传文件对象
         onProgress: pcb ?? dpcb,
       },
       function (cerr, cdata) {

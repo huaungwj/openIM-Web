@@ -3,7 +3,9 @@
     <!-- search input -->
     <n-input placeholder="搜索" size="small">
       <template #prefix>
-        <i class="iconfont openIM-search"></i>
+        <svg class="icon" aria-hidden="true">
+          <use xlink:href="#openIM-search"></use>
+        </svg>
       </template>
     </n-input>
 
@@ -13,7 +15,9 @@
       :options="addMenuOptions"
       @select="handleSelectFun"
     >
-      <i class="iconfont openIM-add add_button pointer"></i>
+      <svg class="icon add_button pointer" aria-hidden="true">
+        <use xlink:href="#openIM-add"></use>
+      </svg>
     </n-dropdown>
 
     <!-- 模态框 -->
@@ -256,7 +260,8 @@ const actionSearchFun = () => {
 /* 头部添加按钮 */
 .top_search_container > .add_button {
   font-size: 25px;
-  padding-left: 10px;
+  margin-left: 10px;
+  outline: none;
 }
 /* 内容部分 */
 .top_search_modal_container > .modal_input {
