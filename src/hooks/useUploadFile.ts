@@ -118,6 +118,8 @@ export const useUploadFile = () => {
     uid?: string,
     gid?: string
   ) => {
+    //
+    cveStore.setIsPullMore(false);
     const operationID = uuid();
     if (
       (uid && cveStore.curCve?.userID === uid) ||

@@ -75,22 +75,17 @@ const parseLastMessage = (recvMsgOpt) => {
 };
 
 watch([() => cveStore.historyMsgList], () => {
-  // 跳到底部
   if (cveStore.isPullMore && cveStore.cveContentRef.scrollHeight !== 0) {
-    console.log(cveStore.cveContentRef.scrollHeight - cveStore.cveCScHeight);
-
     return nextTick(() => {
       cveStore.cveContentRef.scrollTop =
         cveStore.cveContentRef.scrollHeight - cveStore.cveCScHeight;
     });
   }
-
+  // 跳到底部
   nextTick(() => {
     scrollTo('bottom');
   });
 });
-
-console.log(JSON.parse(props.cve.latestMsg));
 </script>
 
 <style lang="css">

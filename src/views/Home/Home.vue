@@ -63,6 +63,7 @@ if (token && userID) {
 // 滚动
 const scrollChange = throttle(
   (e: Event) => {
+    console.log(cveStore.cveContentRef.scrollTop);
     if (cveStore.cveCScHeight !== cveStore.cveContentRef.scrollHeight) {
       cveStore.setCveCScHeiht(cveStore.cveContentRef.scrollHeight);
     }

@@ -29,7 +29,7 @@
 </template>
 
 <script lang="ts" setup>
-import { watch, onBeforeUnmount, ref } from 'vue';
+import { watch, onBeforeUnmount, ref, onMounted } from 'vue';
 import ChatTopBar from '@/views/Home/Cve/ChatPage/ChatTopBar.vue';
 import CharContent from './ChatPage/CharContent.vue';
 import CharFooterBar from '@/views/Home/Cve/ChatPage/ChatFooterBar.vue';
@@ -189,7 +189,7 @@ onBeforeUnmount(() => {
 
 <style>
 .chat_page_container {
-  width: 1200px;
+  width: 1190px;
   height: 100vh;
   background-color: var(--im-theme-chatPageBg);
 }

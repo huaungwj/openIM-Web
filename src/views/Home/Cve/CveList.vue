@@ -54,7 +54,10 @@ const openMenu = (e, cve) => {
 <style>
 .cve_container {
   width: 435px;
+  height: 100vh;
   position: relative;
+  border-right: 1px solid var(--color-border);
+  box-shadow: 10px 0px 0px 0px #2279e5;
 }
 
 .cve_list {
