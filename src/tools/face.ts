@@ -14,6 +14,20 @@ import face_14 from '@/assets/face/face_14.png';
 import face_15 from '@/assets/face/face_15.png';
 import face_16 from '@/assets/face/face_16.png';
 import face_17 from '@/assets/face/face_17.png';
+import face_18 from '@/assets/face/face_18.png';
+import face_19 from '@/assets/face/face_19.png';
+import face_20 from '@/assets/face/face_20.png';
+import face_21 from '@/assets/face/face_21.png';
+import face_22 from '@/assets/face/face_22.png';
+import face_23 from '@/assets/face/face_23.png';
+import face_24 from '@/assets/face/face_24.png';
+import face_25 from '@/assets/face/face_25.png';
+import face_26 from '@/assets/face/face_26.png';
+import face_27 from '@/assets/face/face_27.png';
+import face_28 from '@/assets/face/face_28.png';
+import face_29 from '@/assets/face/face_29.png';
+import face_30 from '@/assets/face/face_30.png';
+import face_31 from '@/assets/face/face_31.png';
 
 export const faceMap = [
   {
@@ -79,5 +93,61 @@ export const faceMap = [
   {
     context: '[亲亲]',
     src: face_17,
+  },
+  {
+    context: '[微笑]',
+    src: face_18,
+  },
+  {
+    context: '[亲亲]',
+    src: face_19,
+  },
+  {
+    context: '[大哭]',
+    src: face_20,
+  },
+  {
+    context: '[害羞]',
+    src: face_21,
+  },
+  {
+    context: '[汗]',
+    src: face_22,
+  },
+  {
+    context: '[难过]',
+    src: face_23,
+  },
+  {
+    context: '[哭]',
+    src: face_24,
+  },
+  {
+    context: '[得意]',
+    src: face_25,
+  },
+  {
+    context: '[恭喜发财]',
+    src: face_26,
+  },
+  {
+    context: '[扫地]',
+    src: face_27,
+  },
+  {
+    context: '[财迷]',
+    src: face_28,
+  },
+  {
+    context: '[没钱了]',
+    src: face_29,
+  },
+  {
+    context: '[尬住]',
+    src: face_30,
+  },
+  {
+    context: '[好吃]',
+    src: face_31,
   },
 ];

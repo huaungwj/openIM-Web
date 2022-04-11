@@ -8,7 +8,7 @@
     <div class="text_type" v-if="msg.contentType === messageTypes.TEXTMESSAGE">
       <!-- 消息内容和时间 -->
       <div class="chat_msg_info">
-        <span class="chat_msg_text" v-html="parseTextFun()"> </span>
+        <span class="chat_msg_text" v-html="parseTextFun(msg.content)"> </span>
         <span class="chat_msg_time">{{
           $day(msg.sendTime).format('HH:mm')
         }}</span>
@@ -53,7 +53,17 @@
     </div>
     <!-- 名片消息 -->
     <div class="card_type" v-if="msg.contentType === messageTypes.CARDMESSAGE">
-      名片消息
+      <p class="title">名片</p>
+      <hr />
+      <div class="card_info">
+        <MyAvatar :src="JSON.parse(msg.content).faceURL" :size="32" />
+        <span class="card_info_name">{{
+          JSON.parse(msg.content).nickname
+        }}</span>
+        <span class="chat_msg_time">{{
+          $day(msg.sendTime).format('HH:mm')
+        }}</span>
+      </div>
     </div>
     <!-- 地理位置类型消息 -->
     <div
@@ -65,17 +75,11 @@
     <!-- 自定义消息 -->
     <div
       class="custom_type"
-      v-if="msg.contentType === messageTypes.CARDMESSAGE"
+      v-if="msg.contentType === messageTypes.CUSTOMMESSAGE"
     >
       自定义消息
     </div>
-    <!-- 撤回类型消息 -->
-    <div
-      class="revoke_type"
-      v-if="msg.contentType === messageTypes.REVOKEMESSAGE"
-    >
-      撤回消息
-    </div>
+
     <!-- 已读回执类型消息 -->
     <div
       class="read_type"
@@ -88,7 +92,45 @@
       class="quqte_type"
       v-if="msg.contentType === messageTypes.QUOTEMESSAGE"
     >
-      引用类型
+      <!-- 引用消息 -->
+      <div class="quqte_content">
+        回复{{ msg.quoteElem.quoteMessage.senderNickname }}:
+        <p
+          class="qut_text"
+          v-if="
+            msg.quoteElem.quoteMessage.contentType === messageTypes.TEXTMESSAGE
+          "
+        >
+          <span v-html="parseQute(msg.quoteElem.quoteMessage)"></span>
+        </p>
+        <span
+          class="qut_at"
+          v-if="
+            msg.quoteElem.quoteMessage.contentType ===
+            messageTypes.ATTEXTMESSAGE
+          "
+        ></span>
+        <span
+          class="qut_pic"
+          v-if="
+            msg.quoteElem.quoteMessage.contentType ===
+            messageTypes.PICTUREMESSAGE
+          "
+        ></span>
+      </div>
+      <!-- 发送的消息 只对文本生效 -->
+      <div
+        style="
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+        "
+      >
+        <span class="send_msg" v-html="parseTextFun(msg.quoteElem.text)"></span>
+        <span class="chat_msg_time">{{
+          $day(msg.sendTime).format('HH:mm')
+        }}</span>
+      </div>
     </div>
   </div>
 </template>
@@ -107,6 +149,7 @@ import playbackRate from 'xgplayer/dist/controls/playbackRate';
 import pip from 'xgplayer/dist/controls/pip';
 import FileMsgVue from '@/views/Home/Cve/ChatPage/components/FileMsg.vue';
 import { useScroll } from '@/hooks/useScroll';
+import MyAvatar from '../../../../../components/myAvatar/MyAvatar.vue';
 
 const cveStore = useCveStore();
 const contactsStore = useContactsStore();
@@ -181,8 +224,8 @@ const parseUrl = (mstr: string) => {
 };
 
 // 对文本进行重排
-const parseTextFun = (): string => {
-  let atMsg = props.msg.content;
+const parseTextFun = (content): string => {
+  let atMsg = content;
   atMsg = parseEmojiFace(atMsg);
 
   if (!isImage.value) atMsg = parseUrl(atMsg);
@@ -191,8 +234,22 @@ const parseTextFun = (): string => {
   return atMsg;
 };
 
+// 引用类型
+const parseQute = (quMsg: MessageItem) => {
+  switch (quMsg.contentType) {
+    case messageTypes.TEXTMESSAGE: {
+      return parseTextFun(quMsg.content);
+    }
+    case messageTypes.ATTEXTMESSAGE: {
+      return parseAt(quMsg.atElem.text);
+    }
+    case messageTypes.PICTUREMESSAGE: {
+      return quMsg.pictureElem.sourcePicture.url;
+    }
+  }
+};
+
 const imageLoad = () => {
-  console.log('dadadadasd', cveStore.cveCScHeight);
   if (
     cveStore.cveCscHeight === cveStore.cveContentRef.scrollHeight ||
     cveStore.isPullMore
@@ -234,7 +291,9 @@ onMounted(() => {
 }
 
 /* 消息内容盒子 */
-.chat_msg_content .chat_msg_info {
+.chat_msg_content .chat_msg_info,
+.chat_msg_content .quqte_type,
+.chat_msg_content .card_type {
   border-radius: 5px;
   background-color: var(--im-theme-chatMsgBg);
   padding: 5px 55px 10px 10px;
@@ -242,7 +301,40 @@ onMounted(() => {
   flex-direction: column;
 }
 
-.reversal_msg .chat_msg_content .chat_msg_info {
+/* ---------------------------------- 引用类型消息 --------------------------------------- */
+.chat_msg_content > .quqte_type,
+.chat_msg_content > .card_type {
+  padding-right: 20px;
+}
+.chat_msg_content > .quqte_type > .quqte_content {
+  border-left: 2px solid var(--color-text);
+  padding-left: 10px;
+  margin-bottom: 10px;
+}
+.chat_msg_content > .quqte_type .chat_msg_time,
+.chat_msg_content > .card_type .chat_msg_time {
+  font-size: 12px;
+  color: var(--color-text);
+}
+
+/* ---------------------------------- 卡片类型消息 --------------------------------------  */
+.chat_msg_content > .card_type > .card_info {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.chat_msg_content > .card_type > .title {
+  color: var(--color-text);
+}
+
+.chat_msg_content > .card_type > .card_info > .card_info_name {
+  padding: 10px 20px 10px 10px;
+}
+
+.reversal_msg .chat_msg_content .chat_msg_info,
+.reversal_msg .chat_msg_content .quqte_type,
+.reversal_msg .chat_msg_content .card_type {
   background-color: var(--im-theme-primary) !important;
   color: var(--im-cveItem-dark-color);
 }
@@ -293,8 +385,13 @@ onMounted(() => {
   padding-left: 0;
   padding-right: 15px;
 }
+
 .reversal_msg .chat_msg_content {
   justify-content: flex-end;
   align-items: flex-end;
+}
+
+.chat_msg_content a {
+  color: var(--im-theme-primary);
 }
 </style>

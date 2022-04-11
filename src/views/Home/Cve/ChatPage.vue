@@ -10,7 +10,7 @@
       :class="` ${isDragetIng && 'dragent_active'}`"
     >
       <!-- 头部用户信息栏 -->
-      <ChatTopBar />
+      <ChatTopBar :draggable="false" />
       <!-- 会话主体内容 -->
       <CharContent />
       <!-- 底部信息框 -->
@@ -164,7 +164,7 @@ const dropFun = function (e: DragEvent) {
 
   if (e.dataTransfer?.files.length === 0 || e.dataTransfer?.files.length > 1) {
     isDragetIng.value = false;
-    return message.warning('暂时不支持多文件发送');
+    return message.warning('暂不支持这样的方式发送文件！');
   }
 
   // 文件内容
@@ -189,7 +189,7 @@ onBeforeUnmount(() => {
 
 <style>
 .chat_page_container {
-  width: 1190px;
+  width: calc(70vw - 10px);
   height: 100vh;
   background-color: var(--im-theme-chatPageBg);
 }

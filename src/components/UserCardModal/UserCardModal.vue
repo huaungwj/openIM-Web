@@ -78,7 +78,7 @@ import { useContactsStore } from '@/stores/contacts';
 const props = defineProps<{
   userCardIsShow: boolean;
   friendData: object;
-  changeUserCardStatus: Function;
+  changeUserCardStatus: () => void;
 }>();
 
 const message = useMessage();

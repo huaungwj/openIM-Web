@@ -89,18 +89,6 @@ watch([() => cveStore.historyMsgList], () => {
 </script>
 
 <style lang="css">
-.cve_item {
-  display: flex;
-  width: 100%;
-  justify-content: space-between;
-  padding: 20px 15px 20px 20px;
-  background-color: var(--im-theme-cveItemBg);
-  border-bottom: 1px solid var(--im-theme-chatPageSolid);
-  cursor: pointer;
-}
-.cve_item:hover {
-  background-color: var(--im-theme-activeCveBg);
-}
 .cve_item > p {
   color: var(--color-text);
   font-size: 13px;

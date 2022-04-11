@@ -79,7 +79,7 @@ import { im } from '@/tools';
 const props = defineProps<{
   groupCardIsShow: boolean;
   groupData: object;
-  changeGroupCardStatus: Function;
+  changeGroupCardStatus: () => void;
 }>();
 /**
  * store

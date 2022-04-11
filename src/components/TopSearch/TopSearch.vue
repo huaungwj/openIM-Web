@@ -251,7 +251,7 @@ const actionSearchFun = () => {
 .top_search_container {
   display: flex;
   align-items: center;
-  width: 25.8%;
+  width: 25.7vw;
   background-color: var(--im-theme-topSearchBg) !important;
   z-index: 1;
   padding: 10px;

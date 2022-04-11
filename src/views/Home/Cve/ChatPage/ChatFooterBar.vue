@@ -14,9 +14,11 @@
       </n-dropdown>
       <!-- 发送文件、图片、视频 -->
       <div class="input_tools_files">
-        <svg class="icon iconfont" aria-hidden="true">
-          <use xlink:href="#openIM-file-open"></use>
-        </svg>
+        <n-upload :show-file-list="false" :custom-request="cusromSendFile">
+          <svg class="icon iconfont" aria-hidden="true">
+            <use xlink:href="#openIM-file-open"></use>
+          </svg>
+        </n-upload>
       </div>
       <!-- 信息搜索 -->
       <div class="input_tools_sear_msg">
@@ -47,22 +49,23 @@
 </template>
 
 <script setup lang="ts">
-import { h, ref } from 'vue';
+import { h, ref, resolveComponent } from 'vue';
 import contenteditable from '@/views/Home/Cve/ChatPage/components/Contenteditable.vue';
 // import EmojiContent from './EmojiContent.vue';
 import { faceMap } from '@/tools/face';
-import { NImage, useMessage } from 'naive-ui';
+import { NImage, useMessage, NScrollbar, NTooltip } from 'naive-ui';
 import { im } from '@/tools';
 import { messageTypes } from '@/tools/im/constants/messageContentType';
 import { useCveStore } from '@/stores/cve';
 import { useScroll } from '@/hooks/useScroll';
 import { useUploadFile } from '@/hooks/useUploadFile';
+import type { UploadRequestOption } from 'rc-upload/lib/interface';
 
 //use
 const cveStore = useCveStore();
 const { scrollTo } = useScroll();
 const message = useMessage();
-const { sendMsg } = useUploadFile();
+const { sendMsg, sendCosMsg } = useUploadFile();
 // 聊天框内容
 const chatInputContext = ref<string>(``);
 
@@ -73,6 +76,7 @@ function faceClick(face, e) {
   chatInputContext.value = chatInputContext.value + faceEl;
 }
 
+// emoji配置文件
 const emojiOptions = [
   {
     key: 'header',
@@ -82,27 +86,45 @@ const emojiOptions = [
 ];
 
 function renderEmojiContent() {
-  return h(
-    'div',
-    {
-      style: "boxShadow: '0px 4px 25px rgb(0 0 0 / 16%)'",
-      class: 'face_container',
-    },
-    [
-      faceMap.map((face) => {
-        return h(
-          'div',
-          {
-            key: face.context,
-            onClick: (e) => {
-              faceClick(face, e);
-            },
-            class: 'face_item',
-          },
-          [h(NImage, { 'preview-disabled': true, width: 24, src: face.src })]
-        );
-      }),
-    ]
+  return h(NScrollbar, { style: 'max-height: 300px' }, () =>
+    h(
+      'div',
+      {
+        style: "boxShadow: '0px 4px 25px rgb(0 0 0 / 16%)'",
+        class: 'face_container',
+      },
+
+      [
+        faceMap.map((face) => {
+          return h(
+            NTooltip,
+            { trigger: 'hover' },
+            {
+              default: () => `${face.context}`,
+
+              trigger: () =>
+                h(
+                  'div',
+                  {
+                    key: face.context,
+                    onClick: (e) => {
+                      faceClick(face, e);
+                    },
+                    class: 'face_item',
+                  },
+                  [
+                    h(NImage, {
+                      'preview-disabled': true,
+                      width: 26,
+                      src: face.src,
+                    }),
+                  ]
+                ),
+            }
+          );
+        }),
+      ]
+    )
   );
 }
 
@@ -166,6 +188,18 @@ const sendTextMsg = async (text: string) => {
   resetData();
 };
 
+// 自定义发送文件
+const cusromSendFile = async (data: UploadRequestOption) => {
+  console.log(data);
+  if (!data) return;
+  const fileList = ['image', 'video'];
+  let type = data.file.type.split('/')[0];
+  sendCosMsg(
+    data.file?.file,
+    fileList.some((item) => item === type) ? type : 'file'
+  );
+};
+
 const resetData = () => {
   chatInputContext.value = '';
 };
@@ -187,6 +221,10 @@ const resetData = () => {
   padding-left: 20px;
 }
 
+.chat_footer input[type='file'] {
+  display: none;
+}
+
 /* 聊天框工具栏 */
 .chat_footer > .chat_input_tools {
   padding-top: 10px;
@@ -194,6 +232,7 @@ const resetData = () => {
   height: 35%;
   display: flex;
   justify-content: space-between;
+  align-items: center;
 }
 
 /* 图标 */
@@ -237,11 +276,13 @@ const resetData = () => {
 
 /* emoji内容 */
 .face_container {
-  width: 200px;
+  width: 250px;
   display: flex;
   flex-wrap: wrap;
   justify-content: center;
   align-items: center;
+  /* height: 300px;
+  overflow-y: scroll; */
 }
 /* 表情 */
 .face_container > .face_item {
@@ -251,5 +292,6 @@ const resetData = () => {
 .face_container > .face_item:hover {
   /* background-color: rgba(255, 255, 255, 0.3); */
   background-color: var(--color-text);
+  border-radius: 7px;
 }
 </style>

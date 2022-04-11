@@ -47,6 +47,9 @@
 
   /* 消息气泡框背景 */
   --im-chatMsgBg-dark-color: #2c2c2c;
+  /* 文件消息背景 */
+  --im-fileMsgBg-dark-color: #354c3a;
+  --im-fileMsgBg-light-color: #a0bca6;
 }
 
 /* semantic color variables for this project */
@@ -74,7 +77,7 @@
 
   /* cve 会话 */
   /* 会话item */
-  --im-theme-cveItemBg: var(--im-cveItem-light-color);
+  --im-theme-cveItemBg: var(--vt-c-white-soft);
   /* chat_page */
   --im-theme-chatPageBg: var(--im-chatPage-light-color);
   /* chat_page_header_solid */
@@ -82,7 +85,9 @@
   /* 消息气泡框背景 */
   --im-theme-chatMsgBg: var(--vt-c-white);
   /* 当前cve会话活跃背景 */
-  --im-theme-activeCveBg: #d3d3d3;
+  --im-theme-activeCveBg: #efefef;
+  /* 文件消息背景 */
+  --im-theme-fileMsgBg: var(--im-fileMsgBg-light-color);
 }
 
 @media (prefers-color-scheme: dark) {
@@ -116,6 +121,8 @@
     --im-theme-chatMsgBg: var(--im-chatMsgBg-dark-color);
     /* 当前cve会话活跃背景 */
     --im-theme-activeCveBg: var(--vt-c-divider-dark-2);
+    /* 文件消息背景 */
+    --im-theme-fileMsgBg: var(--im-fileMsgBg-dark-color);
   }
 }
 
@@ -189,4 +196,65 @@ a {
 
 .xgplayer-skin-default .xgplayer-drag {
   background: var(--im-theme-primary) !important;
+}
+
+/* 会话列表和联系人群组列表 */
+.cve_container,
+.contact_container {
+  width: 25.7vw;
+  height: 100vh;
+  position: relative;
+  border-right: 1px solid var(--color-border);
+}
+
+.cve_list,
+.contactList {
+  padding-top: 60px;
+  width: 100%;
+}
+
+.cve_item,
+.contact_item_c {
+  display: flex;
+  width: 95%;
+  margin: 0 auto;
+  justify-content: space-between;
+  padding: 20px 15px 20px 20px;
+  margin-top: 15px;
+  background-color: var(--im-theme-cveItemBg);
+  border-bottom: 1px solid var(--im-theme-chatPageSolid);
+  cursor: pointer;
+  border-radius: 10px;
+  box-shadow: 0px 0px 10.9px rgba(0, 0, 0, 0.14),
+    0px 0px 101px rgba(0, 0, 0, 0.02);
+}
+
+.cve_item:hover,
+.contact_item_c:hover {
+  background-color: var(--im-theme-activeCveBg);
+}
+.cve_item:nth-child(1),
+.contact_item_c:nth-child(1) {
+  margin-top: 0;
+}
+
+@media (prefers-color-scheme: dark) {
+  .cve_item,
+  .contact_item_c {
+    box-shadow: 0px 0px 10.9px rgba(255, 255, 255, 0.14),
+      0px 0px 101px rgba(255, 255, 255, 0.02);
+  }
+}
+
+/* 聊天头部用户信息栏、联系人头部 */
+.chat_hearder_container,
+.contact_top_c {
+  padding: 20px 0 5px 20px;
+  width: calc(70vw - 10px);
+  display: flex;
+  justify-content: space-between;
+  background-color: var(--im-theme-chatPageBg);
+  border-bottom: 1px solid var(--im-theme-chatPageSolid);
+  position: fixed;
+  z-index: 116;
 }

@@ -5,7 +5,6 @@ export function useScroll() {
   const cveStore = useCveStore();
   const scrollTo = (type?: string, top?: number) => {
     if (type === '') return;
-    console.log(cveStore.cveContentRef.scrollHeight);
     if (type == 'bottom') {
       if (
         cveStore.cveContentRef.scrollHeight -

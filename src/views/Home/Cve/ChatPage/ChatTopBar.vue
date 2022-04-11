@@ -160,17 +160,6 @@ const switchOnline = (oType: string, details?: DetailType[]) => {
 </script>
 
 <style>
-/* 聊天头部用户信息栏 */
-.chat_hearder_container {
-  padding: 20px 0 5px 20px;
-  width: 69%;
-  display: flex;
-  justify-content: space-between;
-  background-color: var(--im-theme-chatPageBg);
-  border-bottom: 1px solid var(--im-theme-chatPageSolid);
-  position: fixed;
-  z-index: 116;
-}
 .chat_hearder_container > .chat_header_left {
   display: flex;
   flex-direction: row;

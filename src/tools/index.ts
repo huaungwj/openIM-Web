@@ -20,4 +20,13 @@ export const markCveHasRead = (cve: ConversationItem, type?: number) => {
   }
 };
 
-export { cveSort };
+// contact 菜单
+const contactMenu = [
+  { icon: 'drxx91', text: '常用联系人', num: 10, key: 'tC' },
+  { icon: 'a-bianzu61', text: '新的好友', num: 10, key: 'nF' },
+  { icon: 'icon_1-09', text: '新的群组', num: 10, key: 'nG' },
+  { icon: 'lianxiren', text: '我的好友', num: 10, key: 'mF' },
+  { icon: 'a-bianzu38', text: '我的群组', num: 10, key: 'mG' },
+];
+
+export { cveSort, contactMenu };

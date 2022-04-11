@@ -41,8 +41,8 @@ const sendVarMsg = ref<string>('');
 
 const props = defineProps<{
   name: string;
-  sendFun: Function;
-  changePageFun: Function;
+  sendFun: () => void;
+  changePageFun: () => void;
   avatarUrl: string;
 }>();
 </script>

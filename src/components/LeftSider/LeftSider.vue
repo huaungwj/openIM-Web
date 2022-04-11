@@ -2,7 +2,7 @@
   <div class="left_sider_container">
     <MyAvatar
       class="sider_avatar"
-      :src="$isDark.value ? 'ic_avatar_06' : 'ic_avatar_01'"
+      :src="userStore.selfInfo.faceURL"
       :size="36"
     />
 
@@ -17,10 +17,12 @@
             <li>
               <n-badge :value="contactsStore.unReadCount" :max="99">
                 <svg
-                  :class="`icon ${$route.path === '/cve' ? 'active' : ''}`"
+                  :class="`icon ${
+                    $route.path === '/cve' ? 'active' : 'default'
+                  }`"
                   aria-hidden="true"
                 >
-                  <use :xlink:href="`#openIM-message2`"></use>
+                  <use :xlink:href="`#openIM-message`"></use>
                 </svg>
               </n-badge>
             </li>
@@ -37,7 +39,9 @@
           <template #trigger>
             <li>
               <svg
-                :class="`icon ${$route.path === '/contacts' ? 'active' : ''}`"
+                :class="`icon ${
+                  $route.path === '/contacts' ? 'active' : 'default'
+                }`"
                 aria-hidden="true"
               >
                 <use :xlink:href="`#openIM-tongxunlu1`"></use>
@@ -47,6 +51,8 @@
           联系人
         </n-tooltip>
       </router-link>
+      <!-- 日历 -->
+      <!-- 待办事项 -->
     </ul>
   </div>
 </template>
@@ -55,8 +61,10 @@
 import MyAvatar from '../myAvatar/MyAvatar.vue';
 import { RouterLink } from 'vue-router';
 import { useContactsStore } from '@/stores/contacts';
+import { useUserStore } from '@/stores/user';
 
 const contactsStore = useContactsStore();
+const userStore = useUserStore();
 </script>
 
 <style>
@@ -90,5 +98,8 @@ const contactsStore = useContactsStore();
 
 .sider_nav .active {
   color: #57be6a;
+}
+.sider_nav .default {
+  color: var(--color-heading);
 }
 </style>

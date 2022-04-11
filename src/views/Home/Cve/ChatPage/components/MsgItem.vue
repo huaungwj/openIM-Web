@@ -8,7 +8,8 @@
       v-if="
         msg.contentType !== tipsTypes.FRIENDADDED &&
         msg.contentType !== tipsTypes.MEMBERENTER &&
-        msg.contentType !== tipsTypes.GROUPINFOUPDATED
+        msg.contentType !== tipsTypes.GROUPINFOUPDATED &&
+        msg.contentType !== tipsTypes.REVOKEMESSAGE
       "
     >
       <!-- 头像 -->
@@ -19,6 +20,14 @@
     </div>
 
     <div class="n_msg_item" v-else>
+      <!-- 撤回消息 -->
+      <div
+        class="revoke_message"
+        v-if="msg.contentType === tipsTypes.REVOKEMESSAGE"
+      >
+        <a>{{ msg.senderNickname }}</a>
+        撤回了一条消息
+      </div>
       <!-- 新成员加入 -->
       <div
         class="new_member_join"
@@ -84,5 +93,9 @@ const userStore = useUserStore();
   text-align: center;
   color: var(--color-text);
   padding: 10px 0;
+}
+
+.n_msg_item a {
+  color: var(--im-theme-primary);
 }
 </style>

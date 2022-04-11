@@ -36,6 +36,7 @@ export const useContactsStore = defineStore({
           groupMemberLoading: false, // 组成员加载
           member2status: {},
           unReadCount: 0, // 未读信息总计
+          conPage: 'tC',
         },
   getters: {},
   actions: {
@@ -118,6 +119,9 @@ export const useContactsStore = defineStore({
         this.groupMemberList = JSON.parse(res.data);
         this.groupMemberLoading = false;
       });
+    },
+    togglePage(page: string) {
+      this.conPage = page;
     },
   },
 });
