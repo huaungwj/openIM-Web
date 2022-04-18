@@ -38,14 +38,16 @@
         >
           <template #trigger>
             <li>
-              <svg
-                :class="`icon ${
-                  $route.path === '/contacts' ? 'active' : 'default'
-                }`"
-                aria-hidden="true"
-              >
-                <use :xlink:href="`#openIM-tongxunlu1`"></use>
-              </svg>
+              <n-badge :value="conCount" :max="99">
+                <svg
+                  :class="`icon ${
+                    $route.path === '/contacts' ? 'active' : 'default'
+                  }`"
+                  aria-hidden="true"
+                >
+                  <use :xlink:href="`#openIM-tongxunlu1`"></use>
+                </svg>
+              </n-badge>
             </li>
           </template>
           联系人
@@ -58,13 +60,49 @@
 </template>
 
 <script lang="ts" setup>
+import { ref, watch } from 'vue';
 import MyAvatar from '../myAvatar/MyAvatar.vue';
 import { RouterLink } from 'vue-router';
 import { useContactsStore } from '@/stores/contacts';
 import { useUserStore } from '@/stores/user';
+import type {
+  FriendApplicationItem,
+  GroupApplicationItem,
+} from '@/tools/im/types';
 
 const contactsStore = useContactsStore();
 const userStore = useUserStore();
+const conCount = ref<number>(0);
+
+const initConCout = () => {
+  let count = 0;
+  contactsStore.recvFriendApplicationList.length > 0 &&
+    contactsStore.recvFriendApplicationList.forEach(
+      (item: FriendApplicationItem) => {
+        if (item.handleResult === 0) count += 1;
+      }
+    );
+
+  // 群组
+  contactsStore.recvGroupApplicationList.length > 0 &&
+    contactsStore.recvGroupApplicationList.forEach(
+      (item: GroupApplicationItem) => {
+        if (item.handleResult === 0) count += 1;
+      }
+    );
+  conCount.value = count;
+};
+initConCout();
+
+watch(
+  [
+    () => contactsStore.recvFriendApplicationList,
+    () => contactsStore.recvGroupApplicationList,
+  ],
+  () => {
+    initConCout();
+  }
+);
 </script>
 
 <style>

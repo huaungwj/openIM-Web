@@ -35,22 +35,24 @@
     </div>
 
     <!-- 聊天框 -->
-
-    <contenteditable
-      class="chat_input"
-      tag="div"
-      :contenteditable="true"
-      v-model="chatInputContext"
-      :noHTML="false"
-      :noNL="true"
-      @keydown.enter="switchMessage('text')"
-    />
+    <vue-tribute :options="mentionOptions" style="outline: none">
+      <contenteditable
+        class="chat_input"
+        tag="div"
+        :contenteditable="true"
+        v-model="chatInputContext"
+        :noHTML="false"
+        :noNL="true"
+        @keydown.enter="switchMessage('text')"
+      />
+    </vue-tribute>
   </footer>
 </template>
 
 <script setup lang="ts">
-import { h, ref, resolveComponent } from 'vue';
+import { h, ref, watch, reactive } from 'vue';
 import contenteditable from '@/views/Home/Cve/ChatPage/components/Contenteditable.vue';
+import { VueTribute } from 'vue-tribute';
 // import EmojiContent from './EmojiContent.vue';
 import { faceMap } from '@/tools/face';
 import { NImage, useMessage, NScrollbar, NTooltip } from 'naive-ui';
@@ -59,15 +61,24 @@ import { messageTypes } from '@/tools/im/constants/messageContentType';
 import { useCveStore } from '@/stores/cve';
 import { useScroll } from '@/hooks/useScroll';
 import { useUploadFile } from '@/hooks/useUploadFile';
+import { useContactsStore } from '@/stores/contacts';
 import type { UploadRequestOption } from 'rc-upload/lib/interface';
+
+type mentionArrType = {
+  key: string | number;
+  value: string | number;
+};
 
 //use
 const cveStore = useCveStore();
+const contactsStore = useContactsStore();
 const { scrollTo } = useScroll();
 const message = useMessage();
 const { sendMsg, sendCosMsg } = useUploadFile();
 // 聊天框内容
 const chatInputContext = ref<string>(``);
+// 艾特列表
+const atList = ref<{ id: string; name: string; tag: string }[]>();
 
 function faceClick(face, e) {
   e.preventDefault();
@@ -75,6 +86,25 @@ function faceClick(face, e) {
   // move2end(chatInputRef);
   chatInputContext.value = chatInputContext.value + faceEl;
 }
+
+const mentionOptions = reactive({
+  trigger: '@',
+  values: [],
+  selectTemplate: (item: any) => {
+    console.log(item);
+    const tag = parseAt('' + `@${item.original.value} ` + ' ');
+    atList.value.push({
+      id: item.original.value,
+      name: item.original.key,
+      tag: tag,
+    });
+
+    return tag;
+  },
+  noMatchTemplate: function () {
+    return '<span style:"visibility: hidden;"></span>';
+  },
+});
 
 // emoji配置文件
 const emojiOptions = [
@@ -162,12 +192,37 @@ const parseBr = (mstr: string) => {
   return mstr;
 };
 
+const parseAt = (mstr: string) => {
+  const pattern = /@\S+\s/g;
+  const arr = mstr.match(pattern);
+
+  arr?.map((a) => {
+    const member = contactsStore.groupMemberList.find(
+      (gm) => gm.userID === a.slice(1, -1)
+    );
+
+    if (member) {
+      mstr = mstr.replaceAll(
+        a,
+        `<span onclick='seeDetailInfo("${member.userID.replace(
+          '.',
+          '-'
+        )}")' class='at_el' data_name="${member.nickname}" data_id="${
+          member.userID
+        }" contenteditable="false"> @${member.nickname} </span>`
+      );
+    }
+  });
+  return mstr;
+};
+
 // 辨别消息的类型
 const switchMessage = (type: string) => {
   // console.log('发送', chatInputContext.value);
   let text = chatInputContext.value;
   text = parseImg(parseEmojiFace(text));
   text = parseBr(text);
+  text = parseAt(text);
   if (text === '') return;
   cveStore.setIsPullMore(false);
   switch (type) {
@@ -190,7 +245,6 @@ const sendTextMsg = async (text: string) => {
 
 // 自定义发送文件
 const cusromSendFile = async (data: UploadRequestOption) => {
-  console.log(data);
   if (!data) return;
   const fileList = ['image', 'video'];
   let type = data.file.type.split('/')[0];
@@ -200,13 +254,40 @@ const cusromSendFile = async (data: UploadRequestOption) => {
   );
 };
 
+const contextChange = () => {
+  const atels = [...document.getElementsByClassName('at_el')];
+  let tmpAts: any = [];
+  atels.map((at) =>
+    tmpAts.push({
+      id: at.attributes.getNamedItem('data_id')?.value,
+      name: at.attributes.getNamedItem('data_name')?.value,
+      tag: at.outerHTML,
+    })
+  );
+  atList.value = tmpAts;
+  console.log('发生变化了', atList.value);
+};
+
 const resetData = () => {
   chatInputContext.value = '';
 };
 
-// watch(chatInputContext, (newValue) => {
-//   console.log(newValue);
-// });
+watch(
+  () => contactsStore.groupMemberList,
+  () => {
+    const tmp = contactsStore.groupMemberList.map((item) => {
+      return { key: item.nickname, value: item.userID };
+    });
+    mentionOptions.values = tmp;
+  }
+);
+
+watch(
+  () => chatInputContext.value,
+  () => {
+    contextChange();
+  }
+);
 </script>
 
 <style>
@@ -245,7 +326,7 @@ const resetData = () => {
   color: var(--im-theme-primary);
 }
 /* 输入框 */
-.chat_footer > .chat_input {
+.chat_footer .chat_input {
   min-height: 34px;
   max-height: 50%;
   font-size: 14px;
@@ -293,5 +374,10 @@ const resetData = () => {
   /* background-color: rgba(255, 255, 255, 0.3); */
   background-color: var(--color-text);
   border-radius: 7px;
+}
+
+.at_el {
+  color: #428be5;
+  cursor: pointer;
 }
 </style>

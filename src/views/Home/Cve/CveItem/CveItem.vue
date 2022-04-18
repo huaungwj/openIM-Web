@@ -1,8 +1,8 @@
 <template>
   <div
     :class="`cve_item ${
-      cve.conversationID === cveStore.curCve?.conversationID ? 'active_cve' : ''
-    }`"
+      cve.conversationID === cveStore.curCve?.conversationID && 'active_cve'
+    } ${cve.isPinned && 'pinned'}`"
     @click="clickCveItem"
   >
     <div class="left">
@@ -10,7 +10,12 @@
         <MyAvatar :src="cve.faceURL" :size="40" />
       </n-badge>
       <div class="cve_info">
-        <p class="info_title">{{ cve.showName }}</p>
+        <p class="info_title">
+          {{ cve.showName }}
+          <n-tag type="info" size="small" v-show="!isSingleCve(cve)">
+            群聊
+          </n-tag>
+        </p>
         <p class="info_msg" v-html="parseLastMessage(cve.recvMsgOpt)"></p>
       </div>
     </div>
@@ -30,6 +35,7 @@ import { useCveStore } from '@/stores/cve';
 import { useContactsStore } from '@/stores/contacts';
 import { useOpenCveWindow } from '@/hooks/useOpenCveWindow';
 import { useScroll } from '@/hooks/useScroll';
+import { isSingleCve } from '@/tools';
 
 const props = defineProps<{
   cve: ConversationItem;
@@ -113,5 +119,11 @@ watch([() => cveStore.historyMsgList], () => {
 
 .active_cve {
   background-color: var(--im-theme-activeCveBg);
+  /* border: 1px solid var(--im-theme-primary); */
+}
+
+/* 置顶 */
+.pinned {
+  background-color: var(--im-theme-fileMsgBg);
 }
 </style>

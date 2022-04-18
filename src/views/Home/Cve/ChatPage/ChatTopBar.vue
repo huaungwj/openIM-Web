@@ -98,6 +98,7 @@ const getGroupOnline = () => {
 };
 
 const initInfo = () => {
+  if (!cveStore.curCve) return;
   if (
     (cveStore.curCve.conversationID == lastCve.value?.conversationID &&
       cveStore.curCve?.faceURL === lastCve.value?.faceURL &&

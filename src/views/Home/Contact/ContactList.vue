@@ -1,7 +1,7 @@
 <template>
   <div class="contact_container">
     <TopSearch />
-    <div class="contactList">
+    <div class="contact_list">
       <ContactItem
         v-for="item in contactMenu"
         :key="item.key"
@@ -21,4 +21,8 @@ import ContactItem from '@/views/Home/Contact/ContactItem/ContactItem.vue';
 import { contactMenu } from '@/tools';
 </script>
 
-<style></style>
+<style>
+.contact_list > .active {
+  background-color: var(--im-theme-activeCveBg);
+}
+</style>

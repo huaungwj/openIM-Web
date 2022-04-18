@@ -26,7 +26,7 @@ export enum tipsTypes {
   BLACKADDED = 1207, //add_black
   BLACKDELETED = 1208, //remove_black
   SELFINFOUPDATED = 1303, //SetSelfInfoTip
-  GROUPCREATED = 1501,
+  GROUPCREATED = 1501, // 创建群聊
   GROUPINFOUPDATED = 1502, // 修改群信息
   JOINGROUPAPPLICATIONADDED = 1503,
   MEMBERQUIT = 1504,

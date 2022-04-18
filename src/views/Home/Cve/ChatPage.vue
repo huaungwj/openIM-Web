@@ -17,7 +17,12 @@
       <CharFooterBar />
     </div>
 
-    <Empty v-else :imgSrc="`/src/assets/images/empty1.png`">
+    <Empty
+      v-else
+      :imgSrc="`/src/assets/images/empty1.png`"
+      :width="300"
+      :height="300"
+    >
       <template #header>
         <p class="title" style="font-size: 20px">快去聊天吧~</p>
         <p class="sub_title" style="padding-top: 10px">
@@ -75,7 +80,6 @@ const inCurCve = (newServerMsg: MessageItem): boolean => {
 
 // 新消息回调
 const newMsgHandler = (data: WsResponse) => {
-  console.log('12323333 new message');
   const newServerMsg: MessageItem = JSON.parse(data.data);
   // 消息类型不是正在输入的类型 && 不是自己的消息 创建消息通知
   if (
@@ -189,7 +193,7 @@ onBeforeUnmount(() => {
 
 <style>
 .chat_page_container {
-  width: calc(70vw - 10px);
+  width: 70vw;
   height: 100vh;
   background-color: var(--im-theme-chatPageBg);
 }

@@ -9,17 +9,25 @@
         msg.contentType !== tipsTypes.FRIENDADDED &&
         msg.contentType !== tipsTypes.MEMBERENTER &&
         msg.contentType !== tipsTypes.GROUPINFOUPDATED &&
-        msg.contentType !== tipsTypes.REVOKEMESSAGE
+        msg.contentType !== tipsTypes.REVOKEMESSAGE &&
+        msg.contentType !== tipsTypes.GROUPCREATED
       "
     >
-      <!-- 头像 -->
       <MyAvatar :src="msg.senderFaceUrl" :size="40" />
-
-      <!--  -->
-      <SwitchMsgType :msg="msg" :key="msg.clientMsgID" />
+      <SwitchMsgType :msg="msg" :key="msg.clientMsgID" :msgIsRead="msgIsRead" />
     </div>
 
     <div class="n_msg_item" v-else>
+      <!-- 创建了群聊 -->
+      <div v-if="msg.contentType === tipsTypes.GROUPCREATED">
+        <a>{{
+          userStore.selfInfo.userID === msg.sendID
+            ? '你'
+            : JSON.parse(JSON.parse(props.msg.content).jsonDetail)
+                .groupOwnerUser.nickname
+        }}</a>
+        创建了群聊
+      </div>
       <!-- 撤回消息 -->
       <div
         class="revoke_message"
@@ -61,17 +69,51 @@
 </template>
 
 <script setup lang="ts">
-import { defineProps } from 'vue';
+import { defineProps, onMounted, ref, watch } from 'vue';
+
 import MyAvatar from '@/components/myAvatar/MyAvatar.vue';
 import type { MessageItem } from '@/tools/im/types';
 import SwitchMsgType from '@/views/Home/Cve/ChatPage/components/SwitchMsgType.vue';
 import { useUserStore } from '@/stores/user';
 import { useCveStore } from '@/stores/cve';
 import { tipsTypes } from '@/tools/im/constants/messageContentType';
+import { im } from '@/tools';
 
 const props = defineProps<{ msg: MessageItem }>();
 const cveStore = useCveStore();
 const userStore = useUserStore();
+const msgIsRead = ref<boolean>(props.msg.isRead);
+
+// 设置已读
+const markC2CHasRead = (userID: string, msgID: string) => {
+  if (props.msg.groupID) return;
+  // console.log(cveStore.curCve.groupID, props.msg);
+  msgIsRead.value = true;
+  im.markC2CMessageAsRead({ userID, msgIDList: [msgID] });
+};
+
+onMounted(() => {
+  if (
+    cveStore.curCve &&
+    cveStore.curCve.userID === props.msg.sendID &&
+    !props.msg.isRead
+  ) {
+    markC2CHasRead(props.msg.sendID, props.msg.clientMsgID);
+  }
+});
+
+watch(
+  () => cveStore.curCve,
+  () => {
+    if (
+      cveStore.curCve &&
+      cveStore.curCve.userID === props.msg.sendID &&
+      !props.msg.isRead
+    ) {
+      markC2CHasRead(props.msg.sendID, props.msg.clientMsgID);
+    }
+  }
+);
 </script>
 
 <style>

@@ -3,6 +3,7 @@
     <!-- 头像 -->
     <n-upload
       class="avatar_upload"
+      ref="uploadAvatarRef"
       action=""
       accept="image/*"
       name="avatar"
@@ -21,7 +22,7 @@
           display: userInfo.faceURL === '' ? 'block' : 'none',
         }"
       >
-        {{ $t('login.contetnRight.clickUploadText') }}
+        {{ $t('login.contentRight.clickUploadText') }}
       </div>
     </n-upload>
 
@@ -75,6 +76,7 @@ import { useUserStore } from '@/stores/user';
 import type { InfoField } from './type';
 import { im } from '@/tools';
 import i18n from '@/lang/i18n';
+import { fileSizeTran } from '../../tools/tools';
 
 export default defineComponent({
   components: {
@@ -87,7 +89,7 @@ export default defineComponent({
     const userInfo = ref({
       userID: 'userID',
       nickname: '',
-      faceURL: `ic_avatar_0${Math.ceil(Math.random() * 6)}`,
+      faceURL: `ic_avatar_0${Math.ceil(Math.random() * 11)}`,
     });
     // message
     const message = useMessage();
@@ -95,18 +97,28 @@ export default defineComponent({
     const userStore = useUserStore();
     // useRouter
     const router = useRouter();
-    // console.log(props);
+    const uploadAvatarRef = ref<HTMLElement>(null as unknown as HTMLElement);
 
     /**
      * 自定义上传头像
      * @param data
      */
     const cusromUpload = async (data: UploadRequestOption) => {
-      console.log('执行了', data);
+      if (!data) return false;
+
+      console.log(uploadAvatarRef);
+      if (data.file.file.size! > 2097152) {
+        uploadAvatarRef.value.clear();
+        return message.warning(
+          `当前文件大小为：${fileSizeTran(
+            data.file.file.size
+          )}头像文件不能大于2MB`
+        );
+      }
       await getCosAuthorization();
       cosUpload(data.file)
         .then((res) => {
-          console.log(res);
+          uploadAvatarRef.value.clear();
           userInfo.value.faceURL = res.url;
         })
         .catch((err) => {
@@ -159,6 +171,7 @@ export default defineComponent({
       userInfo,
       cusromUpload,
       deleteAvatar,
+      uploadAvatarRef,
       rules: {
         nickname: {
           trigger: ['blur', 'input'],

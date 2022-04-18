@@ -23,6 +23,11 @@ import {
   NEmpty,
   NIcon,
   NBadge,
+  NPopconfirm,
+  NAnchor,
+  NAnchorLink,
+  NAffix,
+  NTag,
 } from 'naive-ui';
 
 const naive = create({
@@ -50,6 +55,11 @@ const naive = create({
     NEmpty,
     NIcon,
     NBadge,
+    NPopconfirm,
+    NAnchor,
+    NAnchorLink,
+    NAffix,
+    NTag,
   ],
 });
 export function registerNaive(app: any) {

@@ -70,15 +70,15 @@ watch(
 <style>
 .contextmenu {
   margin: 0;
-  background: #fff;
-  z-index: 3000;
+  background: var(--im-theme-chatMsgBg);
+  z-index: 200;
   position: absolute;
   list-style-type: none;
   padding: 5px 0;
-  border-radius: 4px;
+  border-radius: 8px;
   font-size: 12px;
   font-weight: 400;
-  color: #333;
+  color: var(--color-heading);
   box-shadow: 0 3px 6px -4px rgb(0 0 0 / 12%), 0 6px 16px 0 rgb(0 0 0 / 8%),
     0 9px 28px 8px rgb(0 0 0 / 5%);
   /* box-shadow: 2px 2px 3px 0 rgba(0, 0, 0, 0.3); */
@@ -87,10 +87,12 @@ watch(
 .contextmenu li {
   list-style-type: none;
   margin: 0;
-  padding: 7px 16px;
   cursor: pointer;
 }
+.contextmenu li > div {
+  padding: 7px 16px;
+}
 .contextmenu li:hover {
-  background: #eee;
+  background: var(--color-border-hover);
 }
 </style>

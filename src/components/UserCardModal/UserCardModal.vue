@@ -1,6 +1,6 @@
 <template>
   <n-modal
-    v-model:show="userCardIsShow"
+    v-model:show="cveStore.friendCardIsShow"
     transform-origin="center"
     :style="bodyStyle"
   >
@@ -46,12 +46,9 @@
               <span class="label_value">{{ friendData?.userID }}</span>
             </li>
           </ul>
-          <n-button
-            class="add_f_btn"
-            @click="cardTypeStatus = 'send'"
-            type="primary"
-            >{{ isFriend ? '发送信息' : '添加好友' }}</n-button
-          >
+          <n-button class="add_f_btn" @click="sendAddOrSendM" type="primary">{{
+            isFriend ? '发送信息' : '添加好友'
+          }}</n-button>
         </div>
       </div>
       <!-- 发送好友申请 -->
@@ -67,27 +64,44 @@
 </template>
 
 <script lang="ts" setup>
-import { defineProps, ref, watch } from 'vue';
+import { defineProps, ref, watch, onBeforeUnmount, onMounted } from 'vue';
 import SendApplyCard from '../SendApplyCard/SendApplyCard.vue';
 import MyAvatar from '@/components/myAvatar/MyAvatar.vue';
 import { useMessage } from 'naive-ui';
 import { im } from '@/tools';
-import type { AddFriendParams, FriendItem } from '@/tools/im/types';
+import type {
+  AddFriendParams,
+  FriendItem,
+  ConversationItem,
+  PublicUserItem,
+} from '@/tools/im/types';
 import { useContactsStore } from '@/stores/contacts';
+import { useCveStore } from '@/stores/cve';
+import { useOpenCveWindow } from '@/hooks/useOpenCveWindow';
+import { SessionType } from '../../tools/im/constants/messageContentType';
+import { useRoute, useRouter } from 'vue-router';
 
 const props = defineProps<{
-  userCardIsShow: boolean;
-  friendData: object;
-  changeUserCardStatus: () => void;
+  changeUserCardStatus: (type: boolean) => void;
+  changeQuModal?: (type: boolean) => void;
+  setInputLoading?: (type: boolean) => void;
+  clearModalData?: () => void;
 }>();
 
+const { openCveWindow } = useOpenCveWindow();
 const message = useMessage();
+const route = useRoute();
+const router = useRouter();
 // 模态框样式
 const bodyStyle = { width: '300px' };
 // type 页面
 const cardTypeStatus = ref<string>('default');
 // contactsStore
 const contactsStore = useContactsStore();
+// cveStore
+const cveStore = useCveStore();
+// 朋友数据
+const friendData = ref<PublicUserItem | FriendItem>();
 
 // 是否是朋友
 const isFriend = ref<boolean>(false);
@@ -95,7 +109,7 @@ const isFriend = ref<boolean>(false);
 // 发送好友请求
 const sendAddFriendFun = (msg: string) => {
   const param: AddFriendParams = {
-    toUserID: props.friendData?.userID,
+    toUserID: friendData.value.userID,
     reqMsg: msg,
   };
 
@@ -116,17 +130,67 @@ const changeCardTypeStatusFun = (type: string) => {
   cardTypeStatus.value = type;
 };
 
+// 发送消息还是发送好友请求
+const sendAddOrSendM = () => {
+  if (!isFriend.value) return (cardTypeStatus.value = 'send');
+  // 发送信息
+  getOneCve(friendData.value?.userID, SessionType.SINGLECVE)
+    .then((cve) => openCveWindow(cve))
+    .catch((err) => message.error('找不到会话！'));
+  // router.push('/');
+  props.changeUserCardStatus(false);
+  props.changeQuModal(false);
+  if (route.path !== '/cve') return router.push('/cve');
+};
+
+// 获取会话列表
+const getOneCve = (
+  sourceID: string,
+  sessionType: number
+): Promise<ConversationItem> => {
+  return new Promise((resolve, reject) => {
+    im.getOneConversation({ sourceID, sessionType })
+      .then((res) => resolve(JSON.parse(res.data)))
+      .catch((err) => reject(err));
+  });
+};
+
+const initData = () => {
+  // 1. 根据 朋友ID 搜索
+  im.getUsersInfo([cveStore.friendIDCard])
+    .then((res) => {
+      props.changeUserCardStatus(true);
+      let tmpArr = JSON.parse(res.data);
+      if (tmpArr.length > 0) {
+        friendData.value = tmpArr[0].friendInfo
+          ? tmpArr[0].friendInfo
+          : tmpArr[0].publicInfo;
+      } else {
+        message.info('用户搜索结果为空');
+      }
+    })
+    .catch((err) => {
+      console.log(err);
+    });
+  props?.setInputLoading(false);
+  props.clearModalData();
+};
+
 watch(
-  [() => contactsStore.friendList, () => props.userCardIsShow],
-  ([nFriendList, nUserCardIsShow]) => {
-    if ((props.friendData as FriendItem).remark !== undefined) {
+  [
+    () => contactsStore.friendList,
+    () => cveStore.friendCardIsShow,
+    () => friendData.value,
+  ],
+  () => {
+    if (friendData.value?.remark !== undefined) {
       isFriend.value = true;
       return;
     }
 
     // 没有好友信息返回会走到这里
     const idx = contactsStore.friendList.findIndex(
-      (f) => f.userID == props.friendData.userID
+      (f) => f.userID == friendData.value?.userID
     );
 
     if (idx > -1) {
@@ -134,6 +198,14 @@ watch(
     } else {
       isFriend.value = false;
     }
+  }
+);
+
+watch(
+  () => cveStore.friendIDCard,
+  () => {
+    if (!cveStore.friendIDCard) return;
+    initData();
   }
 );
 </script>

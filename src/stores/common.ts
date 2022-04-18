@@ -12,11 +12,16 @@ export const useCommonStore = defineStore({
   id: 'common',
   state: () => ({
     isDark: false,
+    createGARelayMTpye: 'cancel', // 转发消息和新建群聊模态框当前的状态标识
+    curRelayMsg: [], // 当前需要转发消息的数组
   }),
   getters: {},
   actions: {
     setIsDark(type: boolean) {
       this.isDark = type;
+    },
+    setcreateGARelayMTpye(type: string) {
+      this.createGARelayMTpye = type;
     },
   },
 });

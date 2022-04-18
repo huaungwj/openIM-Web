@@ -20,7 +20,7 @@
 </template>
 
 <script lang="ts" setup>
-import { ref } from 'vue';
+import { ref, watch } from 'vue';
 import { useContactsStore } from '@/stores/contacts';
 import { contactMenu } from '@/tools';
 
@@ -30,6 +30,7 @@ type selectOptionType = {
   disabled?: boolean;
 };
 
+const contactsStore = useContactsStore();
 const optionValue = ref<number>(0);
 
 const selectOptionFun = () => {
@@ -51,11 +52,53 @@ const selectOptionFun = () => {
   return option;
 };
 
-const contactsStore = useContactsStore();
+const initNewFGList = () => {
+  switch (contactsStore.conPage) {
+    case 'nF': {
+      // 0 为新的好友
+      return optionValue.value === 0
+        ? contactsStore.setNewFGList({
+            type: 'from',
+            data: contactsStore.recvFriendApplicationList,
+          })
+        : contactsStore.setNewFGList({
+            type: 'to',
+            data: contactsStore.sentFriendApplicationList,
+          });
+    }
+    case 'nG': {
+      // 新的群
+      return optionValue.value === 0
+        ? contactsStore.setNewFGList({
+            type: 'from',
+            data: contactsStore.recvGroupApplicationList,
+          })
+        : contactsStore.setNewFGList({
+            type: 'to',
+            data: contactsStore.sentGroupApplicationList,
+          });
+    }
+  }
+};
+
+watch(
+  [
+    () => optionValue.value,
+    () => contactsStore.conPage,
+    () => contactsStore.recvFriendApplicationList,
+    () => contactsStore.sentFriendApplicationList,
+    () => contactsStore.recvGroupApplicationList,
+    () => contactsStore.sentGroupApplicationList,
+  ],
+  () => {
+    initNewFGList();
+  }
+);
 </script>
 
 <style>
 .top_select {
   width: 200px;
+  margin-right: 40px;
 }
 </style>

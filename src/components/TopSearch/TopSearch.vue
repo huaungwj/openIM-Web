@@ -1,7 +1,12 @@
 <template>
   <div class="top_search_container">
     <!-- search input -->
-    <n-input placeholder="搜索" size="small">
+    <n-input
+      placeholder="搜索"
+      size="small"
+      v-model:value="searchText"
+      @keydown.enter="searchFun"
+    >
       <template #prefix>
         <svg class="icon" aria-hidden="true">
           <use xlink:href="#openIM-search"></use>
@@ -21,7 +26,13 @@
     </n-dropdown>
 
     <!-- 模态框 -->
-    <n-modal :style="modalStyle" v-model:show="isShowModal" preset="card">
+    <n-modal
+      display-directive="show"
+      :style="modalStyle"
+      v-model:show="isShowModal"
+      preset="card"
+      transform-origin="center"
+    >
       <template #header>
         <div>
           {{
@@ -60,17 +71,24 @@
 
     <!-- 用户card props show -->
     <UserCardModal
-      :user-card-is-show="userCardIsShow"
-      :friend-data="friendData"
+      display-directive="show"
       :change-user-card-status="changeCardStatus"
+      :change-qu-modal="changeQuModal"
+      :set-input-loading="setInputLoading"
+      :clearModalData="clearModalData"
+      transform-origin="center"
     />
 
     <!-- 群组modal -->
     <GroupOpModal
-      :group-card-is-show="groupCardIsShow"
-      :group-data="groupData"
+      display-directive="show"
       :change-group-card-status="changeCardStatus"
+      :change-qu-modal="changeQuModal"
+      :set-input-loading="setInputLoading"
+      :clearModalData="clearModalData"
+      transform-origin="center"
     />
+    <!-- :on-after-leave="clearModalData" -->
   </div>
 </template>
 
@@ -85,23 +103,22 @@ import {
   People as AddGroupIcon,
   ChatbubblesOutline as createGroupIcon,
 } from '@vicons/ionicons5';
-import { im } from '@/tools';
 import { useUserStore } from '@/stores/user';
-import type { PartialUserItem } from '@/tools/im/types';
-
-// 使用 use
-const message = useMessage();
-// userStore
-const userStore = useUserStore();
-
-// 自我信息
-let selfInfo: PartialUserItem = {
-  userID: userStore.selfInfo.userID,
-};
+import { useCveStore } from '@/stores/cve';
+import { useContactsStore } from '@/stores/contacts';
+import { useCommonStore } from '@/stores/common';
+import type {
+  ConversationItem,
+  PartialUserItem,
+  FriendItem,
+  FriendApplicationItem,
+  GroupApplicationItem,
+  GroupItem,
+} from '@/tools/im/types';
+import { useRoute } from 'vue-router';
 
 // 渲染 icon
 const renderIcon = (icon: Component) => {
-  console.log(icon);
   return () => {
     return h(NIcon, null, {
       default: () => h(icon),
@@ -109,6 +126,13 @@ const renderIcon = (icon: Component) => {
   };
 };
 
+// 使用 use
+const message = useMessage();
+const cveStore = useCveStore();
+const userStore = useUserStore();
+const contactsStore = useContactsStore();
+const commonStore = useCommonStore();
+const route = useRoute();
 // 是否显示模态框
 const isShowModal = ref<boolean>(false);
 // modal 样式
@@ -121,12 +145,23 @@ const operType = ref<string | boolean>('');
 const modalInputValue = ref<string>('');
 // 搜索框 loading
 const inputLoading = ref<boolean>(false);
-// 搜索朋友数据
-const friendData = ref<object>({});
-// 搜索群聊数据
-const groupData = ref<object>({});
-// 朋友数据卡片是否显示
-const userCardIsShow = ref<boolean>(false);
+// 搜索文本、会话、好友等
+const searchText = ref<string>('');
+// 原会话列表
+const pCveList = ref<ConversationItem[]>([]);
+// 原好友列表
+const pFriList = ref<FriendItem[]>([]);
+// 原好友申请列表
+const pRecvFriList = ref<FriendApplicationItem[]>([]);
+// 原已发送好友申请的列表
+const pSentFriList = ref<FriendApplicationItem[]>([]);
+// 原收到的加入群聊申请列表。
+const pRecGroupList = ref<GroupApplicationItem[]>([]);
+// 原发出的加入群聊申请列表。
+const pSentGroupList = ref<GroupApplicationItem[]>([]);
+// 原群聊列表
+const pGroupList = ref<GroupItem[]>([]);
+
 // menu
 const addMenuOptions = [
   {
@@ -145,18 +180,29 @@ const addMenuOptions = [
     icon: renderIcon(createGroupIcon),
   },
 ];
-// 控制群组卡片是否显示
-const groupCardIsShow = ref<boolean>(false);
+
+// 自我信息
+let selfInfo: PartialUserItem = {
+  userID: userStore.selfInfo.userID,
+};
+
+// 最外层的模态框状态控制
+const changeQuModal = (type: boolean) => {
+  isShowModal.value = type;
+};
 
 /**
  * 下拉选择发生变化的回调
  * @param key
  */
 const handleSelectFun = (key: string) => {
-  // 1. 清空输入框
-  modalInputValue.value = '';
-  operType.value = key;
-  isShowModal.value = true;
+  if (key === 'createGroupChat') commonStore.setcreateGARelayMTpye('show');
+  if (key !== 'createGroupChat') {
+    // 1. 清空输入框
+    modalInputValue.value = '';
+    operType.value = key;
+    isShowModal.value = true;
+  }
 };
 
 /**
@@ -164,66 +210,31 @@ const handleSelectFun = (key: string) => {
  * @param type
  */
 const changeCardStatus = (type: boolean) => {
-  if (userCardIsShow.value) {
+  if (cveStore.friendCardIsShow) {
     // 用户卡片为true说明当前在用user
-    userCardIsShow.value = type;
-  } else if (groupCardIsShow.value) {
-    groupCardIsShow.value = type;
+    cveStore.setFriCardStatus(type);
+  } else if (cveStore.groupCardIsShow) {
+    cveStore.setGroupCardStatus(type);
   }
 };
 
 // 根据 id 获取用户信息
 const searchFirendFun = () => {
+  cveStore.setFriCardStatus(false);
   // 1. 判断 userID 是否是自个账号
   if (userStore.selfInfo.userID === modalInputValue.value) {
+    setInputLoading(false);
     message.info('不能添加自己！');
     return false;
   }
-  // 1. 根据 朋友ID 搜索
-  im.getUsersInfo([modalInputValue.value])
-    .then((res) => {
-      inputLoading.value = false;
-      let tmpArr = JSON.parse(res.data);
-      if (tmpArr.length > 0) {
-        friendData.value = tmpArr[0].friendInfo
-          ? tmpArr[0].friendInfo
-          : tmpArr[0].publicInfo;
-        userCardIsShow.value = true;
-        console.log(
-          tmpArr[0].friendInfo ? tmpArr[0].friendInfo : tmpArr[0].publicInfo
-        );
-      } else {
-        message.info('用户搜索结果为空');
-      }
-    })
-    .catch((err) => {
-      console.log(err);
-    });
+  cveStore.setFriIDCard(modalInputValue.value);
+  cveStore.setFriCardStatus(true);
 };
 
-// 添加群聊
-const searchGroupFun = () => {
-  // 1. 群聊 id 获取群信息
-  im.getGroupsInfo([modalInputValue.value])
-    .then((res) => {
-      inputLoading.value = false;
-      const tmpArr = JSON.parse(res.data);
-      if (tmpArr.length > 0) {
-        console.log(tmpArr);
-        groupData.value = tmpArr[0];
-        groupCardIsShow.value = true;
-      } else {
-        message.info('用户搜索结果为空');
-      }
-      console.log(res);
-    })
-    .catch((err) => {
-      console.log(err);
-    });
+// 设置输入框 loading
+const setInputLoading = (type: boolean) => {
+  inputLoading.value = type;
 };
-
-// 创建群聊
-const createGroupFun = () => {};
 
 // 搜索朋友、搜索群聊、创建群聊
 const actionSearchFun = () => {
@@ -231,18 +242,149 @@ const actionSearchFun = () => {
     message.error('请输入内容后继续');
     return false;
   } else if (operType.value === 'addFriends') {
-    userCardIsShow.value = false;
-
+    cveStore.setFriCardStatus(false);
     searchFirendFun();
   } else if (operType.value === 'addGroupChat') {
     // 添加群聊
-    console.log('添加群聊');
-    searchGroupFun();
-  } else {
-    // 创建群聊
-    createGroupFun();
+    cveStore.setGroupIDCard(modalInputValue.value);
+    cveStore.setGroupCardStatus(true);
   }
   inputLoading.value = true;
+};
+
+// 清空数据
+const clearModalData = (type: string) => {
+  if (type === 'single') return cveStore.setFriIDCard('');
+
+  return cveStore.setGroupIDCard('');
+};
+
+/**
+ *
+ * @param p 原数组
+ * @param store store对象
+ * @param storeValue store值
+ * @param setStoreFun setStore方法
+ * @param filterFun 过滤函数
+ */
+const commActionFun = (
+  p: ref<any[]>,
+  store: any,
+  storeValue: string,
+  setStoreFun: (data: any) => void,
+  filterFun: () => any[]
+) => {
+  p.value.length === 0 && (p.value = [...store[storeValue]]);
+  if (!store[storeValue]) return setStoreFun(p.value);
+  let tmp = filterFun();
+
+  if (tmp.length === 0) return message.info('没有找到相关的信息');
+  setStoreFun(tmp);
+};
+
+// 搜索朋友列表，会话列表等
+const searchFun = () => {
+  if (route.path === '/cve') {
+    commActionFun(pCveList, cveStore, 'cves', cveStore.setCveList, () => {
+      return pCveList.value.filter(
+        (item: ConversationItem) =>
+          item.showName.toLowerCase().indexOf(searchText.value) >= 0
+      );
+    });
+  } else if (route.path === '/contacts') {
+    if (['tC', 'mF'].some((item) => item === contactsStore.conPage)) {
+      commActionFun(
+        pFriList,
+        contactsStore,
+        'friendList',
+        contactsStore.setFriendList,
+        () => {
+          return pFriList.value.filter(
+            (item: FriendItem) =>
+              item.nickname.toLowerCase().indexOf(searchText.value) >= 0 ||
+              item.remark.toLowerCase().indexOf(searchText.value) >= 0 ||
+              item.userID.toLowerCase().indexOf(searchText.value) >= 0 ||
+              item.phoneNumber.toLowerCase().indexOf(searchText.value) >= 0
+          );
+        }
+      );
+    } else if (
+      contactsStore.conPage === 'nF' ||
+      contactsStore.conPage === 'nG'
+    ) {
+      const type = contactsStore.conPage === 'nF' ? true : false;
+      if (contactsStore.newFGList.type === 'from') {
+        commActionFun(
+          type ? pRecvFriList : pRecGroupList,
+          contactsStore,
+          type ? 'recvFriendApplicationList' : 'recvGroupApplicationList',
+          type
+            ? contactsStore.setRecvFriendApplicationList
+            : contactsStore.setRecvGroupApplicationList,
+          () => {
+            return type
+              ? pRecvFriList.value.filter(
+                  (item: FriendApplicationItem) =>
+                    item.fromUserID.toLowerCase().indexOf(searchText.value) >=
+                      0 ||
+                    item.fromNickname.toLowerCase().indexOf(searchText.value) >=
+                      0
+                )
+              : pRecGroupList.value.filter(
+                  (item: GroupApplicationItem) =>
+                    item.groupID.toLowerCase().indexOf(searchText.value) >= 0 ||
+                    item.groupName.toLowerCase().indexOf(searchText.value) >=
+                      0 ||
+                    item.nickname.toLowerCase().indexOf(searchText.value) >=
+                      0 ||
+                    item.userID.toLowerCase().indexOf(searchText.value) >= 0
+                );
+          }
+        );
+      } else {
+        commActionFun(
+          type ? pSentFriList : pSentGroupList,
+          contactsStore,
+          type ? 'sentFriendApplicationList' : 'sentGroupApplicationList',
+          type
+            ? contactsStore.setSentFriendApplicationList
+            : contactsStore.setSentGroupApplicationList,
+          () => {
+            return type
+              ? pSentFriList.value.filter(
+                  (item: FriendApplicationItem) =>
+                    item.toUserID.toLowerCase().indexOf(searchText.value) >=
+                      0 ||
+                    item.toNickname.toLowerCase().indexOf(searchText.value) >= 0
+                )
+              : pSentGroupList.value.filter(
+                  (item: GroupApplicationItem) =>
+                    item.groupID.toLowerCase().indexOf(searchText.value) >= 0 ||
+                    item.groupName.toLowerCase().indexOf(searchText.value) >=
+                      0 ||
+                    item.nickname.toLowerCase().indexOf(searchText.value) >=
+                      0 ||
+                    item.userID.toLowerCase().indexOf(searchText.value) >= 0
+                );
+          }
+        );
+      }
+    } else if (contactsStore.conPage === 'mG') {
+      commActionFun(
+        pGroupList,
+        contactsStore,
+        'groupList',
+        contactsStore.setGroupList,
+        () => {
+          return pGroupList.value.filter(
+            (item) =>
+              item.groupID.toLowerCase().indexOf(searchText.value) >= 0 ||
+              item.groupName.toLowerCase().indexOf(searchText.value) >= 0
+          );
+        }
+      );
+    }
+  }
 };
 </script>
 
@@ -251,8 +393,10 @@ const actionSearchFun = () => {
 .top_search_container {
   display: flex;
   align-items: center;
-  width: 25.7vw;
-  background-color: var(--im-theme-topSearchBg) !important;
+  width: 26.7vw;
+  height: 71px;
+  background-color: var(--im-theme-chatPageBg) !important;
+  border-bottom: 1px solid var(--im-theme-chatPageSolid);
   z-index: 1;
   padding: 10px;
   position: fixed;

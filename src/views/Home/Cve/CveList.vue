@@ -7,17 +7,29 @@
           v-for="cve in cveStore.cves"
           :key="cve.userID && cve.groupID"
           :cve="cve"
-          @contextmenu.prevent="openMenu($event, cve)"
+          @contextmenu.prevent="openCveMenu($event, cve)"
         />
       </div>
     </n-spin>
 
     <context-menu class="right-menu" :offset="menuOffset">
       <template v-slot:menuItem>
-        <li>1232131</li>
-        <li>1231232</li>
-        <li>312333</li>
-        <li>533333</li>
+        <li @click="pinnedCveFun(curClickCve.isPinned ? false : true)">
+          {{ curClickCve?.isPinned ? '取消置顶' : '置顶' }}
+        </li>
+        <li @click="markCveHasRead(curClickCve, 1)">标为已读</li>
+        <li @click="seeDetailInfo">查看详细资料</li>
+
+        <n-popconfirm
+          @positive-click="delCve"
+          positive-text="去意已决！"
+          negative-text="朕，在想想~"
+        >
+          <template #trigger>
+            <li>移除会话</li>
+          </template>
+          确定要删除吗？聊天记录会丢失！
+        </n-popconfirm>
       </template>
     </context-menu>
   </div>
@@ -30,9 +42,17 @@ import ContextMenu from '@/components/ContextMenu/ContextMenu.vue';
 import TopSearch from '@/components/TopSearch/TopSearch.vue';
 import CveItem from '@/views/Home/Cve/CveItem/CveItem.vue';
 import { useCveStore } from '@/stores/cve';
+import type { PinCveParams, ConversationItem } from '@/tools/im/types';
+import { im } from '@/tools';
+import { useMessage } from 'naive-ui';
+import { markCveHasRead, isSingleCve } from '@/tools';
+import { useMenu } from '@/hooks/useMenu';
 
-const cveItemRef = ref<Ref>(null);
+const cveItemRef = ref<Ref>();
 const cveStore = useCveStore();
+const curClickCve = ref<ConversationItem>();
+const { openMenu } = useMenu();
+const message = useMessage();
 
 const menuOffset = reactive({
   offsetLeft: 0,
@@ -41,13 +61,73 @@ const menuOffset = reactive({
   clientY: 0,
 });
 
+// 置顶会话
+const pinnedCveFun = (isPin: boolean) => {
+  const options: PinCveParams = {
+    conversationID: curClickCve.value.conversationID,
+    isPinned: isPin,
+  };
+  im.pinConversation(options)
+    .then((res) => message.success(isPin ? '置顶成功' : '取消置顶成功'))
+    .catch((err) => {
+      message.error('操作失败，请稍后再试!');
+    });
+};
+
+// 查看详细信息
+const seeDetailInfo = () => {
+  if (isSingleCve(curClickCve.value!)) {
+    // 单会话
+    cveStore.setFriIDCard(curClickCve.value?.userID);
+    cveStore.setFriCardStatus(true);
+  } else {
+    // 群聊
+    cveStore.setGroupCardStatus(true);
+    cveStore.setGroupIDCard(curClickCve.value?.groupID);
+  }
+};
+
+/**
+ * 改变朋友、群组卡片模态框的状态
+ * @param type
+ */
+const changeCardStatus = (type: boolean) => {
+  if (cveStore.friendCardIsShow) {
+    // 用户卡片为true说明当前在用user
+    cveStore.setFriCardStatus(type);
+  } else if (cveStore.groupCardIsShow) {
+    cveStore.setGroupCardStatus(type);
+  }
+};
+
+/**
+ * 移除会话
+ */
+const delCve = () => {
+  im.deleteConversation(curClickCve.value!.conversationID!)
+    .then((res) => {
+      const tarray = [...cveStore.cves];
+      const farray = tarray.filter(
+        (c) => c.conversationID !== curClickCve.value?.conversationID
+      );
+
+      console.log(farray);
+      cveStore.setCveList(farray);
+      if (cveStore.curCve.conversationID === curClickCve.value?.conversationID)
+        return cveStore.setCurCve(null);
+    })
+    .catch((err) => message.error('操作失败，请稍后再试！'));
+};
+
 // context Menu
-const openMenu = (e, cve) => {
-  console.log(cve);
-  menuOffset.offsetLeft = cveItemRef.value.getBoundingClientRect().left; // container margin left
-  menuOffset.offsetWidth = cveItemRef.value.offsetWidth; // container width
-  menuOffset.clientX = e.clientX;
-  menuOffset.clientY = e.clientY;
+const openCveMenu = (e, cve: ConversationItem) => {
+  curClickCve.value = cve;
+  let offset = openMenu(e, cveItemRef);
+  console.log(cveItemRef);
+  menuOffset.clientX = offset.clientX;
+  menuOffset.clientY = offset.clientY;
+  menuOffset.offsetLeft = offset.offsetLeft;
+  menuOffset.offsetWidth = offset.offsetWidth;
 };
 </script>
 

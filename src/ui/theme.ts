@@ -16,6 +16,9 @@ const lightThemeOverrides: GlobalThemeOverrides = {
   Layout: {
     siderColor: '#e5e5e5',
   },
+  Card: {
+    borderRadius: '20px',
+  },
 };
 const darkThemeOverrides: GlobalThemeOverrides = {
   common: {

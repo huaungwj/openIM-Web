@@ -50,6 +50,8 @@
   /* 文件消息背景 */
   --im-fileMsgBg-dark-color: #354c3a;
   --im-fileMsgBg-light-color: #a0bca6;
+  /* 转发模态框右边背景 */
+  --im-CGModalBg-dark-color: #1e1e1f;
 }
 
 /* semantic color variables for this project */
@@ -88,6 +90,8 @@
   --im-theme-activeCveBg: #efefef;
   /* 文件消息背景 */
   --im-theme-fileMsgBg: var(--im-fileMsgBg-light-color);
+  /* 转发模态框右边背景 */
+  --im--theme-CGModalBg: var(--vt-c-white);
 }
 
 @media (prefers-color-scheme: dark) {
@@ -123,6 +127,8 @@
     --im-theme-activeCveBg: var(--vt-c-divider-dark-2);
     /* 文件消息背景 */
     --im-theme-fileMsgBg: var(--im-fileMsgBg-dark-color);
+    /* 转发模态框右边背景 */
+    --im--theme-CGModalBg: var(--im-CGModalBg-dark-color);
   }
 }
 
@@ -201,15 +207,15 @@ a {
 /* 会话列表和联系人群组列表 */
 .cve_container,
 .contact_container {
-  width: 25.7vw;
+  width: 26.7vw;
   height: 100vh;
   position: relative;
   border-right: 1px solid var(--color-border);
 }
 
 .cve_list,
-.contactList {
-  padding-top: 60px;
+.contact_list {
+  padding-top: 85px;
   width: 100%;
 }
 
@@ -240,7 +246,10 @@ a {
 
 @media (prefers-color-scheme: dark) {
   .cve_item,
-  .contact_item_c {
+  .contact_item_c,
+  .fg_item_c,
+  .section_item_c,
+  .group_item_c {
     box-shadow: 0px 0px 10.9px rgba(255, 255, 255, 0.14),
       0px 0px 101px rgba(255, 255, 255, 0.02);
   }
@@ -250,11 +259,59 @@ a {
 .chat_hearder_container,
 .contact_top_c {
   padding: 20px 0 5px 20px;
-  width: calc(70vw - 10px);
+  width: 70vw;
+  height: 71px;
   display: flex;
   justify-content: space-between;
   background-color: var(--im-theme-chatPageBg);
   border-bottom: 1px solid var(--im-theme-chatPageSolid);
   position: fixed;
   z-index: 116;
+}
+
+/* 提及 */
+.tribute-container {
+  z-index: 117;
+}
+
+.tribute-container > ul {
+  padding: 0px;
+  background: var(--im-theme-chatMsgBg);
+  border-radius: 8px;
+  margin: 10px;
+  height: 200px;
+  overflow-y: auto;
+}
+
+.tribute-container > ul::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+.tribute-container > ul::-webkit-scrollbar-track {
+  width: 6px;
+  background-color: rgba(204, 204, 204, 0.1);
+  -webkit-border-radius: 2em;
+  -moz-border-radius: 2em;
+  border-radius: 2em;
+}
+.tribute-container > ul::-webkit-scrollbar-thumb {
+  background-color: rgba(204, 204, 204, 0.5);
+  background-clip: padding-box;
+  min-height: 28px;
+  -webkit-border-radius: 2em;
+  -moz-border-radius: 2em;
+  border-radius: 2em;
+}
+.tribute-container > ul::-webkit-scrollbar-thumb:hover {
+  background-color: rgba(204, 204, 204, 1);
+}
+
+.tribute-container li {
+  padding: 10px;
+  color: var(--color-heading);
+}
+
+.tribute-container .highlight {
+  background-color: var(--color-border-hover);
+  border-radius: 8px;
 }

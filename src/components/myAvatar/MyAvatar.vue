@@ -18,6 +18,11 @@ import ic_avatar_03 from '@/assets/images/ic_avatar_03.png';
 import ic_avatar_04 from '@/assets/images/ic_avatar_04.png';
 import ic_avatar_05 from '@/assets/images/ic_avatar_05.png';
 import ic_avatar_06 from '@/assets/images/ic_avatar_06.png';
+import ic_avatar_07 from '@/assets/images/ic_avatar_07.png';
+import ic_avatar_08 from '@/assets/images/ic_avatar_08.png';
+import ic_avatar_09 from '@/assets/images/ic_avatar_09.png';
+import ic_avatar_10 from '@/assets/images/ic_avatar_10.png';
+import ic_avatar_11 from '@/assets/images/ic_avatar_11.png';
 import { PersonOutline } from '@vicons/ionicons5';
 export default defineComponent({
   components: {
@@ -32,6 +37,11 @@ export default defineComponent({
       ic_avatar_04,
       ic_avatar_05,
       ic_avatar_06,
+      ic_avatar_07,
+      ic_avatar_08,
+      ic_avatar_09,
+      ic_avatar_10,
+      ic_avatar_11,
     });
 
     return {

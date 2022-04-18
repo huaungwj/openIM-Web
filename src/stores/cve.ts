@@ -36,6 +36,10 @@ export const useCveStore = defineStore({
           isPullMore: false, // 是否正在拉取
           cveCScHeight: 0, // 内容区域可滚动区域高度
           fileInfo: {}, //当前正在上传的文件对象
+          friendCardIsShow: false, // 是否显示朋友卡片
+          groupCardIsShow: false, // 是否显示群组卡片
+          friendIDCard: '',
+          groupIDCard: '',
         },
   getters: {},
   actions: {
@@ -94,7 +98,6 @@ export const useCveStore = defineStore({
     setCveContentRef(data: any) {
       this.cveContentRef = data;
     },
-
     // setCveCScHeigth
     setCveCScHeiht(height: number) {
       this.cveCScHeight = height;
@@ -106,6 +109,20 @@ export const useCveStore = defineStore({
     //setFileInfo
     setFileInfo(file: RcFile) {
       this.fileInfo = file;
+    },
+    // setUserCardStatus
+    setFriCardStatus(type: boolean) {
+      this.friendCardIsShow = type;
+    },
+    // setGroupCardStatus
+    setGroupCardStatus(type: boolean) {
+      this.groupCardIsShow = type;
+    },
+    setFriIDCard(id: string) {
+      this.friendIDCard = id;
+    },
+    setGroupIDCard(id: string) {
+      this.groupIDCard = id;
     },
 
     // // setHasMore

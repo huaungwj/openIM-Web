@@ -127,9 +127,10 @@ export const getVideoInfo = (file: RcFile): Promise<number> => {
 /**
  * 中英文排序
  * @param arr
+ * @param type nickname | groupName
  * @returns
  */
-export const pySegSort = (arr: any[]) => {
+export const pySegSort = (arr: any[], type: string) => {
   if (arr.length == 0) return;
   if (!String.prototype.localeCompare) return null;
   const letters = '#ABCDEFGHJKLMNOPQRSTWXYZ'.split('');
@@ -149,25 +150,25 @@ export const pySegSort = (arr: any[]) => {
     };
     arr.map((v, index) => {
       // 特殊字符
-      if (pattern.test(v?.nickname[0])) {
+      if (pattern.test(v[type][0])) {
         if (
-          (!zh[i - 1] || zh[i - 1].localeCompare(v?.nickname) <= 0) &&
-          v?.nickname.localeCompare(zh[i]) == -1
+          (!zh[i - 1] || zh[i - 1].localeCompare(v[type]) <= 0) &&
+          v[type].localeCompare(zh[i]) == -1
         ) {
           curr.data.push(v);
         }
       }
       // 判断首个字是否是中文
-      if (re.test(v?.nickname[0])) {
+      if (re.test(v[type][0])) {
         // 英文
-        if (v?.nickname[0].toUpperCase() == items) {
+        if (v[type][0].toUpperCase() == items) {
           curr.data.push(v);
         }
       } else {
         // 中文
         if (
-          (!zh[i - 1] || zh[i - 1].localeCompare(v?.nickname) <= 0) &&
-          v?.nickname.localeCompare(zh[i]) == -1
+          (!zh[i - 1] || zh[i - 1].localeCompare(v[type]) <= 0) &&
+          v[type].localeCompare(zh[i]) == -1
         ) {
           curr.data.push(v);
         }
@@ -178,7 +179,7 @@ export const pySegSort = (arr: any[]) => {
       curr.initial = letters[i];
       segs.push(curr);
       curr.data.sort((a: any, b: any) => {
-        return a.nickname.localeCompare(b.nickname);
+        return a[type].localeCompare(b[type]);
       });
     }
   });
@@ -188,3 +189,19 @@ export const pySegSort = (arr: any[]) => {
   res.segs.push(lastData);
   return res;
 };
+
+/**
+ * 判断元素是否在可视区域内
+ * top 大于等于 0
+ * left 大于等于 0
+ * bottom 小于等于视窗高度
+ * right 小于等于视窗宽度
+ */
+export function isContain(dom: any) {
+  const totalHeight =
+    window.innerHeight || document.documentElement.clientHeight;
+  const totalWidth = window.innerWidth || document.documentElement.clientWidth;
+  // 当滚动条滚动时，top, left, bottom, right时刻会发生改变。
+  const { top, right, bottom, left } = dom.getBoundingClientRect();
+  return top >= 0 && left >= 0;
+}
