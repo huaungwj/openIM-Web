@@ -36,10 +36,13 @@ import MsgItem from '@/views/Home/Cve/ChatPage/components/MsgItem.vue';
 import ContextMenu from '@/components/ContextMenu/ContextMenu.vue';
 import { useCveStore } from '@/stores/cve';
 import { useUserStore } from '@/stores/user';
+import { useMessage } from 'naive-ui';
 import { useMenu } from '@/hooks/useMenu';
 import type { MessageItem } from '@/tools/im/types';
 import { messageTypes } from '@/tools/im/constants/messageContentType';
 import { useCopy } from '@/hooks/useCopy';
+import Bus from '@/tools/bus';
+import { im } from '../../../../tools';
 
 type msgMenusType = {
   title: string;
@@ -51,6 +54,7 @@ const { openMenu } = useMenu();
 const { copyFun } = useCopy();
 const cveStore = useCveStore();
 const userStore = useUserStore();
+const message = useMessage();
 const msgListRef = ref<Ref>();
 const menuOffset = ref({
   offsetLeft: 0,
@@ -79,9 +83,18 @@ const copyTextFun = () => {
 
 const mutilMsg = () => {};
 
-const replayMsg = () => {};
+const replayMsg = () => {
+  Bus.$emit('REPLAYMSG', curClickMsg.value);
+};
 
-const revMsg = () => {};
+const revMsg = () => {
+  // 撤回一条消息
+  im.revokeMessage(JSON.stringify(curClickMsg))
+    .then(() => {
+      // 待完成
+    })
+    .catch((err) => message.error('撤回信息失败'));
+};
 
 const delComfirm = () => {};
 

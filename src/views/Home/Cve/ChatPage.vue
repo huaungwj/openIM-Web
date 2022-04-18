@@ -34,7 +34,7 @@
 </template>
 
 <script lang="ts" setup>
-import { watch, onBeforeUnmount, ref, onMounted } from 'vue';
+import { watch, onBeforeUnmount, ref } from 'vue';
 import ChatTopBar from '@/views/Home/Cve/ChatPage/ChatTopBar.vue';
 import CharContent from './ChatPage/CharContent.vue';
 import CharFooterBar from '@/views/Home/Cve/ChatPage/ChatFooterBar.vue';
@@ -155,7 +155,7 @@ const dragleaveFun = function (e) {
 
 // 在指定的区域拖拽 此处不能用节流，否则不能执行
 const dragoverFun = function (e) {
-  console.log('拖拽了');
+  // console.log('拖拽了');
   e.preventDefault();
 };
 
@@ -164,7 +164,6 @@ const dropFun = function (e: DragEvent) {
   // 这里阻止默认事件 为阻止浏览器自动打开拖拽文件
   e.preventDefault();
   cveStore.setFileInfo({});
-  console.log('鼠标松开了', e.dataTransfer?.files);
 
   if (e.dataTransfer?.files.length === 0 || e.dataTransfer?.files.length > 1) {
     isDragetIng.value = false;

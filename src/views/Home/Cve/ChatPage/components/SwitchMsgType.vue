@@ -213,7 +213,6 @@ const parseEmojiFace = (mstr: string) => {
 const parseAt = (mstr: string) => {
   const pattern = /@\S+\s/g;
   const arr = mstr.match(pattern);
-  console.log(arr, mstr, pattern);
   arr?.map((a) => {
     const member = contactsStore.groupMemberList.find(
       (gm) => gm.userID === a.slice(1, -1)

@@ -43,14 +43,26 @@
         v-model="chatInputContext"
         :noHTML="false"
         :noNL="true"
-        @keydown.enter="switchMessage('text')"
-      />
+        @keydown.enter="
+          switchMessage(replyMsg ? 'quote' : atList.length > 0 ? 'at' : 'text')
+        "
+      ></contenteditable>
     </vue-tribute>
+
+    <div class="reply" v-if="replyMsg">
+      <div class="reply_text">
+        回复：<span>{{ replyMsg.senderNickname }}:</span>
+        {{ parseMsg(replyMsg) }}
+      </div>
+      <svg class="icon" @click="replyMsg = undefined">
+        <use xlink:href="#openIM-close"></use>
+      </svg>
+    </div>
   </footer>
 </template>
 
 <script setup lang="ts">
-import { h, ref, watch, reactive } from 'vue';
+import { h, ref, watch, reactive, onMounted } from 'vue';
 import contenteditable from '@/views/Home/Cve/ChatPage/components/Contenteditable.vue';
 import { VueTribute } from 'vue-tribute';
 // import EmojiContent from './EmojiContent.vue';
@@ -63,6 +75,8 @@ import { useScroll } from '@/hooks/useScroll';
 import { useUploadFile } from '@/hooks/useUploadFile';
 import { useContactsStore } from '@/stores/contacts';
 import type { UploadRequestOption } from 'rc-upload/lib/interface';
+import Bus from '@/tools/bus';
+import type { MessageItem } from '@/tools/im/types';
 
 type mentionArrType = {
   key: string | number;
@@ -79,6 +93,7 @@ const { sendMsg, sendCosMsg } = useUploadFile();
 const chatInputContext = ref<string>(``);
 // 艾特列表
 const atList = ref<{ id: string; name: string; tag: string }[]>();
+const replyMsg = ref<MessageItem | undefined>(undefined);
 
 function faceClick(face, e) {
   e.preventDefault();
@@ -91,8 +106,10 @@ const mentionOptions = reactive({
   trigger: '@',
   values: [],
   selectTemplate: (item: any) => {
-    console.log(item);
-    const tag = parseAt('' + `@${item.original.value} ` + ' ');
+    if (replyMsg.value) {
+      replyMsg.value = undefined;
+    }
+    const tag = addAt('' + `@${item.original.value} ` + ' ');
     atList.value.push({
       id: item.original.value,
       name: item.original.key,
@@ -192,7 +209,14 @@ const parseBr = (mstr: string) => {
   return mstr;
 };
 
-const parseAt = (mstr: string) => {
+const parseAt = (text: string) => {
+  atList.value.map((at) => {
+    text = text.replaceAll(at.tag, `@${at.id} `);
+  });
+  return text;
+};
+
+const addAt = (mstr: string) => {
   const pattern = /@\S+\s/g;
   const arr = mstr.match(pattern);
 
@@ -216,18 +240,50 @@ const parseAt = (mstr: string) => {
   return mstr;
 };
 
+const parseMsg = (msg: MessageItem) => {
+  switch (msg.contentType) {
+    case messageTypes.TEXTMESSAGE:
+      return msg.content;
+    case messageTypes.ATTEXTMESSAGE:
+      return msg.atElem.text;
+    case messageTypes.PICTUREMESSAGE:
+      return '[图片消息]';
+    case messageTypes.VIDEOMESSAGE:
+      return '[视频消息]';
+    case messageTypes.VOICEMESSAGE:
+      return '[语音消息]';
+    case messageTypes.LOCATIONMESSAGE:
+      return '[位置信息]';
+    case messageTypes.MERGERMESSAGE:
+      return '[合并消息]';
+    case messageTypes.FILEMESSAGE:
+      return '[文件消息]';
+    case messageTypes.QUOTEMESSAGE:
+      return '[引用消息]';
+    default:
+      break;
+  }
+};
+
 // 辨别消息的类型
 const switchMessage = (type: string) => {
-  // console.log('发送', chatInputContext.value);
   let text = chatInputContext.value;
   text = parseImg(parseEmojiFace(text));
   text = parseBr(text);
-  text = parseAt(text);
+  // text = parseAt(text);
   if (text === '') return;
   cveStore.setIsPullMore(false);
   switch (type) {
     case 'text': // 普通文本和表情
       sendTextMsg(text);
+      break;
+
+    case 'at':
+      sendAtTextMsg(parseAt(text));
+      break;
+
+    case 'quote':
+      quoteMsg(text);
       break;
 
     default:
@@ -240,6 +296,27 @@ const sendTextMsg = async (text: string) => {
   // 发送
   sendMsg(data, messageTypes.TEXTMESSAGE);
   // 重置状态
+  resetData();
+};
+
+const sendAtTextMsg = async (text: string) => {
+  const options = {
+    text,
+    atUserIDList: atList.value.map((au) => au.id),
+  };
+  const { data } = await im.createTextAtMessage(options);
+  sendMsg(data, messageTypes.ATTEXTMESSAGE);
+  // 重置状态
+  resetData();
+};
+
+const quoteMsg = async (text: string) => {
+  const { data } = await im.createQuoteMessage({
+    text,
+    message: JSON.stringify(replyMsg.value),
+  });
+  sendMsg(data, messageTypes.QUOTEMESSAGE);
+
   resetData();
 };
 
@@ -265,11 +342,12 @@ const contextChange = () => {
     })
   );
   atList.value = tmpAts;
-  console.log('发生变化了', atList.value);
 };
 
 const resetData = () => {
   chatInputContext.value = '';
+  atList.value = [];
+  replyMsg.value = undefined;
 };
 
 watch(
@@ -288,6 +366,12 @@ watch(
     contextChange();
   }
 );
+
+onMounted(() => {
+  Bus.$on('REPLAYMSG', (data: MessageItem) => {
+    replyMsg.value = data;
+  });
+});
 </script>
 
 <style>
@@ -375,9 +459,27 @@ watch(
   background-color: var(--color-text);
   border-radius: 7px;
 }
-
+/* 艾特 节点 */
 .at_el {
   color: #428be5;
+  cursor: pointer;
+}
+/* 回复输入框样式 */
+.chat_footer > .reply {
+  display: flex;
+  align-items: center;
+}
+
+.chat_footer > .reply > .reply_text {
+  text-align: center;
+  background-color: var(--im-theme-cveItemBg);
+  padding: 10px 10px;
+  border-radius: 8px;
+}
+.chat_footer > .reply > .icon {
+  padding-left: 5px;
+  width: 25px;
+  height: 25px;
   cursor: pointer;
 }
 </style>
