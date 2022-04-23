@@ -39,10 +39,20 @@
       <svg class="icon openIM-video" aria-hidden="true">
         <use xlink:href="#openIM-video"></use>
       </svg>
-      <svg class="icon" aria-hidden="true">
+      <svg
+        v-if="!isSingleCve(cveStore.curCve)"
+        class="icon openIM-xiaoyuangonggao1"
+        aria-hidden="true"
+        @click="showDrawer('groupNotice')"
+      >
+        <use xlink:href="#openIM-xiaoyuangonggao1"></use>
+      </svg>
+      <svg class="icon" aria-hidden="true" @click="showDrawer('setting')">
         <use xlink:href="#openIM-setting"></use>
       </svg>
     </div>
+
+    <CveSettingInfo />
   </header>
 </template>
 
@@ -55,6 +65,8 @@ import { useUserStore } from '@/stores/user';
 import { isSingleCve } from '@/tools';
 import type { ConversationItem, DetailType } from '@/tools/im/types';
 import { getOnline } from '@/service/cve/cve';
+import CveSettingInfo from './components/CveSettingInfo.vue';
+import Bus from '@/tools/bus';
 
 const cveStore = useCveStore();
 const contactsStore = useContactsStore();
@@ -158,6 +170,10 @@ const switchOnline = (oType: string, details?: DetailType[]) => {
       break;
   }
 };
+
+const showDrawer = (status: string) => {
+  Bus.$emit('SETDRAWERSTATUS', status);
+};
 </script>
 
 <style>
@@ -213,5 +229,11 @@ const switchOnline = (oType: string, details?: DetailType[]) => {
 /* 视频图标 */
 .chat_hearder_container > .chat_header_right > .openIM-video {
   margin: 0 35px;
+}
+.chat_hearder_container > .chat_header_right > .openIM-xiaoyuangonggao1 {
+  margin-right: 35px;
+}
+.setting_drawer {
+  height: 100vh;
 }
 </style>

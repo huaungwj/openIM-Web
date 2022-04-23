@@ -28,6 +28,10 @@ import {
   NAnchorLink,
   NAffix,
   NTag,
+  NDialogProvider,
+  NDrawer,
+  NDrawerContent,
+  NSwitch,
 } from 'naive-ui';
 
 const naive = create({
@@ -60,6 +64,10 @@ const naive = create({
     NAnchorLink,
     NAffix,
     NTag,
+    NDialogProvider,
+    NDrawer,
+    NDrawerContent,
+    NSwitch,
   ],
 });
 export function registerNaive(app: any) {

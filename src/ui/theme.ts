@@ -17,7 +17,10 @@ const lightThemeOverrides: GlobalThemeOverrides = {
     siderColor: '#e5e5e5',
   },
   Card: {
-    borderRadius: '20px',
+    colorModal: 'var(--im--theme-CGModalBg)',
+  },
+  Drawer: {
+    color: 'var(--color-background)',
   },
 };
 const darkThemeOverrides: GlobalThemeOverrides = {
@@ -31,6 +34,12 @@ const darkThemeOverrides: GlobalThemeOverrides = {
   },
   Layout: {
     siderColor: '#2b2a2b',
+  },
+  Card: {
+    colorModal: 'var(--im--theme-CGModalBg)',
+  },
+  Drawer: {
+    color: 'var(--color-background)',
   },
 };
 

@@ -9,7 +9,7 @@ class Bus {
   }
 
   // 订阅
-  $on(name: string, fn: () => void) {
+  $on(name: string, fn: (data: any) => void) {
     this.eventList[name] = this.eventList[name] || [];
     this.eventList[name].push(fn);
   }

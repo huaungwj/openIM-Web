@@ -1,11 +1,17 @@
 <template>
-  <footer class="chat_footer">
+  <footer class="chat_footer" v-if="!mutilSelect">
     <!-- <n-input :style="{ width: '50%' }" />
     <n-button type="primary" ghost> 搜索 </n-button> -->
     <!-- 聊天框工具栏 -->
     <div class="chat_input_tools">
       <!-- 表情 -->
-      <n-dropdown trigger="hover" placement="top" :options="emojiOptions">
+      <n-dropdown
+        trigger="hover"
+        placement="top"
+        :options="emojiOptions"
+        display-directive="show"
+        :delay="0"
+      >
         <div class="input_tools_emoji iconfont">
           <svg class="icon" aria-hidden="true">
             <use xlink:href="#openIM-emoji"></use>
@@ -27,7 +33,7 @@
         </svg>
       </div>
       <!-- 名片 -->
-      <div class="input_tools_scard">
+      <div class="input_tools_scard" @click="clickSendCardFun">
         <svg class="icon iconfont" aria-hidden="true">
           <use xlink:href="#openIM-zhanghu"></use>
         </svg>
@@ -59,43 +65,84 @@
       </svg>
     </div>
   </footer>
+  <footer class="mutil_sel_con" v-else>
+    <div class="forward" @click="forWardFun(false)">
+      <svg class="icon iconfont" aria-hidden="true">
+        <use xlink:href="#openIM-31zhuanfa"></use>
+      </svg>
+      逐条转发
+    </div>
+    <div class="merge_forward" @click="forWardFun(true)">
+      <svg class="icon iconfont" aria-hidden="true">
+        <use xlink:href="#openIM-zhuanfa_dark"></use>
+      </svg>
+      合并转发
+    </div>
+    <div class="merge_del">
+      <svg class="icon iconfont" aria-hidden="true" @click="mutilDelMsg">
+        <use xlink:href="#openIM-remove2"></use>
+      </svg>
+      删除
+    </div>
+    <div class="mutil_close" @click="closeMutil">
+      <svg class="icon iconfont" aria-hidden="true">
+        <use xlink:href="#openIM-guanbi"></use>
+      </svg>
+    </div>
+  </footer>
 </template>
 
 <script setup lang="ts">
 import { h, ref, watch, reactive, onMounted } from 'vue';
 import contenteditable from '@/views/Home/Cve/ChatPage/components/Contenteditable.vue';
 import { VueTribute } from 'vue-tribute';
-// import EmojiContent from './EmojiContent.vue';
 import { faceMap } from '@/tools/face';
-import { NImage, useMessage, NScrollbar, NTooltip } from 'naive-ui';
-import { im } from '@/tools';
+import { NImage, useMessage, NScrollbar, NPopover } from 'naive-ui';
+import { im, isSingleCve } from '@/tools';
 import { messageTypes } from '@/tools/im/constants/messageContentType';
 import { useCveStore } from '@/stores/cve';
-import { useScroll } from '@/hooks/useScroll';
 import { useUploadFile } from '@/hooks/useUploadFile';
 import { useContactsStore } from '@/stores/contacts';
+import { useCommonStore } from '@/stores/common';
 import type { UploadRequestOption } from 'rc-upload/lib/interface';
 import Bus from '@/tools/bus';
-import type { MessageItem } from '@/tools/im/types';
+import type {
+  MessageItem,
+  GroupMemberItem,
+  FriendItem,
+} from '@/tools/im/types';
+
+/**
+ * 添加群成员 | 转发消息 > 合并消息 - 单发消息 | 创建群聊
+ */
 
 type mentionArrType = {
   key: string | number;
   value: string | number;
 };
 
+type FaceEmojiType = {
+  context: string;
+  src: string;
+};
+
 //use
 const cveStore = useCveStore();
 const contactsStore = useContactsStore();
-const { scrollTo } = useScroll();
 const message = useMessage();
+const commonStore = useCommonStore();
 const { sendMsg, sendCosMsg } = useUploadFile();
 // 聊天框内容
 const chatInputContext = ref<string>(``);
 // 艾特列表
 const atList = ref<{ id: string; name: string; tag: string }[]>();
 const replyMsg = ref<MessageItem | undefined>(undefined);
+// 是否多选转发
+const mutilSelect = ref<boolean>(false);
+// 选中的msg
+const mutilMsgArr = ref<MessageItem[]>([]);
 
-function faceClick(face, e) {
+function faceClick(face: FaceEmojiType, e: Event) {
   e.preventDefault();
   const faceEl = `<img class="face_el" alt="${face.context}" style="padding-right:2px" width="24px" src="${face.src}">`;
   // move2end(chatInputRef);
@@ -142,10 +189,14 @@ function renderEmojiContent() {
       },
 
       [
-        faceMap.map((face) => {
+        faceMap.map((face: FaceEmojiType) => {
           return h(
-            NTooltip,
-            { trigger: 'hover' },
+            NPopover,
+            {
+              trigger: 'hover',
+              animated: false,
+              key: face.context,
+            },
             {
               default: () => `${face.context}`,
 
@@ -154,7 +205,7 @@ function renderEmojiContent() {
                   'div',
                   {
                     key: face.context,
-                    onClick: (e) => {
+                    onClick: (e: Event) => {
                       faceClick(face, e);
                     },
                     class: 'face_item',
@@ -325,6 +376,7 @@ const cusromSendFile = async (data: UploadRequestOption) => {
   if (!data) return;
   const fileList = ['image', 'video'];
   let type = data.file.type.split('/')[0];
+
   sendCosMsg(
     data.file?.file,
     fileList.some((item) => item === type) ? type : 'file'
@@ -350,10 +402,71 @@ const resetData = () => {
   replyMsg.value = undefined;
 };
 
+/**
+ * 转发函数
+ * @param type 是否合并转发 true 是 | false 否
+ */
+const forWardFun = (type: boolean) => {
+  if (mutilMsgArr.value.length === 0 || mutilMsgArr.value.length > 5)
+    return message.warning('请输入1条并且不大于5条信息进行转发');
+  commonStore.setcreateGARelayMTpye(type ? 'mergeForwardMsg' : 'forwardMsg');
+
+  const sortedMsg = mutilMsgArr.value.sort((a, b) => a.sendTime - b.sendTime);
+  if (type) {
+    // 合并转发配置项
+    let title;
+    if (isSingleCve(cveStore.curCve)) {
+      title = '与' + cveStore.curCve.showName + '的聊天记录';
+    } else {
+      title = `群聊 ${cveStore.curCve.showName} 的聊天记录`;
+    }
+
+    let tmm: string[] = [];
+    const tmpArr = sortedMsg.length > 5 ? sortedMsg.slice(0, 4) : sortedMsg;
+    tmpArr.map((m) => tmm.push(`${m.senderNickname}：${parseMsg(m)}`));
+
+    const options = {
+      messageList: [...sortedMsg],
+      title,
+      summaryList: tmm,
+    };
+
+    Bus.$emit('FORWARDMSG', options);
+  } else {
+    // 逐条转发
+    Bus.$emit('FORWARDMSG', { messageList: sortedMsg });
+  }
+};
+
+// 关闭多选
+const closeMutil = () => {
+  Bus.$emit('MUTILMSG', false);
+};
+
+// 批量删除msg
+const mutilDelMsg = () => {
+  if (mutilMsgArr.value.length < 0) return;
+  mutilMsgArr.value.forEach((msg) => {
+    Bus.$emit('DELMSG', msg);
+    Bus.$emit('MUTILMSG', false);
+  });
+};
+
+// 点击卡片
+const clickSendCardFun = () => {
+  commonStore.setcreateGARelayMTpye('sendCard');
+};
+
+const sendCardMsg = async (friend: FriendItem) => {
+  console.log(friend);
+  const { data } = await im.createCardMessage(JSON.stringify(friend));
+  sendMsg(data, messageTypes.CARDMESSAGE);
+};
+
 watch(
   () => contactsStore.groupMemberList,
   () => {
-    const tmp = contactsStore.groupMemberList.map((item) => {
+    const tmp = contactsStore.groupMemberList.map((item: GroupMemberItem) => {
       return { key: item.nickname, value: item.userID };
     });
     mentionOptions.values = tmp;
@@ -368,14 +481,37 @@ watch(
 );
 
 onMounted(() => {
+  // 回复
   Bus.$on('REPLAYMSG', (data: MessageItem) => {
     replyMsg.value = data;
   });
+  // 改变多选状态
+  Bus.$on('MUTILMSG', (type: boolean) => {
+    mutilSelect.value = type;
+    if (type) mutilMsgArr.value = [];
+  });
+  // 选中消息触发
+  Bus.$on(
+    'MUTILMSGCHANGE',
+    ({ msg, checked }: { msg: MessageItem; checked: boolean }) => {
+      if (checked) {
+        mutilMsgArr.value?.push(msg);
+      } else {
+        const tmp = mutilMsgArr.value?.filter(
+          (item) => item.clientMsgID !== msg.clientMsgID
+        );
+        mutilMsgArr.value = tmp;
+      }
+    }
+  );
+  // 发送卡片消息
+  Bus.$on('SENDCARDMSG', sendCardMsg);
 });
 </script>
 
 <style>
-.chat_footer {
+.chat_footer,
+.mutil_sel_con {
   position: fixed;
   bottom: 0;
   width: 69%;
@@ -384,6 +520,26 @@ onMounted(() => {
   background-color: var(--im-theme-chatPageBg);
   border-top: 1px solid var(--im-theme-chatPageSolid);
   padding-left: 20px;
+}
+
+.mutil_sel_con {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.mutil_sel_con > div {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  margin-right: 20px;
+  width: 95px;
+  height: 95px;
+  background-color: var(--im-theme-cveItemBg);
+  border-radius: 50%;
+  font-size: 12px;
+  cursor: pointer;
 }
 
 .chat_footer input[type='file'] {

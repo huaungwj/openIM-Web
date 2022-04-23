@@ -1,0 +1,12 @@
+server_addr: 'ngrok.weikill.club:4443' #这里的域名填写和生成证书的时候填写的一样  端口号按照开启服务器时填写的 -tunnerlAdder  写的一样
+trust_host_root_certs: false
+tunnels:
+  vue:
+    subdomain: 'vue'
+    proto:
+      http: 127.0.0.1:3000
+  vue:
+    subdomain: 'vue'
+    proto:
+      http: 127.0.0.1:3001
+

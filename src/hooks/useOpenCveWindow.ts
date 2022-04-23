@@ -2,6 +2,7 @@ import type { ConversationItem, MessageItem } from '@/tools/im/types';
 import { useCveStore } from '@/stores/cve';
 import { useContactsStore } from '@/stores/contacts';
 import { isSingleCve, markCveHasRead } from '@/tools';
+import Bus from '@/tools/bus';
 
 const cveStore = useCveStore();
 const contactsStore = useContactsStore();
@@ -38,6 +39,8 @@ export function useOpenCveWindow() {
     // console.log(cve);
     if (cve.conversationID === cveStore.curCve?.conversationID) return;
     // 到这里说明切换新的会话了
+    // 多选状态初始化
+    Bus.$emit('MUTILMSG', false);
     // 拉取状态
     cveStore.setIsPullMore(false);
     // 清除旧的历史信息

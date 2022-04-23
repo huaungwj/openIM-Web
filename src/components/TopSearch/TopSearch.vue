@@ -196,7 +196,8 @@ const changeQuModal = (type: boolean) => {
  * @param key
  */
 const handleSelectFun = (key: string) => {
-  if (key === 'createGroupChat') commonStore.setcreateGARelayMTpye('show');
+  if (key === 'createGroupChat')
+    commonStore.setcreateGARelayMTpye('createGroup');
   if (key !== 'createGroupChat') {
     // 1. 清空输入框
     modalInputValue.value = '';

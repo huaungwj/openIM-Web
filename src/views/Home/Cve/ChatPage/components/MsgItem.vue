@@ -10,14 +10,33 @@
         msg.contentType !== tipsTypes.MEMBERENTER &&
         msg.contentType !== tipsTypes.GROUPINFOUPDATED &&
         msg.contentType !== tipsTypes.REVOKEMESSAGE &&
-        msg.contentType !== tipsTypes.GROUPCREATED
+        msg.contentType !== tipsTypes.GROUPCREATED &&
+        msg.contentType !== tipsTypes.MEMBERINVITED
       "
     >
+      <div style="padding: 10px" v-if="mutilSelect">
+        <n-checkbox
+          value="mutilCheckSelect"
+          :on-update:checked="changeMutilCheckSelect"
+          :disabled="!canSelectTypes.includes(msg.contentType)"
+        >
+        </n-checkbox>
+      </div>
       <MyAvatar :src="msg.senderFaceUrl" :size="40" />
       <SwitchMsgType :msg="msg" :key="msg.clientMsgID" :msgIsRead="msgIsRead" />
     </div>
 
     <div class="n_msg_item" v-else>
+      <!-- 邀请入群 -->
+      <div v-if="msg.contentType === tipsTypes.MEMBERINVITED">
+        <a>{{
+          userStore.selfInfo.userID === msg.sendID
+            ? '你'
+            : JSON.parse(JSON.parse(props.msg.content).jsonDetail)
+                .groupOwnerUser.nickname
+        }}</a>
+        邀请了 xxx
+      </div>
       <!-- 创建了群聊 -->
       <div v-if="msg.contentType === tipsTypes.GROUPCREATED">
         <a>{{
@@ -69,20 +88,38 @@
 </template>
 
 <script setup lang="ts">
-import { defineProps, onMounted, ref, watch } from 'vue';
+import { defineProps, onMounted, ref, watch, onBeforeUnmount } from 'vue';
 
 import MyAvatar from '@/components/myAvatar/MyAvatar.vue';
 import type { MessageItem } from '@/tools/im/types';
 import SwitchMsgType from '@/views/Home/Cve/ChatPage/components/SwitchMsgType.vue';
 import { useUserStore } from '@/stores/user';
 import { useCveStore } from '@/stores/cve';
-import { tipsTypes } from '@/tools/im/constants/messageContentType';
+import {
+  tipsTypes,
+  messageTypes,
+} from '@/tools/im/constants/messageContentType';
 import { im } from '@/tools';
+import Bus from '@/tools/bus';
 
-const props = defineProps<{ msg: MessageItem }>();
+const props = defineProps<{ msg: MessageItem; mutilSelect?: boolean }>();
 const cveStore = useCveStore();
 const userStore = useUserStore();
 const msgIsRead = ref<boolean>(props.msg.isRead);
+
+//当前消息是否被选中
+const mutilCheckSelect = ref<boolean>(false);
+// 允许选中的消息类型
+const canSelectTypes = [
+  messageTypes.TEXTMESSAGE,
+  messageTypes.ATTEXTMESSAGE,
+  messageTypes.PICTUREMESSAGE,
+  messageTypes.VIDEOMESSAGE,
+  messageTypes.VOICEMESSAGE,
+  messageTypes.CARDMESSAGE,
+  messageTypes.FILEMESSAGE,
+  messageTypes.LOCATIONMESSAGE,
+];
 
 // 设置已读
 const markC2CHasRead = (userID: string, msgID: string) => {
@@ -90,6 +127,14 @@ const markC2CHasRead = (userID: string, msgID: string) => {
   // console.log(cveStore.curCve.groupID, props.msg);
   msgIsRead.value = true;
   im.markC2CMessageAsRead({ userID, msgIDList: [msgID] });
+};
+
+const changeMutilCheckSelect = (checked: boolean) => {
+  if (props.mutilSelect && canSelectTypes.includes(props.msg.contentType)) {
+    // events.emit(MUTILMSGCHANGE, !lastChange, msg);
+    Bus.$emit('MUTILMSGCHANGE', { msg: props.msg, checked });
+    // setLastChange((v) => !v);
+  }
 };
 
 onMounted(() => {

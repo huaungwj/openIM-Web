@@ -68,8 +68,10 @@ export default defineComponent({
     :theme-overrides="$isDark.value ? darkThemeOverrides : lightThemeOverrides"
   >
     <NMessageProvider>
-      <RouterView />
-      <RouterView name="home" />
+      <n-dialog-provider>
+        <RouterView />
+        <RouterView name="home" />
+      </n-dialog-provider>
     </NMessageProvider>
   </n-config-provider>
 </template>

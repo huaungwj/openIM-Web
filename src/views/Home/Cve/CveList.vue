@@ -12,13 +12,18 @@
       </div>
     </n-spin>
 
-    <context-menu class="right-menu" :offset="menuOffset">
+    <context-menu class="cve_menu" :offset="menuOffset">
       <template v-slot:menuItem>
-        <li @click="pinnedCveFun(curClickCve.isPinned ? false : true)">
+        <li
+          class="cve_menu_item"
+          @click="pinnedCveFun(curClickCve.isPinned ? false : true)"
+        >
           {{ curClickCve?.isPinned ? '取消置顶' : '置顶' }}
         </li>
-        <li @click="markCveHasRead(curClickCve, 1)">标为已读</li>
-        <li @click="seeDetailInfo">查看详细资料</li>
+        <li class="cve_menu_item" @click="markCveHasRead(curClickCve, 1)">
+          标为已读
+        </li>
+        <li class="cve_menu_item" @click="seeDetailInfo">查看详细资料</li>
 
         <n-popconfirm
           @positive-click="delCve"
@@ -26,7 +31,7 @@
           negative-text="朕，在想想~"
         >
           <template #trigger>
-            <li>移除会话</li>
+            <li class="cve_menu_item">移除会话</li>
           </template>
           确定要删除吗？聊天记录会丢失！
         </n-popconfirm>
@@ -131,4 +136,9 @@ const openCveMenu = (e, cve: ConversationItem) => {
 };
 </script>
 
-<style></style>
+<style>
+.cve_menu > .cve_menu_item {
+  padding: 10px;
+  text-align: center;
+}
+</style>

@@ -1,4 +1,5 @@
 import type { RcFile } from 'rc-upload/lib/interface';
+import axios from 'axios';
 // md5 加密秘钥
 export const MD5_KEY = 'weiChat';
 // OpenIM秘钥，服务端配置文件config.yaml的secret字段，注意安全保存
@@ -205,3 +206,28 @@ export function isContain(dom: any) {
   const { top, right, bottom, left } = dom.getBoundingClientRect();
   return top >= 0 && left >= 0;
 }
+
+export const downloadFileUtil = (filePath: string, filename: string) => {
+  axios
+    .get(filePath, {
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded',
+      },
+      responseType: 'blob',
+    })
+    .then(function (response) {
+      const blob = new Blob([response.data]);
+      const fileName = filename;
+      const linkNode = document.createElement('a');
+      linkNode.download = fileName;
+      linkNode.style.display = 'none';
+      linkNode.href = URL.createObjectURL(blob);
+      document.body.appendChild(linkNode);
+      linkNode.click();
+      URL.revokeObjectURL(linkNode.href);
+      document.body.removeChild(linkNode);
+    })
+    .catch(function (error) {
+      console.log(error);
+    });
+};

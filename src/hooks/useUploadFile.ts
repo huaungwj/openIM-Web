@@ -146,9 +146,6 @@ export const useUploadFile = () => {
           });
         }
       }, 2000);
-      // nextTick(() => {
-      //   scrollTo();
-      // });
     }
     const offlinePushInfo = {
       title: '你有一条新消息',
@@ -164,6 +161,7 @@ export const useUploadFile = () => {
       message: nMsg,
     };
     nMsgMaps = nMsgMaps.filter((f) => !f.flag);
+    console.log(sendOption);
     if (notOssMessageTypes.includes(type)) {
       im.sendMessageNotOss(sendOption, operationID)
         .then((res) => sendMsgCB(res, type))
@@ -189,7 +187,7 @@ export const useUploadFile = () => {
         }
       }
     });
-    if (type === messageTypes.MERGERMESSAGE) message.success('发送成功');
+    if (type === messageTypes.MERGERMESSAGE) return;
   };
 
   return { sendCosMsg, sendMsg };

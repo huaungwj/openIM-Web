@@ -55,22 +55,39 @@
       <div
         class="merger_type"
         v-if="msg.contentType === messageTypes.MERGERMESSAGE"
+        @click="clickMerge"
       >
-        合并消息
+        <div className="title">{{ msg.mergeElem.title }}</div>
+        <div className="content">
+          <div
+            class="marger_item"
+            v-for="item in msg.mergeElem.abstractList"
+            :key="item"
+          >
+            <span v-html="item"></span>
+          </div>
+        </div>
       </div>
       <!-- 名片消息 -->
       <div
         class="card_type"
         v-if="msg.contentType === messageTypes.CARDMESSAGE"
+        @click="showUserCard(JSON.parse(msg.content).userID)"
       >
-        <p class="title">名片</p>
-        <hr />
         <div class="card_info">
           <MyAvatar :src="JSON.parse(msg.content).faceURL" :size="32" />
-          <span class="card_info_name">{{
-            JSON.parse(msg.content).nickname
-          }}</span>
+          <div style="display: flex; flex-direction: column">
+            <span class="card_info_name">{{
+              JSON.parse(msg.content).nickname
+            }}</span
+            ><span class="card_info_name">{{
+              JSON.parse(msg.content).userID
+            }}</span>
+          </div>
         </div>
+        <hr />
+
+        <p class="title">个人名片</p>
       </div>
       <!-- 地理位置类型消息 -->
       <div
@@ -184,6 +201,7 @@ import playbackRate from 'xgplayer/dist/controls/playbackRate';
 import pip from 'xgplayer/dist/controls/pip';
 import FileMsgVue from '@/views/Home/Cve/ChatPage/components/FileMsg.vue';
 import { useScroll } from '@/hooks/useScroll';
+import Bus from '@/tools/bus';
 import MyAvatar from '../../../../../components/myAvatar/MyAvatar.vue';
 
 const cveStore = useCveStore();
@@ -192,7 +210,7 @@ const userStore = useUserStore();
 const { scrollTo } = useScroll();
 const isImage = ref<boolean>(false);
 
-const props = defineProps<{ msg: MessageItem; msgIsRead: boolean }>();
+const props = defineProps<{ msg: MessageItem; msgIsRead?: boolean }>();
 
 const parseEmojiFace = (mstr: string) => {
   faceMap.map((f) => {
@@ -230,6 +248,11 @@ const parseAt = (mstr: string) => {
     }
   });
   return mstr;
+};
+
+const showUserCard = (userID: string) => {
+  cveStore.setFriCardStatus(true);
+  cveStore.setFriIDCard(userID);
 };
 
 // 查看详细信息
@@ -294,8 +317,15 @@ const imageLoad = () => {
   cveStore.setCveCScHeiht(cveStore.cveContentRef.scrollHeight);
 };
 
+const clickMerge = () => {
+  Bus.$emit('PREVIEWMERGEMSG', {
+    type: true,
+    mutilMsgArrTmp: props.msg.mergeElem.multiMessage,
+  });
+};
+
 onMounted(() => {
-  if (props.msg.videoElem.videoUrl) {
+  if (props.msg.videoElem?.videoUrl) {
     let player = new Player({
       id: props.msg.videoElem.snapshotUUID,
       url: props.msg.videoElem.videoUrl,
@@ -343,7 +373,8 @@ onMounted(() => {
 .chat_msg_content .chat_msg_info,
 .chat_msg_content .quqte_type,
 .chat_msg_content .card_type,
-.chat_msg_content .at_type {
+.chat_msg_content .at_type,
+.chat_msg_content .merger_type {
   border-radius: 5px;
   background-color: var(--im-theme-chatMsgBg);
   padding: 5px 55px 10px 10px;
@@ -371,24 +402,39 @@ onMounted(() => {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  cursor: pointer;
 }
 
 .chat_msg_content .card_type > .title {
   color: var(--color-text);
+  padding-top: 10px;
+  font-size: 12px;
 }
 
-.chat_msg_content .card_type > .card_info > .card_info_name {
-  padding: 10px 20px 10px 10px;
+.chat_msg_content .card_type > hr {
+  margin-top: 7px;
+  height: 1px;
+  background-color: var(--color-text);
+  border: none;
+}
+
+.chat_msg_content .card_type > .card_info .card_info_name {
+  padding: 5px 20px 0px 10px;
+  font-size: 12px;
+  color: var(--color-text);
 }
 
 .reversal_msg .chat_msg_content .chat_msg_info,
 .reversal_msg .chat_msg_content .quqte_type,
-.reversal_msg .chat_msg_content .card_type {
+.reversal_msg .chat_msg_content .at_type {
   background-color: var(--im-theme-primary) !important;
   color: var(--im-cveItem-dark-color);
 }
 
-.default_msg > .chat_msg_content .chat_msg_info::before {
+.default_msg > .chat_msg_content .chat_msg_info::before,
+.default_msg .chat_msg_content .quqte_type::before,
+.default_msg .chat_msg_content .card_type::before,
+.default_msg .chat_msg_content .at_type::before {
   position: absolute;
   top: 10px;
   left: -15px;
@@ -406,6 +452,15 @@ onMounted(() => {
   font-size: 14px;
 }
 
+/* 合并消息盒子 */
+.chat_msg_content .merger_type .marger_item {
+  font-size: 12px;
+  color: var(--color-text);
+}
+.chat_msg_content .merger_type {
+  cursor: pointer;
+}
+
 /* 时间 */
 .chat_msg_content > .chat_msg_time {
   font-size: 12px;
@@ -419,9 +474,10 @@ onMounted(() => {
 }
 
 /* 自我 */
-.reversal_msg > .chat_msg_content .chat_msg_info::before {
+.reversal_msg > .chat_msg_content .chat_msg_info::before,
+.reversal_msg .chat_msg_content .quqte_type::before,
+.reversal_msg .chat_msg_content .at_type::before {
   right: -15px;
-
   position: absolute;
   top: 10px;
   content: '';
