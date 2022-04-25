@@ -16,19 +16,19 @@
         </p>
         <!-- 创建人 -->
         <p class="create_user_id">
-          创建人ID：
+          所有者ID：
           <n-tooltip trigger="hover">
             <template #trigger>
               <svg
                 class="icon"
-                @click="copyFun(item.creatorUserID)"
+                @click="copyFun(item.ownerUserID)"
                 aria-hidden="true"
                 style="cursor: pointer; width: 15px; height: 15px"
               >
                 <use xlink:href="#openIM-fuzhi"></use>
               </svg>
             </template>
-            {{ item.creatorUserID }}
+            {{ item.ownerUserID }}
           </n-tooltip>
         </p>
         <!-- 群ID -->

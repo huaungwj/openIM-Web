@@ -1,30 +1,7 @@
 <template>
   <div class="info_container" style="text-align: center">
     <!-- 头像 -->
-    <n-upload
-      class="avatar_upload"
-      ref="uploadAvatarRef"
-      action=""
-      accept="image/*"
-      name="avatar"
-      id="touxiang"
-      :custom-request="cusromUpload"
-      list-type="image-card"
-      :max="1"
-      :on-remove="deleteAvatar"
-    >
-      <my-avatar :src="userInfo.faceURL" />
-      <div
-        :style="{
-          fontSize: '12px',
-          color: '#777',
-          marginTop: '8px',
-          display: userInfo.faceURL === '' ? 'block' : 'none',
-        }"
-      >
-        {{ $t('login.contentRight.clickUploadText') }}
-      </div>
-    </n-upload>
+    <UplaodAvatar :getUplaodURL="getUplaodURL" :faceURL="userInfo.faceURL" />
 
     <!-- 输入名字 -->
     <n-form
@@ -65,22 +42,19 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, ref, reactive } from 'vue';
+import { defineComponent, ref } from 'vue';
 import { useRouter } from 'vue-router';
 import { useMessage } from 'naive-ui';
 import type { FormInst, FormItemRule, FormValidationError } from 'naive-ui';
-import MyAvatar from '@/components/myAvatar/MyAvatar.vue';
-import { getCosAuthorization, cosUpload } from '@/tools/cos';
-import type { UploadRequestOption } from 'rc-upload/lib/interface';
+import UplaodAvatar from '@/components/UploadAvatar/UploadAvatar.vue';
 import { useUserStore } from '@/stores/user';
 import type { InfoField } from './type';
 import { im } from '@/tools';
-import i18n from '@/lang/i18n';
-import { fileSizeTran } from '../../tools/tools';
+import { i18n } from '@/locales/index';
 
 export default defineComponent({
   components: {
-    MyAvatar,
+    UplaodAvatar,
   },
 
   setup(props) {
@@ -89,7 +63,7 @@ export default defineComponent({
     const userInfo = ref({
       userID: 'userID',
       nickname: '',
-      faceURL: `ic_avatar_0${Math.ceil(Math.random() * 11)}`,
+      faceURL: `ic_avatar_0${Math.ceil(Math.random() * 9)}`,
     });
     // message
     const message = useMessage();
@@ -97,37 +71,10 @@ export default defineComponent({
     const userStore = useUserStore();
     // useRouter
     const router = useRouter();
-    const uploadAvatarRef = ref<HTMLElement>(null as unknown as HTMLElement);
 
-    /**
-     * 自定义上传头像
-     * @param data
-     */
-    const cusromUpload = async (data: UploadRequestOption) => {
-      if (!data) return false;
-
-      console.log(uploadAvatarRef);
-      if (data.file.file.size! > 2097152) {
-        uploadAvatarRef.value.clear();
-        return message.warning(
-          `当前文件大小为：${fileSizeTran(
-            data.file.file.size
-          )}头像文件不能大于2MB`
-        );
-      }
-      await getCosAuthorization();
-      cosUpload(data.file)
-        .then((res) => {
-          uploadAvatarRef.value.clear();
-          userInfo.value.faceURL = res.url;
-        })
-        .catch((err) => {
-          console.log(err);
-        });
-    };
-    // 删除头像
-    const deleteAvatar = () => {
-      userInfo.value.faceURL = `ic_avatar_0${Math.ceil(Math.random() * 6)}`;
+    // 获取头像上传后的头像URL
+    const getUplaodURL = (url: string) => {
+      userInfo.value.faceURL = url;
     };
 
     /**
@@ -169,9 +116,7 @@ export default defineComponent({
 
     return {
       userInfo,
-      cusromUpload,
-      deleteAvatar,
-      uploadAvatarRef,
+      getUplaodURL,
       rules: {
         nickname: {
           trigger: ['blur', 'input'],

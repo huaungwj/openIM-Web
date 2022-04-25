@@ -157,6 +157,7 @@ const message = useMessage()
 const acceptFun = () => {
   // 1. 判断是入群申请还是好友申请
   if(contactsStore.conPage === 'nF') {
+    im.removeBlack(props.con.fromUserID);
     const options:AccessFriendParams = {
       toUserID: props.con.fromUserID,
       handleMsg: ""

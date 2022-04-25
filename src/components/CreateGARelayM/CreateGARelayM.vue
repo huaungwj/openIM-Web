@@ -372,7 +372,13 @@ const switchActionFun = () => {
       im.inviteUserToGroup(options)
         .then((res) => message.success('邀请成功！'))
         .catch((err) => message.error('操作失败，请稍后再试！'));
-      commonStore.setcreateGARelayMTpye('cancel');
+      // 新成员添加
+      contactsStore.setGroupMemberList([
+        ...contactsStore.groupMemberList,
+        ...selectArr.value,
+      ]);
+      cancelModalFun();
+
       Bus.$emit('SETDRAWERSTATUS', 'cancel');
       break;
     }

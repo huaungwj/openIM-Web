@@ -22,7 +22,7 @@
             <svg class="im-icon" aria-hidden="true">
               <use xlink:href="#openIM-people3geren"></use>
             </svg>
-            <span>{{ contactsStore.groupInfo.memberCount }}</span>
+            <span>{{ contactsStore.groupMemberList.length }}</span>
           </div>
           <div className="num">
             <span className="icon" />
@@ -63,7 +63,11 @@ import { useCveStore } from '@/stores/cve';
 import { useContactsStore } from '@/stores/contacts';
 import { useUserStore } from '@/stores/user';
 import { isSingleCve } from '@/tools';
-import type { ConversationItem, DetailType } from '@/tools/im/types';
+import type {
+  ConversationItem,
+  DetailType,
+  ResItemType,
+} from '@/tools/im/types';
 import { getOnline } from '@/service/cve/cve';
 import CveSettingInfo from './components/CveSettingInfo.vue';
 import Bus from '@/tools/bus';
@@ -80,7 +84,6 @@ const onlineStatus = ref<string>('离线');
 
 // 获取群组的在线数量
 const getGroupOnline = () => {
-  console.log(contactsStore.groupMemberList);
   const tmplist = [...contactsStore.groupMemberList];
   const total = Math.ceil(tmplist.length / 200);
   let promiseArr = [];
@@ -97,7 +100,7 @@ const getGroupOnline = () => {
     let count = 0;
     let obj = {};
     res.map((pres) => {
-      pres?.data?.map((item) => {
+      pres?.data?.map((item: ResItemType) => {
         obj = { ...obj, [item.userID]: item };
         if (item.status === 'online') {
           count += 1;
@@ -106,6 +109,7 @@ const getGroupOnline = () => {
     });
 
     onlineNo.value = count;
+    contactsStore.setMember2status(obj);
   });
 };
 

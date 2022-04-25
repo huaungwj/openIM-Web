@@ -1,5 +1,5 @@
 <template>
-  <div class="tc_mf_c">
+  <div class="tc_mf_c" v-if="consList">
     <!-- 列表 -->
     <div
       class="contact_tc_mf_list"
@@ -10,7 +10,7 @@
       <!-- 头部锚点 -->
       <div class="sections_title">{{ con.initial }}</div>
       <!-- 内容区域 -->
-      <main class="sections_c">
+      <main class="sections_c" v-if="con.data.length > 0">
         <SectionItemComp
           v-for="item in con.data"
           :key="item.userID"
@@ -34,11 +34,22 @@
       </ul>
     </div>
   </div>
+  <Empty
+    v-else
+    imgSrc="/src/assets/images/empty5.png"
+    :width="270"
+    :height="250"
+  >
+    <template #header>
+      <p>暂无数据</p>
+    </template>
+  </Empty>
 </template>
 
 <script setup lang="ts">
 import { defineProps } from 'vue';
 import SectionItemComp from '@/views/Home/Contact/contactRight/components/SectionItemComp.vue';
+import Empty from '@/components/Empty/Empty.vue';
 import { useFriend } from '@/hooks/useFriend';
 
 const props = defineProps<{ goChatFun: () => void }>();

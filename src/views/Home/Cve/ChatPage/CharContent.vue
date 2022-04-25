@@ -60,6 +60,7 @@ import { im } from '@/tools';
 import { useUploadFile } from '@/hooks/useUploadFile';
 import Bus from '@/tools/bus';
 import { downloadFileUtil } from '@/tools/tools';
+import { specialMsg } from '@/tools';
 
 /**
  * types
@@ -70,10 +71,6 @@ type msgMenusType = {
   method: () => void;
   hidden: boolean;
 };
-
-// export type SelectFriendItem = FriendItem & ChechType;
-// export type SelectMemberItem = GroupMemberItem & ChechType;
-// export type SelectGroupItem = GroupItem & ChechType;
 type SelectType = FriendItem | GroupMemberItem | GroupItem;
 
 const { openMenu } = useMenu();
@@ -109,9 +106,9 @@ const forwardMsg = () => {
 
 const copyTextFun = () => {
   copyFun(
-    curClickMsg.value.contentType === messageTypes.ATTEXTMESSAGE
-      ? curClickMsg.value.atElem.text
-      : curClickMsg.value.content
+    curClickMsg.value!.contentType === messageTypes.ATTEXTMESSAGE
+      ? curClickMsg.value!.atElem.text
+      : curClickMsg.value!.content
   );
 };
 
@@ -279,6 +276,7 @@ const switchMenu = () => {
 
 // console.log();
 const openMsgMenu = (e, curMsg: MessageItem) => {
+  if (specialMsg.includes(curMsg.contentType)) return false;
   curClickMsg.value = curMsg;
   switchMenu();
   const offset = openMenu(e, msgListRef);

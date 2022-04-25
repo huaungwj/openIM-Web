@@ -83,7 +83,7 @@ import { useMessage } from 'naive-ui';
 import { debounce } from '@/tools/tools';
 import { useUserStore } from '@/stores/user';
 import { uuid } from '@/tools/im/util/index';
-import i18n from '@/lang/i18n';
+import { i18n } from '@/locales/index';
 
 // 声明一个 ref 来存放该元素的引用
 // 必须和模板 ref 同名

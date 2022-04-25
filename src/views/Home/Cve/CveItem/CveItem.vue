@@ -6,7 +6,10 @@
     @click="clickCveItem"
   >
     <div class="left">
-      <n-badge :value="isRecv(cve.recvMsgOpt) ? cve.unreadCount : null">
+      <n-badge
+        :value="isRecv(cve.recvMsgOpt) ? cve.unreadCount : null"
+        :dot="!isRecv(cve.recvMsgOpt) && cve.unreadCount > 0"
+      >
         <MyAvatar :src="cve.faceURL" :size="40" />
       </n-badge>
       <div class="cve_info">
@@ -19,8 +22,22 @@
         <p class="info_msg" v-html="parseLastMessage(cve.recvMsgOpt)"></p>
       </div>
     </div>
+    <div>
+      <p style="font-size: 12px">{{ $day(cve.latestMsgSendTime).fromNow() }}</p>
 
-    <p>{{ $day(cve.latestMsgSendTime).fromNow() }}</p>
+      <p
+        style="text-align: right; padding-top: 5px"
+        v-show="cve.recvMsgOpt !== 0"
+      >
+        <svg
+          class="icon"
+          style="cursor: pointer; width: 15px; height: 15px"
+          aria-hidden="true"
+        >
+          <use xlink:href="#openIM-miandarao1"></use>
+        </svg>
+      </p>
+    </div>
   </div>
 </template>
 
@@ -76,7 +93,7 @@ const parseLastMessage = (recvMsgOpt) => {
   return isRecv(recvMsgOpt)
     ? parseLatestMsg(props.cve.latestMsg)
     : props.cve.unreadCount > 0
-    ? `[${props.cve.unreadCount + ''}] ${parseLatestMsg(props.cve.latestMsg)}`
+    ? `[${props.cve.unreadCount + ''}条] ${parseLatestMsg(props.cve.latestMsg)}`
     : parseLatestMsg(props.cve.latestMsg);
 };
 

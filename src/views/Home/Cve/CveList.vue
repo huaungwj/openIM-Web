@@ -2,7 +2,7 @@
   <div class="cve_container">
     <top-search />
     <n-spin size="small" :show="cveStore.cveInitLoading">
-      <div class="cve_list" ref="cveItemRef">
+      <div class="cve_list" ref="cveItemRef" v-if="cveStore.cves.length > 0">
         <CveItem
           v-for="cve in cveStore.cves"
           :key="cve.userID && cve.groupID"
@@ -10,6 +10,17 @@
           @contextmenu.prevent="openCveMenu($event, cve)"
         />
       </div>
+      <Empty
+        class="cve_list"
+        v-else
+        imgSrc="/src/assets/images/empty6.png"
+        :width="200"
+        :height="180"
+      >
+        <template #header>
+          <p>暂无数据</p>
+        </template>
+      </Empty>
     </n-spin>
 
     <context-menu class="cve_menu" :offset="menuOffset">
@@ -46,6 +57,7 @@ import type { Ref } from 'vue';
 import ContextMenu from '@/components/ContextMenu/ContextMenu.vue';
 import TopSearch from '@/components/TopSearch/TopSearch.vue';
 import CveItem from '@/views/Home/Cve/CveItem/CveItem.vue';
+import Empty from '@/components/Empty/Empty.vue';
 import { useCveStore } from '@/stores/cve';
 import type { PinCveParams, ConversationItem } from '@/tools/im/types';
 import { im } from '@/tools';
@@ -69,7 +81,7 @@ const menuOffset = reactive({
 // 置顶会话
 const pinnedCveFun = (isPin: boolean) => {
   const options: PinCveParams = {
-    conversationID: curClickCve.value.conversationID,
+    conversationID: curClickCve.value!.conversationID,
     isPinned: isPin,
   };
   im.pinConversation(options)

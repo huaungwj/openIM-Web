@@ -1,4 +1,5 @@
 import { OpenIMSDK } from './im';
+import { tipsTypes } from './im/constants/messageContentType';
 import type { ConversationItem, MessageItem } from './im/types';
 import { cveSort } from './imT';
 
@@ -29,4 +30,17 @@ const contactMenu = [
   { icon: 'a-bianzu38', text: '我的群组', num: 10, key: 'mG' },
 ];
 
-export { cveSort, contactMenu };
+// 特殊信息列表
+const specialMsg = [
+  tipsTypes.FRIENDADDED,
+  tipsTypes.MEMBERENTER,
+  tipsTypes.GROUPINFOUPDATED,
+  tipsTypes.REVOKEMESSAGE,
+  tipsTypes.GROUPCREATED,
+  tipsTypes.MEMBERINVITED,
+  tipsTypes.MEMBERKICKED,
+  tipsTypes.MEMBERQUIT,
+  tipsTypes.GROUPOWNERTRANSFERRED,
+];
+
+export { cveSort, contactMenu, specialMsg };

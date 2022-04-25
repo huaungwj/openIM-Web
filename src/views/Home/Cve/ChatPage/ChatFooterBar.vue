@@ -345,7 +345,9 @@ const switchMessage = (type: string) => {
 const sendTextMsg = async (text: string) => {
   const { data } = await im.createTextMessage(text);
   // 发送
-  sendMsg(data, messageTypes.TEXTMESSAGE);
+  sendMsg(data, messageTypes.TEXTMESSAGE).catch((err: Error) =>
+    message.error(err.message)
+  );
   // 重置状态
   resetData();
 };
@@ -356,7 +358,9 @@ const sendAtTextMsg = async (text: string) => {
     atUserIDList: atList.value.map((au) => au.id),
   };
   const { data } = await im.createTextAtMessage(options);
-  sendMsg(data, messageTypes.ATTEXTMESSAGE);
+  sendMsg(data, messageTypes.ATTEXTMESSAGE).catch((err: Error) =>
+    message.error(err.message)
+  );
   // 重置状态
   resetData();
 };
@@ -366,7 +370,9 @@ const quoteMsg = async (text: string) => {
     text,
     message: JSON.stringify(replyMsg.value),
   });
-  sendMsg(data, messageTypes.QUOTEMESSAGE);
+  sendMsg(data, messageTypes.QUOTEMESSAGE).catch((err: Error) =>
+    message.error(err.message)
+  );
 
   resetData();
 };
@@ -460,7 +466,9 @@ const clickSendCardFun = () => {
 const sendCardMsg = async (friend: FriendItem) => {
   console.log(friend);
   const { data } = await im.createCardMessage(JSON.stringify(friend));
-  sendMsg(data, messageTypes.CARDMESSAGE);
+  sendMsg(data, messageTypes.CARDMESSAGE).catch((err: Error) =>
+    message.error(err.message)
+  );
 };
 
 watch(

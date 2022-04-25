@@ -25,7 +25,7 @@
             </div>
             <!-- 右边盒子 -->
             <div class="right_container">
-              <MyAvatar src="ic_avatar_06" :size="62" />
+              <MyAvatar :src="friendData?.faceURL" :size="62" />
             </div>
           </div>
         </div>
@@ -112,7 +112,14 @@ const sendAddFriendFun = (msg: string) => {
     toUserID: friendData.value.userID,
     reqMsg: msg,
   };
-
+  // 判断是否在黑名单中，如果是，则移出黑名单
+  if (
+    contactsStore.blackList.some(
+      (item) => item.userID === friendData.value.userID
+    )
+  ) {
+    im.removeBlack(friendData.value.userID);
+  }
   im.addFriend(param)
     .then((res) => {
       console.log(res);
@@ -172,7 +179,7 @@ const initData = () => {
     .catch((err) => {
       console.log(err);
     });
-  props?.setInputLoading(false);
+  props.setInputLoading(false);
   props.clearModalData();
 };
 

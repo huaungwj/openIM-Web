@@ -6,8 +6,10 @@ export function useCopy() {
     const input = document.createElement('input');
     document.body.appendChild(input);
     input.setAttribute('value', value);
-    input.select();
+
+    console.log(input);
     if (document.execCommand('copy')) {
+      input.select();
       document.execCommand('copy');
       message.success('复制成功！');
     } else {

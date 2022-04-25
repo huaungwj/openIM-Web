@@ -4,7 +4,7 @@ import { registerApp } from './global';
 import App from './App.vue';
 import router from './router';
 import 'normalize.css/normalize.css';
-import i18n from './lang/i18n';
+import { i18n } from './locales/index';
 import dayjs from 'dayjs';
 import relativeTime from 'dayjs/plugin/relativeTime';
 import 'dayjs/locale/zh-cn';

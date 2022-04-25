@@ -15,6 +15,7 @@ import type {
   GroupMemberItem,
   FriendApplicationItem,
   GroupApplicationItem,
+  ResItemType,
 } from '@/tools/im/types';
 import type { BlackItem } from '@/tools/im/types';
 
@@ -38,7 +39,7 @@ export const useContactsStore = defineStore({
           groupMemberList: [], // 群员列表
           groupInfo: {} as GroupItem, // 群聊信息
           groupMemberLoading: false, // 组成员加载
-          member2status: {},
+          member2status: [], // 群员在线状态
           unReadCount: 0, // 未读信息总计
           conPage: 'tC', // contactPage
           newFGList: {}, // 新的好友和新群组的数据
@@ -146,7 +147,7 @@ export const useContactsStore = defineStore({
         .catch((err) => (this.groupInfo = {} as GroupItem));
     },
     // 设置群聊信息
-    setGroupInfo(data: GroupItem) {
+    setGroupInfo(data: GroupItem[]) {
       this.groupInfo = data;
     },
     //获取群成员列表
@@ -158,8 +159,12 @@ export const useContactsStore = defineStore({
       });
     },
     // 设置群员列表
-    setGroupMemberList(data: GroupMemberItem) {
+    setGroupMemberList(data: GroupMemberItem[]) {
       this.groupMemberList = data;
+    },
+    // 设置在线状态
+    setMember2status(data: ResItemType[]) {
+      this.member2status = data;
     },
 
     // 切换页面

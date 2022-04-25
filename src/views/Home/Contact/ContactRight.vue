@@ -25,18 +25,26 @@ import TCAMF from '@/views/Home/Contact/contactRight/TCAMF.vue';
 import MG from '@/views/Home/Contact/contactRight/MG.vue';
 import ContactTopBar from '@/views/Home/Contact/contactRight/components/ContactTopBar.vue';
 import { useMessage } from 'naive-ui';
-import { im } from '@/tools';
+import { im, isSingleCve } from '@/tools';
 import type { ConversationItem } from '@/tools/im/types';
 import { useOpenCveWindow } from '@/hooks/useOpenCveWindow';
+import { useCveStore } from '@/stores/cve';
 import type { SessionType } from '@/tools/im/constants/messageContentType';
 import { useRouter } from 'vue-router';
 
 const contactsStore = useContactsStore();
+const cveStore = useCveStore();
 const { openCveWindow } = useOpenCveWindow();
 const message = useMessage();
 const router = useRouter();
 // 去聊天页面
-const goChatFun = (id: string, type: SessionType) => {
+const goChatFun = async (id: string, type: SessionType) => {
+  // 检查好友关系是否正常
+  const checkResult = await im.checkFriend([id ?? cveStore.curCve.userID]);
+  console.log(JSON.parse(checkResult.data));
+  if (JSON.parse(checkResult.data)[0].result !== 1)
+    return message.error('你和对方不是好友，无法发送消息');
+
   getOneCve(id, type)
     .then((cve) => openCveWindow(cve))
     .catch((err) => message.error('找不到会话！'));

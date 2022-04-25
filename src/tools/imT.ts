@@ -72,19 +72,21 @@ export const parseMessageType = (
       return '[引用消息]';
     case tipsTypes.FRIENDADDED:
       return '你们已经是好友啦，开始聊天吧~';
-    case tipsTypes.MEMBERENTER:
+    case tipsTypes.MEMBERENTER: {
       const enterDetails = JSON.parse(pmsg.notificationElem.detail);
       const enterUser = enterDetails.entrantUser;
       return `${
         isSelf(enterUser.userID) ? '你' : enterUser.nickname
       }${'加入了群聊'}`;
-    case tipsTypes.GROUPCREATED:
+    }
+    case tipsTypes.GROUPCREATED: {
       const groupCreatedDetail = JSON.parse(pmsg.notificationElem.detail);
       const groupCreatedUser = groupCreatedDetail.opUser;
       return `${
         isSelf(groupCreatedUser.userID) ? '你' : groupCreatedUser.nickname
       }创建了群聊`;
-    case tipsTypes.MEMBERINVITED:
+    }
+    case tipsTypes.MEMBERINVITED: {
       const inviteDetails = JSON.parse(pmsg.notificationElem.detail);
       const inviteOpUser = inviteDetails.opUser;
       const invitedUserList = inviteDetails.invitedUserList ?? [];
@@ -96,7 +98,8 @@ export const parseMessageType = (
       return `${
         isSelf(inviteOpUser.userID) ? '你' : inviteOpUser.nickname
       }'邀请了'${inviteStr}入群`;
-    case tipsTypes.MEMBERKICKED:
+    }
+    case tipsTypes.MEMBERKICKED: {
       const kickDetails = JSON.parse(pmsg.notificationElem.detail);
       const kickOpUser = kickDetails.opUser;
       const kickdUserList = kickDetails.kickedUserList ?? [];
@@ -108,18 +111,34 @@ export const parseMessageType = (
       return `${
         isSelf(kickOpUser.userID) ? '你' : kickOpUser.nickname
       }踢出了${kickStr}`;
-    case tipsTypes.MEMBERQUIT:
+    }
+
+    case tipsTypes.MEMBERQUIT: {
       const quitDetails = JSON.parse(pmsg.notificationElem.detail);
       const quitUser = quitDetails.quitUser;
       return `${isSelf(quitUser.userID) ? '你' : quitUser.nickname}
         '退出了群聊'
       `;
-    case tipsTypes.GROUPINFOUPDATED:
+    }
+
+    case tipsTypes.GROUPINFOUPDATED: {
       const groupUpdateDetail = JSON.parse(pmsg.notificationElem.detail);
       const groupUpdateUser = groupUpdateDetail.opUser;
       return `${
         isSelf(groupUpdateUser.userID) ? '你' : groupUpdateUser.nickname
       }修改了群信息`;
+    }
+
+    case tipsTypes.GROUPOWNERTRANSFERRED: {
+      const transferDetails = JSON.parse(pmsg.notificationElem.detail);
+      const transferOpUser = transferDetails.opUser;
+      const newOwner = transferDetails.newGroupOwner;
+
+      return `${
+        isSelf(transferOpUser.userID) ? '你' : transferOpUser.nickname
+      } 转让了群主给 ${isSelf(newOwner.userID) ? '你' : newOwner.nickname}`;
+    }
+
     default:
       return pmsg.notificationElem.defaultTips;
   }

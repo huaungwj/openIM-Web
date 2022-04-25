@@ -55,7 +55,7 @@ import { useUserStore } from '@/stores/user';
 import md5 from 'md5';
 import { MD5_KEY } from '@/tools/tools';
 import { uuid } from '@/tools/im/util';
-import i18n from '@/lang/i18n';
+import { i18n } from '@/locales/index';
 import { useImLogin } from '@/hooks/useImLogin';
 
 export default defineComponent({

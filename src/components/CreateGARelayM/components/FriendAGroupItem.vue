@@ -1,13 +1,18 @@
 <template>
   <div
     :class="`c_g_m_f_a_g_item ${isChecked && 'active_c_g'} ${
-      groupMemberListID.some((item) => data.userID === item) && 'disabled'
+      groupMemberListID.some((item) => data.userID === item) &&
+      commonStore.createGARelayMTpye === 'addGroupMember' &&
+      'disabled'
     }`"
     @click="selectItem"
   >
     <n-checkbox
       v-model:checked="isChecked"
-      :disabled="groupMemberListID.some((item) => data.userID === item)"
+      :disabled="
+        groupMemberListID.some((item) => data.userID === item) &&
+        commonStore.createGARelayMTpye === 'addGroupMember'
+      "
       @click="selectItem"
     >
     </n-checkbox>
@@ -23,6 +28,7 @@
 import { defineProps, ref, watch, onMounted } from 'vue';
 import type { FriendItem, GroupItem, GroupMemberItem } from '@/tools/im/types';
 import MyAvatar from '@/components/myAvatar/MyAvatar.vue';
+import { useCommonStore } from '@/stores/common';
 import { useContactsStore } from '@/stores/contacts';
 
 const props = defineProps<{
@@ -31,19 +37,34 @@ const props = defineProps<{
   ChangeCheckedArr: (type: string, member: FriendItem | GroupItem) => void;
 }>();
 const contactsStore = useContactsStore();
+const commonStore = useCommonStore();
 const groupMemberListID = ref<string[]>([]);
 const isChecked = ref<boolean>(false);
 
 const selectItem = () => {
-  if (groupMemberListID.value.some((item) => props.data.userID === item))
+  if (
+    groupMemberListID.value.some((item) => props.data.userID === item) &&
+    commonStore.createGARelayMTpye === 'addGroupMember'
+  )
     return;
   isChecked.value = !isChecked.value;
+};
+
+const resetGroupMListID = () => {
+  groupMemberListID.value = contactsStore.groupMemberList.map(
+    (member: GroupMemberItem) => {
+      return member.userID;
+    }
+  );
 };
 
 watch(
   () => isChecked.value,
   () => {
-    if (groupMemberListID.value.some((item) => props.data.userID === item))
+    if (
+      groupMemberListID.value.some((item) => props.data.userID === item) &&
+      commonStore.createGARelayMTpye === 'addGroupMember'
+    )
       return;
     if (isChecked.value) {
       props.ChangeCheckedArr('add', props.data);
@@ -53,12 +74,15 @@ watch(
   }
 );
 
+watch(
+  () => contactsStore.groupMemberList,
+  () => {
+    resetGroupMListID();
+  }
+);
+
 onMounted(() => {
-  groupMemberListID.value = contactsStore.groupMemberList.map(
-    (member: GroupMemberItem) => {
-      return member.userID;
-    }
-  );
+  resetGroupMListID();
 });
 </script>
 

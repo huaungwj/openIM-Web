@@ -1,5 +1,5 @@
 <template>
-  <div class="my_group_c">
+  <div class="my_group_c" v-if="groupListD">
     <!-- 列表 -->
     <div
       class="group_list"
@@ -33,6 +33,16 @@
       </main>
     </div>
   </div>
+  <Empty
+    v-else
+    imgSrc="/src/assets/images/empty5.png"
+    :width="270"
+    :height="250"
+  >
+    <template #header>
+      <p>暂无数据</p>
+    </template>
+  </Empty>
 </template>
 
 <script setup lang="ts">
@@ -41,6 +51,7 @@ import { useContactsStore } from '@/stores/contacts';
 import { pySegSort } from '@/tools/tools';
 import type { GroupItem } from '@/stores/types/contacts';
 import GroupItemComp from '@/views/Home/Contact/contactRight/components/GroupItemComp.vue';
+import Empty from '@/components/Empty/Empty.vue';
 import type { SessionType } from '@/tools/im/constants/messageContentType';
 
 type groupListType = {
@@ -63,15 +74,15 @@ const groupListD = ref<groupListType[]>();
 
 // 初始化群组列表
 const initGroupList = () => {
-  if (contactsStore.groupList.length < 0) return;
+  if (contactsStore.groupList.length === 0) return;
   const sortData: groupListType[] = pySegSort(
     contactsStore.groupList,
     'groupName'
-  ).segs;
+  )?.segs;
   sections.value = sortData.map((sec) => sec.initial);
   // setCons(sortData);
   groupListD.value = sortData;
-  regionActive.value = sortData[0].initial;
+  regionActive.value = sortData[0]?.initial;
 };
 
 // 点击锚点

@@ -40,6 +40,7 @@ import { useCveStore } from '@/stores/cve';
 import { useContactsStore } from '@/stores/contacts';
 import { useUserStore } from '@/stores/user';
 import { CbEvents } from '@/tools/im';
+import { useMessage } from 'naive-ui';
 import type {
   ConversationItem,
   WsResponse,
@@ -62,6 +63,7 @@ const userID = localStorage.getItem('lastimuid')!;
 const { imLogin } = useImLogin();
 const siderRef = ref<LayoutSiderInst | null>(null);
 const cveContentRef = ref<LayoutInst | null>(null);
+const message = useMessage();
 const cveStore = useCveStore();
 const contactsStore = useContactsStore();
 const userStore = useUserStore();
@@ -70,7 +72,7 @@ const route = useRoute();
 if (token && userID) {
   im.getLoginStatus()
     .then((res) => {
-      console.log('登录成功');
+      message.success('登录成功');
     })
     .catch((err) => {
       if (token && userID) {
@@ -135,7 +137,6 @@ const conversationChnageHandler = (data: WsResponse) => {
 
 // 新的会话处理
 const newConversationHandler = (data: WsResponse) => {
-  console.log(JSON.parse(data.data));
   // console.log("ONCONVERSATIONCHANGED 新会话触发");
   let tmpCves = cveStore.cves;
   const news: ConversationItem[] = JSON.parse(data.data);
@@ -231,15 +232,17 @@ const blackDeletedHandler = async (data: WsResponse) => {
 im.on(CbEvents.ONBLACKADDED, blackAddedHandler);
 im.on(CbEvents.ONBLACKDELETED, blackDeletedHandler);
 
-const isCurGroup = (gid: string) => contactsStore.curCve?.groupID === gid;
+const isCurGroup = (gid: string) => cveStore.curCve?.groupID === gid;
 
 const groupHandlerTemplate = (data: WsResponse, type: GruopHandlerType) => {
+  console.log('群组信息触发了', data);
   const result = JSON.parse(data.data);
   const tmpArr = [...contactsStore.groupList];
   const idx = tmpArr.findIndex((f) => f.groupID === result.groupID);
   switch (type) {
     case 'info':
       if (idx !== -1) tmpArr[idx] = result;
+      console.log(result);
       if (isCurGroup(result.groupID)) contactsStore.setGroupInfo(result);
       break;
     case 'added':
@@ -345,8 +348,6 @@ const applicationHandlerTemplate = (
       (reqFlag || a.reqMsg !== application.reqMsg)
   );
   if (idx !== -1) tmpArr.splice(idx, 1);
-  console.log(tmpArr, application);
-
   tmpArr.unshift(application);
   dispatchFn(tmpArr);
 };
