@@ -1,0 +1,15 @@
+export default {
+  accountSettings: 'Account Settings',
+  about: 'About',
+  perSetting: 'Personal settings',
+  selectLang: 'Select language',
+  notice: 'Notice',
+  infoFeedback: 'Information Feedback',
+  serviceAgree: 'Service agreement',
+  checkNewV: ' Check For New Version',
+  newFunction: ' Introduction To New Functions',
+  priAgree: 'Privacy Agreement',
+  copyright: 'copyRight',
+  logout: 'Logout',
+  myInfo: 'My UserInfo',
+};

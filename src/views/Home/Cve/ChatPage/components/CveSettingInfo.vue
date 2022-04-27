@@ -8,7 +8,7 @@
     :on-esc="cancelOutDrawer"
     :trap-focus="false"
   >
-    <n-drawer-content title="设置" v-if="drawerStatus === 'setting'">
+    <n-drawer-content :title="$t('setting')" v-if="drawerStatus === 'setting'">
       <!-- {{ contactsStore.groupInfo }} -->
       <!-- 头像名称部分 -->
       <div class="drawer_item avatar_nickname_c">
@@ -39,7 +39,7 @@
             "
             class="nickname_action"
           >
-            修改群信息
+            {{ $t('modifyGroupInfo') }}
           </p>
         </div>
         <!-- right -->
@@ -56,20 +56,19 @@
       <!-- 群成员 -->
       <div class="drawer_item group_c" v-if="!isSingleCve(cveStore.curCve)">
         <div class="top_c">
-          <span class="title">群成员</span>
-          <span class="right_number_icon">
+          <span class="title">{{ $t('groupMember') }}</span>
+          <span
+            class="right_number_icon"
+            style="cursor: pointer"
+            @click="
+              () => {
+                innerDrawerStatus = true;
+                innerDrawerPage = 'groupMember';
+              }
+            "
+          >
             <span>{{ contactsStore.groupMemberList.length }}</span>
-            <svg
-              class="icon"
-              aria-hidden="true"
-              style="cursor: pointer"
-              @click="
-                () => {
-                  innerDrawerStatus = true;
-                  innerDrawerPage = 'groupMember';
-                }
-              "
-            >
+            <svg class="icon" aria-hidden="true">
               <use xlink:href="#openIM-arrow-right"></use>
             </svg>
           </span>
@@ -118,10 +117,10 @@
       </div>
       <!-- 群备注 -->
       <div class="drawer_item g_remark_c" v-if="!isSingleCve(cveStore.curCve)">
-        <span class="title">群备注</span>
+        <span class="title">{{ $t('groupRemark') }}</span>
         <div style="display: flex">
           <div class="right_remark">
-            <span class="remark">群聊的备注仅自己可见</span>
+            <span class="remark">{{ $t('groupRemarkPlace') }}</span>
           </div>
           <svg class="icon" aria-hidden="true">
             <use xlink:href="#openIM-bianji"></use>
@@ -130,7 +129,7 @@
       </div>
       <!-- 群ID -->
       <div class="drawer_item g_remark_c" v-if="!isSingleCve(cveStore.curCve)">
-        <span class="title">群ID</span>
+        <span class="title">{{ $t('groupID') }}</span>
         <div style="display: flex">
           <div class="right_remark">
             <span class="remark">{{ contactsStore.groupInfo.groupID }}</span>
@@ -147,12 +146,12 @@
       </div>
       <!-- 置顶 -->
       <div class="drawer_item g_remark_c">
-        <span class="title">置顶</span>
+        <span class="title">{{ $t('cve.topping') }}</span>
         <n-switch :value="pinnedStatus" :on-update:value="pinnedChange" />
       </div>
       <!-- 添加到黑名单 -->
       <div class="drawer_item g_remark_c" v-if="isSingleCve(cveStore.curCve)">
-        <span class="title">添加到黑名单</span>
+        <span class="title">{{ $t('cve.addBlackList') }}</span>
         <n-switch
           :value="ship === ShipType.Black"
           :on-update:value="shipChange"
@@ -160,13 +159,17 @@
       </div>
       <!-- 免打扰 -->
       <div class="drawer_item g_remark_c">
-        <span class="title">免打扰</span>
+        <span class="title">{{ $t('cve.disturb') }}</span>
         <n-switch :value="recvStatus" :on-update:value="recvStatusChange" />
       </div>
       <!-- 按钮组 -->
       <div class="g_remark_c" style="justify-content: space-around">
         <n-button strong secondary type="primary" @click="quitGroupFun">
-          {{ isSingleCve(cveStore.curCve) ? '删除好友' : '退出群聊' }}
+          {{
+            isSingleCve(cveStore.curCve)
+              ? $t('cve.delFriend')
+              : $t('cve.exitGroup')
+          }}
         </n-button>
         <n-button
           v-if="
@@ -175,16 +178,19 @@
           "
           tertiary
           type="error"
-          @click="message.info('暂不支持,正在开发中...')"
+          @click="message.info($t('notSupport'))"
         >
-          解散群聊
+          {{ $t('cve.dissolutionGroup') }}
         </n-button>
       </div>
     </n-drawer-content>
-    <n-drawer-content title="群公告" v-if="drawerStatus === 'groupNotice'">
-      <Empty imgSrc="/src/assets/images/empty5.png" :width="220" :height="230">
+    <n-drawer-content
+      :title="$t('cve.groupNotice')"
+      v-if="drawerStatus === 'groupNotice'"
+    >
+      <Empty :imgSrc="Empty5" :width="220" :height="230">
         <template #header>
-          <p>暂无数据</p>
+          <p>{{ $t('emptyData') }}</p>
         </template>
       </Empty>
     </n-drawer-content>
@@ -197,10 +203,13 @@
       :width="360"
       placement="right"
     >
-      <n-drawer-content title="群成员" v-if="innerDrawerPage === 'groupMember'">
+      <n-drawer-content
+        :title="$t('groupMember')"
+        v-if="innerDrawerPage === 'groupMember'"
+      >
         <!-- 搜索框 -->
         <n-input
-          placeholder="搜索"
+          :placeholder="$t('search')"
           size="medium"
           v-model:value="searchGroupText"
           @keydown.enter="searchGroupFun"
@@ -228,7 +237,7 @@
                     type="warning"
                     v-if="contactsStore.groupInfo.ownerUserID === member.userID"
                     size="small"
-                    >群主</n-tag
+                    >{{ $t('groupLeader') }}</n-tag
                   >
                 </span>
                 <p class="online">{{ parseStatus(member.userID) }}</p>
@@ -262,15 +271,16 @@
           </li>
         </div>
       </n-drawer-content>
-      <n-drawer-content title="编辑群信息" v-else>
+      <n-drawer-content :title="$t('modifyGroupInfo')" v-else>
         <!-- 头像部分 -->
         <div class="drawer_item group_edit_item">
-          <span class="title">群头像</span>
+          <span class="title">{{ $t('cve.groupAvatar') }}</span>
           <div class="right_remark">
             <!-- 上传头像 -->
             <UplaodAvatar
               :getUplaodURL="getUplaodURL"
               :faceURL="newGroupInfo.faceURL"
+              :is-edit="false"
             />
             <svg class="icon" aria-hidden="true">
               <use xlink:href="#openIM-arrow-right"></use>
@@ -279,22 +289,22 @@
         </div>
         <!-- 名称部分 -->
         <div class="drawer_item group_edit_item">
-          <div class="title">群名称</div>
+          <div class="title">{{ $t('groupName') }}</div>
           <div class="right_remark">
             <n-input
               type="text"
-              placeholder="请输入群名称"
+              :placeholder="$t('pleaseGroupName')"
               v-model:value="newGroupInfo.groupName"
             />
           </div>
         </div>
         <!-- 群描述 -->
         <div class="drawer_item group_edit_item">
-          <div class="title">群名称</div>
+          <div class="title">{{ $t('groupDesc') }}</div>
           <div class="right_remark">
             <n-input
               type="textarea"
-              placeholder="请输入群描述"
+              :placeholder="$t('pleaseGroupDesc')"
               v-model:value="newGroupInfo.introduction"
             />
           </div>
@@ -302,7 +312,7 @@
 
         <div style="text-align: center">
           <n-button strong secondary type="primary" @click="saveGroupInfo">
-            保存
+            {{ $t('save') }}
           </n-button>
         </div>
       </n-drawer-content>
@@ -315,12 +325,14 @@ import { ref, onMounted, watch } from 'vue';
 import MyAvatar from '@/components/myAvatar/MyAvatar.vue';
 import UplaodAvatar from '@/components/UploadAvatar/UploadAvatar.vue';
 import Empty from '@/components/Empty/Empty.vue';
+import Empty5 from '@/assets/images/empty5.png';
 import Bus from '@/tools/bus';
 import { useContactsStore } from '@/stores/contacts';
 import { useCveStore } from '@/stores/cve';
 import { useCommonStore } from '@/stores/common';
 import { useUserStore } from '@/stores/user';
 import { useMessage, useDialog } from 'naive-ui';
+import { useI18n } from 'vue-i18n';
 import { isSingleCve, im } from '@/tools';
 import type {
   FriendItem,
@@ -330,6 +342,7 @@ import type {
   BlackItem,
   TransferGroupParams,
   GroupBaseInfo,
+  ResItemType,
 } from '@/tools/im/types';
 import { OptType } from '@/tools/im/types';
 import { useCopy } from '@/hooks/useCopy';
@@ -355,6 +368,7 @@ const drawerStatus = ref<string | boolean>('cancel');
 const innerDrawerStatus = ref<boolean | string>(false);
 const innerDrawerPage = ref<string>('groupMember');
 const cveStore = useCveStore();
+const { t } = useI18n();
 const dialog = useDialog();
 const contactsStore = useContactsStore();
 const commonStore = useCommonStore();
@@ -392,6 +406,10 @@ const addFriendFun = () => {
   commonStore.setcreateGARelayMTpye('addGroupMember');
 };
 
+/**
+ * 改变置顶状态
+ * @param value
+ */
 const pinnedChange = (value: boolean) => {
   pinnedStatus.value = value;
   const options: PinCveParams = {
@@ -399,9 +417,11 @@ const pinnedChange = (value: boolean) => {
     isPinned: value,
   };
   im.pinConversation(options)
-    .then((res) => message.success(value ? '置顶成功' : '取消置顶成功'))
-    .catch((err) => {
-      message.error('操作失败，请稍后再试!');
+    .then(() =>
+      message.success(value ? t('cve.topSuc') : t('cve.cancelTopSuc'))
+    )
+    .catch(() => {
+      message.error(t('actionErrorText'));
     });
 };
 
@@ -424,19 +444,19 @@ const recvStatusChange = (value: boolean) => {
           : OptType.WithoutNotify;
       cveStore.setCurCve(tmp);
     })
-    .catch((err) => message.error('操作超时，请稍后再试！'));
+    .catch(() => message.error(t('actionErrorText')));
 };
 
 const shipChange = (value: boolean) => {
   if (value) {
     ship.value = ShipType.Black;
     im.addBlack(cveStore.curCve.userID)
-      .then((res) => message.success('添加黑名单成功！'))
-      .catch((err) => message.error('添加黑名单失败'));
+      .then(() => message.success(t('addBlackSuc')))
+      .catch(() => message.error(t('addBlackFail')));
   } else {
     ship.value = ShipType.Nomal;
-    im.removeBlack(cveStore.curCve.userID).catch((err) =>
-      message.error('移除黑名单失败！')
+    im.removeBlack(cveStore.curCve.userID).catch(() =>
+      message.error(t('removeBlackFail'))
     );
   }
 };
@@ -444,38 +464,38 @@ const shipChange = (value: boolean) => {
 const quitGroupFun = () => {
   if (isSingleCve(cveStore.curCve)) {
     dialog.warning({
-      title: '警告',
-      content: '你确定要删除这个好友吗？',
-      positiveText: '去意已决！',
-      negativeText: '再想想吧！',
+      title: t('warning'),
+      content: t('delFriendWarningText'),
+      positiveText: t('ascertainText'),
+      negativeText: t('cancelText'),
       onPositiveClick: () => {
         // 加入黑名单
         im.addBlack(cveStore.curCve.userID);
         im.deleteFriend(cveStore.curCve.userID)
-          .then((res) => {
+          .then(() => {
             delCve();
-            message.success('解除好友关系成功！');
+            message.success(t('relieveFriendSuc'));
           })
-          .catch((err) => message.error('解除好友关系失败！'));
+          .catch(() => message.error(t('relieveFriendFail')));
         cancelOutDrawer();
       },
     });
   } else {
     dialog.warning({
-      title: '警告',
-      content: '你确定退出这个群聊吗？',
-      positiveText: '去意已决！',
-      negativeText: '再想想吧！',
+      title: t('warning'),
+      content: t('cve.confirmDelGroup'),
+      positiveText: t('ascertainText'),
+      negativeText: t('cancelText'),
       onPositiveClick: () => {
         if (userStore.selfInfo.userID === contactsStore.groupInfo.ownerUserID)
-          return message.warning('请转让群组后，再退出群聊');
+          return message.warning(t('exitGroupFildText1'));
 
         im.quitGroup(cveStore.curCve.groupID)
-          .then((res) => {
-            message.success('退出成功！');
+          .then(() => {
+            message.success(t('exitSuc'));
             cveStore.setCurCve(null);
           })
-          .catch((err) => message.error('退出群聊失败'));
+          .catch(() => message.error(t('exitSuc')));
         cancelOutDrawer();
       },
     });
@@ -485,7 +505,7 @@ const quitGroupFun = () => {
 // 删除会话
 const delCve = () => {
   console.log(cveStore.curCve.conversationID);
-  im.deleteConversation(cveStore.curCve.conversationID).then((res) => {
+  im.deleteConversation(cveStore.curCve.conversationID).then(() => {
     const tarray = [...cveStore.cves];
     const farray = tarray.filter(
       (c) => c.conversationID !== cveStore.curCve.conversationID
@@ -506,21 +526,21 @@ const reduceMemberFun = (userIDList: string[]) => {
     userIDList: userIDList,
   };
   dialog.warning({
-    title: '警告',
-    content: '你确定要踢出此成员吗？',
-    positiveText: '去意已决！',
-    negativeText: '再想想吧！',
+    title: t('warning'),
+    content: t('cve.confirmKickGroup'),
+    positiveText: t('ascertainText'),
+    negativeText: t('cancelText'),
     onPositiveClick: () => {
       im.kickGroupMember(options)
-        .then((res) => {
-          message.success('踢出成功！');
+        .then(() => {
+          message.success(t('cve.kickGroupSuc'));
           // update groupMemberList
           const tmp = contactsStore.groupMemberList.filter(
             (member: GroupMemberItem) => !userIDList.includes(member.userID)
           );
           contactsStore.setGroupMemberList(tmp);
         })
-        .catch((err) => message.error('操作失败，请稍后再试！'));
+        .catch(() => message.error(t('actionErrorText')));
     },
   });
 };
@@ -545,8 +565,8 @@ const initShip = () => {
 };
 
 const parseStatus = (userID: string) => {
-  let str = '离线';
-  const item = contactsStore.member2status[userID];
+  let str = t('offLine');
+  const item: ResItemType = contactsStore.member2status[userID];
   if (item) {
     if (item.status === 'online') {
       str = '';
@@ -555,7 +575,7 @@ const parseStatus = (userID: string) => {
           str += `${pla.platform}/`;
         }
       });
-      str = str.slice(0, -1) + '在线';
+      str = str.slice(0, -1) + ' ' + t('online');
     }
   }
   return `[${str}]`;
@@ -564,7 +584,7 @@ const parseStatus = (userID: string) => {
 /**
  * @param data 进行群主排序的群员列表
  */
-const sortGroupMember = (data: GroupMemberItem[], ownerUserID: string) => {
+const sortGroupMember = (data: GroupMemberItem[], ownerUserID?: string) => {
   const tmp = [...data];
   const index = data.findIndex(
     (member: GroupMemberItem) => ownerUserID === member.userID
@@ -594,21 +614,21 @@ const searchGroupFun = () => {
  */
 const transferGroupFun = (userID: string) => {
   dialog.warning({
-    title: '警告',
-    content: '你确定要转让群主吗？',
-    positiveText: '深思熟虑后的决定！',
-    negativeText: '不了不了！',
+    title: t('warning'),
+    content: t('confirmTransferGroup'),
+    positiveText: t('ascertain'),
+    negativeText: t('cancel'),
     onPositiveClick: () => {
       const options: TransferGroupParams = {
         groupID: cveStore.curCve.groupID,
         newOwnerUserID: userID,
       };
       im.transferGroupOwner(options)
-        .then((res) => {
+        .then(() => {
           sortGroupMember(contactsStore.groupMemberList, userID);
-          message.success('转让成功');
+          message.success(t('transferSuc'));
         })
-        .catch((err) => message.error('转让失败'));
+        .catch(() => message.error(t('transferFail')));
     },
   });
 };
@@ -634,8 +654,8 @@ const saveGroupInfo = () => {
     groupInfo,
   };
   im.setGroupInfo(options)
-    .then((res) => message.success('修改成功！'))
-    .catch((err) => message.error('修改失败！'));
+    .then(() => message.success(t('modifySuc')))
+    .catch(() => message.error(t('modifyFail')));
 
   innerDrawerStatus.value = false;
 };
@@ -675,6 +695,11 @@ watch(
 );
 
 onMounted(() => {
+  initShip();
+  sortGroupMember(
+    contactsStore.groupMemberList,
+    contactsStore.groupInfo.ownerUserID
+  );
   Bus.$on('SETDRAWERSTATUS', (status: string) => {
     drawerStatus.value = status;
   });

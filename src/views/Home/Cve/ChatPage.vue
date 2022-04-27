@@ -17,16 +17,11 @@
       <CharFooterBar />
     </div>
 
-    <Empty
-      v-else
-      :imgSrc="`/src/assets/images/empty1.png`"
-      :width="300"
-      :height="300"
-    >
+    <Empty v-else :imgSrc="Empty1" :width="300" :height="300">
       <template #header>
-        <p class="title" style="font-size: 20px">快去聊天吧~</p>
+        <p class="title" style="font-size: 20px">{{ $t('cve.goChat') }}~</p>
         <p class="sub_title" style="padding-top: 10px">
-          选择一个聊天窗口进行聊天吧~
+          {{ $t('cve.selectCveWindowGoChat') }}
         </p>
       </template>
     </Empty>
@@ -34,7 +29,7 @@
 </template>
 
 <script lang="ts" setup>
-import { watch, onBeforeUnmount, ref } from 'vue';
+import { onBeforeUnmount, ref } from 'vue';
 import ChatTopBar from '@/views/Home/Cve/ChatPage/ChatTopBar.vue';
 import CharContent from './ChatPage/CharContent.vue';
 import CharFooterBar from '@/views/Home/Cve/ChatPage/ChatFooterBar.vue';
@@ -48,10 +43,12 @@ import { SessionType } from '@/tools/im/constants/messageContentType';
 import { messageTypes } from '@/tools/im/constants/messageContentType';
 import { useCveStore } from '@/stores/cve';
 import { useUserStore } from '@/stores/user';
+import { useI18n } from 'vue-i18n';
 import { im, markCveHasRead } from '@/tools';
 import { useMessage } from 'naive-ui';
 import { createNotification } from '@/tools/imT';
 import Empty from '@/components/Empty/Empty.vue';
+import Empty1 from '@/assets/images/empty1.png';
 import { useOpenCveWindow } from '@/hooks/useOpenCveWindow';
 import type { RcFile } from 'rc-upload/lib/interface';
 import { useUploadFile } from '@/hooks/useUploadFile';
@@ -59,12 +56,13 @@ import { useUploadFile } from '@/hooks/useUploadFile';
 const cveStore = useCveStore();
 const userStore = useUserStore();
 const message = useMessage();
+const { t } = useI18n();
 const { sendCosMsg } = useUploadFile();
 const { openCveWindow } = useOpenCveWindow();
 const isDragetIng = ref<boolean>(false); // 是否正在拖拽
-const lastenter = ref(null);
+const lastenter = ref();
 const scaleName = ref<string>(''); // 文件读取阶段状态
-const scale = ref<number>(0); // 本地上传进度
+// const scale = ref<number>(0); // 本地上传进度
 
 // 单聊还是群聊
 const inCurCve = (newServerMsg: MessageItem): boolean => {
@@ -102,7 +100,7 @@ const newMsgHandler = (data: WsResponse) => {
         if (newServerMsg.contentType === messageTypes.REVOKEMESSAGE) {
           cveStore.setHistoryMsgList([
             newServerMsg,
-            ...cveStore.historyMsgList.filter((ms) => {
+            ...cveStore.historyMsgList.filter((ms: MessageItem) => {
               console.log(ms.clientMsgID, newServerMsg.content);
 
               return ms.clientMsgID !== newServerMsg.content;
@@ -123,7 +121,7 @@ const newMsgHandler = (data: WsResponse) => {
 const assignHandler = (id: string, type: SessionType) => {
   getOneCve(id, type)
     .then((cve: ConversationItem) => openCveWindow(cve))
-    .catch((err: any) => message.error('找不到会话！'));
+    .catch(() => message.error(t('notFind') + t('conversation')));
 };
 
 const getOneCve = (
@@ -138,40 +136,43 @@ const getOneCve = (
 };
 
 // 拖拽进入指定区域
-const dragenterFun = function (e) {
+const dragenterFun = function (e: Event) {
   if (scaleName.value) scaleName.value = '';
-  console.log('在容器里面拖动');
+  // console.log('在容器里面拖动');
   lastenter.value = e.target;
   console.log(e.target);
   if (!isDragetIng.value) isDragetIng.value = true;
 };
 // 拖拽离开指定区域
-const dragleaveFun = function (e) {
+const dragleaveFun = function (e: Event) {
   if (isDragetIng.value && lastenter.value == e.target) {
-    console.log('在容器离开了', e.target);
+    // console.log('在容器离开了', e.target);
     isDragetIng.value = false;
   }
 };
 
 // 在指定的区域拖拽 此处不能用节流，否则不能执行
-const dragoverFun = function (e) {
+const dragoverFun = function (e: Event) {
   // console.log('拖拽了');
   e.preventDefault();
 };
 
 // 拖拽的时候鼠标松开
 const dropFun = function (e: DragEvent) {
+  type oFileType = {
+    id: string;
+  };
   // 这里阻止默认事件 为阻止浏览器自动打开拖拽文件
   e.preventDefault();
   cveStore.setFileInfo({});
 
-  if (e.dataTransfer?.files.length === 0 || e.dataTransfer?.files.length > 1) {
+  if (e.dataTransfer?.files.length === 0 || e.dataTransfer!.files.length > 1) {
     isDragetIng.value = false;
-    return message.warning('暂不支持这样的方式发送文件！');
+    return message.warning(t('notSupport'));
   }
 
   // 文件内容
-  let oFile: RcFile = e.dataTransfer.files[0];
+  let oFile: RcFile & oFileType = e.dataTransfer!.files[0];
   oFile.uid = oFile.id = uuid('openIM');
   cveStore.setFileInfo(oFile);
   const fileList = ['image', 'video'];

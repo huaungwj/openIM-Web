@@ -30,6 +30,7 @@ export const useCveStore = defineStore({
           cves: [], // 会话列表
           curCve: null, // 当前使用的会话列表
           cveInitLoading: true, // 初始加载
+          chatPageInitLoading: true, // 聊天页面的会话加载
           historyMsgList: [], // 历史消息
           cveContentRef: null, // 会话内容盒子 ref
           hasMore: true, // 会话列表历史记录是否到底
@@ -67,9 +68,9 @@ export const useCveStore = defineStore({
     },
     // 获取历史信息
     async getMsg(config: any) {
+      this.chatPageInitLoading = true;
       im.getHistoryMessageList(config).then((res) => {
         if (config.startClientMsgID) this.isPullMore = true;
-
         if (JSON.parse(res.data).length === 0) {
           // 最近一次获取如果数量是0的话则没有了
           this.isPullMore = false;
@@ -87,6 +88,7 @@ export const useCveStore = defineStore({
           ...JSON.parse(res.data).reverse(),
         ];
         // this.historyMsgList = JSON.parse(res.data);
+        this.chatPageInitLoading = false;
         this.hasMore = !(JSON.parse(res.data).length < 20);
       });
     },
@@ -124,11 +126,6 @@ export const useCveStore = defineStore({
     setGroupIDCard(id: string) {
       this.groupIDCard = id;
     },
-
-    // // setHasMore
-    // setHasMore(status: boolean) {
-    //   this.hasMore = status;
-    // },
   },
 });
 

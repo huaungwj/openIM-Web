@@ -29,12 +29,12 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch, onBeforeUnmount, onMounted, nextTick } from 'vue';
+import { ref, onBeforeUnmount, onMounted, nextTick } from 'vue';
 import type { LayoutInst, LayoutSiderInst } from 'naive-ui';
 import LeftSider from '@/components/LeftSider/LeftSider.vue';
 import CreateGARelayM from '@/components/CreateGARelayM/CreateGARelayM.vue';
 import { im, cveSort } from '@/tools';
-import { throttle, isContain } from '@/tools/tools';
+import { throttle } from '@/tools/tools';
 import { useImLogin } from '@/hooks/useImLogin';
 import { useCveStore } from '@/stores/cve';
 import { useContactsStore } from '@/stores/contacts';
@@ -50,6 +50,7 @@ import type {
   MessageItem,
 } from '@/tools/im/types';
 import { useRoute } from 'vue-router';
+import router from '../../router';
 
 type GruopHandlerType =
   | 'added'
@@ -58,8 +59,8 @@ type GruopHandlerType =
   | 'memberAdded'
   | 'memberDeleted';
 
-const token = localStorage.getItem(`improfile`)!;
-const userID = localStorage.getItem('lastimuid')!;
+const token = localStorage.getItem(`improfile`);
+const userID = localStorage.getItem('lastimuid');
 const { imLogin } = useImLogin();
 const siderRef = ref<LayoutSiderInst | null>(null);
 const cveContentRef = ref<LayoutInst | null>(null);
@@ -68,22 +69,26 @@ const cveStore = useCveStore();
 const contactsStore = useContactsStore();
 const userStore = useUserStore();
 const route = useRoute();
+const networkOnLine = ref<boolean>(navigator.onLine);
 // 是否登录
-if (token && userID) {
-  im.getLoginStatus()
-    .then((res) => {
-      message.success('登录成功');
-    })
-    .catch((err) => {
-      if (token && userID) {
-        imLogin(userID, token);
-      }
-    });
-}
+const isLogin = () => {
+  if (token && userID) {
+    im.getLoginStatus()
+      .then(() => {
+        message.success('登录成功');
+      })
+      .catch(() => {
+        if (token && userID) {
+          imLogin(userID, token);
+        }
+      });
+  }
+};
+isLogin();
 
 // 滚动
 const scrollChange = throttle(
-  (e: Event) => {
+  () => {
     if (cveStore.cveCScHeight !== cveStore.cveContentRef.scrollHeight) {
       cveStore.setCveCScHeiht(cveStore.cveContentRef.scrollHeight);
     }
@@ -100,7 +105,7 @@ const scrollChange = throttle(
         groupID: cveStore.curCve.groupID ?? '',
         count: 20,
         startClientMsgID:
-          cveStore.historyMsgList[cveStore.historyMsgList.length - 1]!
+          cveStore.historyMsgList[cveStore.historyMsgList.length - 1]
             .clientMsgID,
       };
       cveStore.getMsg(config);
@@ -125,7 +130,9 @@ const conversationChnageHandler = (data: WsResponse) => {
   // 最近一条消息
   const ms = JSON.parse(changes[0].latestMsg);
   const chids = changes.map((ch) => ch.conversationID);
-  filterArr = tmpCves.filter((tc) => !chids.includes(tc.conversationID));
+  filterArr = tmpCves.filter(
+    (tc: ConversationItem) => !chids.includes(tc.conversationID)
+  );
   // 查找当前会话的信息 进行替换
   const idx = changes.findIndex(
     (c) => c.conversationID === cveStore.curCve?.conversationID
@@ -321,6 +328,7 @@ const applicationHandlerTemplate = (
   failed: string,
   reqFlag = false
 ) => {
+  // eslint-disable-next-line @typescript-eslint/no-empty-function
   let dispatchFn = (list: any) => {};
   let tmpArr: any[] = [];
   switch (failed) {
@@ -336,6 +344,7 @@ const applicationHandlerTemplate = (
       dispatchFn = contactsStore.setSentGroupApplicationList;
       tmpArr = [...contactsStore.sentGroupApplicationList];
       break;
+    // eslint-disable-next-line no-duplicate-case
     case 'fromUserID':
       dispatchFn = contactsStore.setRecvGroupApplicationList;
       tmpArr = [...contactsStore.recvGroupApplicationList];
@@ -399,10 +408,29 @@ im.on(CbEvents.ONGROUPAPPLICATIONADDED, groupApplicationAddedHandler);
 im.on(CbEvents.ONGROUPAPPLICATIONACCEPTED, groupApplicationProcessedHandler);
 im.on(CbEvents.ONGROUPAPPLICATIONREJECTED, groupApplicationProcessedHandler);
 
+const kickOffline = (data: WsResponse) => {
+  console.log(data);
+  router.replace('/login');
+};
+
+const tokenExpired = (data: WsResponse) => {
+  console.log(data);
+  router.replace('/login');
+};
+
+/**
+ * 被踢下线
+ */
+im.on(CbEvents.ONKICKEDOFFLINE, kickOffline);
+/**
+ * 账号token过期
+ */
+im.on(CbEvents.ONUSERTOKENEXPIRED, tokenExpired);
+
 onMounted(() => {
   nextTick(() => {
     cveStore.setCveContentRef(
-      cveContentRef.value?.$el?.children[0].childNodes[0]
+      cveContentRef.value?.$el!.children[0].childNodes[0]
     );
   });
 });
@@ -455,12 +483,33 @@ onBeforeUnmount(() => {
   im.off(CbEvents.ONGROUPAPPLICATIONREJECTED, groupApplicationProcessedHandler);
 });
 
+/**
+ * 被踢下线
+ */
+im.off(CbEvents.ONKICKEDOFFLINE, kickOffline);
+/**
+ * 账号token过期
+ */
+im.off(CbEvents.ONUSERTOKENEXPIRED, tokenExpired);
+
 window.urlClick = (url: string) => {
   if (url.indexOf('http') === -1 && url.indexOf('https') === -1) {
     url = `http://${url}`;
   }
   window.open(url, '_blank');
 };
+
+const updateOnlineStatus = () => {
+  networkOnLine.value = navigator.onLine;
+  if (networkOnLine.value) {
+    message.success('网络重连成功！');
+    isLogin();
+  } else {
+    message.error('掉线啦（>_<）...');
+  }
+};
+window.addEventListener('online', updateOnlineStatus);
+window.addEventListener('offline', updateOnlineStatus);
 </script>
 
 <style></style>

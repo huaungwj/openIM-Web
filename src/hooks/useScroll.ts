@@ -1,5 +1,4 @@
 import { useCveStore } from '@/stores/cve';
-import { nextTick } from 'vue';
 
 export function useScroll() {
   const cveStore = useCveStore();

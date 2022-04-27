@@ -19,7 +19,9 @@
     <MyAvatar class="face_url" :src="data.faceURL" :size="33" />
     <span class="show_name"
       >{{ data.nickname ? data.nickname : data.groupName }}
-      <n-tag type="info" v-if="data.groupName"> 群聊 </n-tag></span
+      <n-tag type="info" v-if="data.groupName">
+        {{ $t('groupChat') }}
+      </n-tag></span
     >
   </div>
 </template>
@@ -34,7 +36,7 @@ import { useContactsStore } from '@/stores/contacts';
 const props = defineProps<{
   type: string;
   data: FriendItem & GroupItem;
-  ChangeCheckedArr: (type: string, member: FriendItem | GroupItem) => void;
+  ChangeCheckedArr: (type: string, member: FriendItem & GroupItem) => void;
 }>();
 const contactsStore = useContactsStore();
 const commonStore = useCommonStore();

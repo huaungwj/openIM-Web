@@ -2,7 +2,7 @@
   <div class="top_search_container">
     <!-- search input -->
     <n-input
-      placeholder="搜索"
+      :placeholder="$t('search')"
       size="small"
       v-model:value="searchText"
       @keydown.enter="searchFun"
@@ -37,10 +37,10 @@
         <div>
           {{
             operType === 'addFriends'
-              ? '添加好友'
+              ? $t('addFriend')
               : operType === 'addGroupChat'
-              ? '添加群聊'
-              : '创建群聊'
+              ? $t('addGroup')
+              : $t('createGroup')
           }}
         </div>
       </template>
@@ -51,20 +51,22 @@
           type="text"
           :placeholder="
             operType === 'addFriends'
-              ? '请输入用户ID'
+              ? $t('pleaseUserID')
               : operType === 'addGroupChat'
-              ? '请输入群聊ID'
-              : '请输入群名称'
+              ? $t('pleaseGroupID')
+              : $t('pleaseGroupName')
           "
           :loading="inputLoading"
         />
       </div>
       <template #action>
         <div class="top_search_modal_footer">
-          <n-button type="primary" @click="actionSearchFun"> 确定 </n-button>
-          <n-button class="cancel_btn" @click="isShowModal = false"
-            >取消</n-button
-          >
+          <n-button type="primary" @click="actionSearchFun">
+            {{ $t('ascertain') }}
+          </n-button>
+          <n-button class="cancel_btn" @click="isShowModal = false">{{
+            $t('cancel')
+          }}</n-button>
         </div>
       </template>
     </n-modal>
@@ -94,6 +96,7 @@
 
 <script lang="ts" setup>
 import { h, ref } from 'vue';
+import type { Ref } from 'vue';
 import type { Component } from 'vue';
 import { NIcon, useMessage } from 'naive-ui';
 import UserCardModal from '@/components/UserCardModal/UserCardModal.vue';
@@ -107,9 +110,9 @@ import { useUserStore } from '@/stores/user';
 import { useCveStore } from '@/stores/cve';
 import { useContactsStore } from '@/stores/contacts';
 import { useCommonStore } from '@/stores/common';
+import { useI18n } from 'vue-i18n';
 import type {
   ConversationItem,
-  PartialUserItem,
   FriendItem,
   FriendApplicationItem,
   GroupApplicationItem,
@@ -131,6 +134,7 @@ const message = useMessage();
 const cveStore = useCveStore();
 const userStore = useUserStore();
 const contactsStore = useContactsStore();
+const { t } = useI18n();
 const commonStore = useCommonStore();
 const route = useRoute();
 // 是否显示模态框
@@ -165,26 +169,21 @@ const pGroupList = ref<GroupItem[]>([]);
 // menu
 const addMenuOptions = [
   {
-    label: '添加好友',
+    label: t('addFriend'),
     key: 'addFriends',
     icon: renderIcon(AddFriendsIcon),
   },
   {
-    label: '添加群聊',
+    label: t('addGroup'),
     key: 'addGroupChat',
     icon: renderIcon(AddGroupIcon),
   },
   {
-    label: '创建群聊',
+    label: t('createGroup'),
     key: 'createGroupChat',
     icon: renderIcon(createGroupIcon),
   },
 ];
-
-// 自我信息
-let selfInfo: PartialUserItem = {
-  userID: userStore.selfInfo.userID,
-};
 
 // 最外层的模态框状态控制
 const changeQuModal = (type: boolean) => {
@@ -225,7 +224,7 @@ const searchFirendFun = () => {
   // 1. 判断 userID 是否是自个账号
   if (userStore.selfInfo.userID === modalInputValue.value) {
     setInputLoading(false);
-    message.info('不能添加自己！');
+    message.info(t('noAddSelf'));
     return false;
   }
   cveStore.setFriIDCard(modalInputValue.value);
@@ -240,7 +239,7 @@ const setInputLoading = (type: boolean) => {
 // 搜索朋友、搜索群聊、创建群聊
 const actionSearchFun = () => {
   if (!modalInputValue.value) {
-    message.error('请输入内容后继续');
+    message.error(t('verifyEmpty'));
     return false;
   } else if (operType.value === 'addFriends') {
     cveStore.setFriCardStatus(false);
@@ -254,7 +253,7 @@ const actionSearchFun = () => {
 };
 
 // 清空数据
-const clearModalData = (type: string) => {
+const clearModalData = (type?: string) => {
   if (type === 'single') return cveStore.setFriIDCard('');
 
   return cveStore.setGroupIDCard('');
@@ -269,7 +268,7 @@ const clearModalData = (type: string) => {
  * @param filterFun 过滤函数
  */
 const commActionFun = (
-  p: ref<any[]>,
+  p: Ref<any[]>,
   store: any,
   storeValue: string,
   setStoreFun: (data: any) => void,
@@ -279,7 +278,7 @@ const commActionFun = (
   if (!store[storeValue]) return setStoreFun(p.value);
   let tmp = filterFun();
 
-  if (tmp.length === 0) return message.info('没有找到相关的信息');
+  if (tmp.length === 0) return message.info(t('noFindAboutMessage'));
   setStoreFun(tmp);
 };
 

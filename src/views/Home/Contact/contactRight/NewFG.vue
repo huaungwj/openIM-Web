@@ -23,16 +23,12 @@
     <!-- 空 -->
     <Empty
       v-else
-      :imgSrc="`${
-        $isDark.value
-          ? '/src/assets/images/empty3.png'
-          : '/src/assets/images/empty2.png'
-      }`"
+      :imgSrc="`${$isDark.value ? Empty3 : Empty2}`"
       :width="400"
       :height="300"
     >
       <template #header>
-        <p>暂无数据</p>
+        <p>{{ $t('emptyData') }}</p>
       </template>
     </Empty>
   </div>
@@ -43,11 +39,14 @@ import { watch, ref, onMounted, defineProps } from 'vue';
 import { useContactsStore } from '@/stores/contacts';
 import FGItemComp from '@/views/Home/Contact/contactRight/components/FGItemComp.vue';
 import Empty from '@/components/Empty/Empty.vue';
+import Empty3 from '@/assets/images/empty3.png';
+import Empty2 from '@/assets/images/empty2.png';
+import { useI18n } from 'vue-i18n';
 import type {
   FriendApplicationItem,
   GroupApplicationItem,
 } from '@/tools/im/types';
-import type { SessionType } from '../../../../tools/im/constants/messageContentType';
+import type { SessionType } from '@/tools/im/constants/messageContentType';
 
 type newFGArrType = {
   data: FriendApplicationItem[] & GroupApplicationItem[];
@@ -56,12 +55,13 @@ type newFGArrType = {
 };
 
 // props
-const props = defineProps<{
+defineProps<{
   goChatFun: (id: string, type: SessionType) => void;
 }>();
 
 // use
 const contactsStore = useContactsStore();
+const { t } = useI18n();
 const sections = ref<string[]>();
 const newFGArr = ref<newFGArrType[]>();
 const type = ref<string>('');
@@ -71,9 +71,9 @@ const sortData = () => {
   if (contactsStore.newFGList.length < 0) return;
   type.value = contactsStore.newFGList.type;
   const tmp: newFGArrType[] = [
-    { initial: '等待处理', data: [], key: 'loading' },
-    { initial: '已添加', data: [], key: 'over' },
-    { initial: '已拒绝', data: [], key: 'refuse' },
+    { initial: t('pending'), data: [], key: 'loading' },
+    { initial: t('added'), data: [], key: 'over' },
+    { initial: t('rejected'), data: [], key: 'refuse' },
   ];
   contactsStore.newFGList.data.forEach(
     (item: FriendApplicationItem & GroupApplicationItem) => {

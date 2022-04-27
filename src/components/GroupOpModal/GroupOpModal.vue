@@ -39,7 +39,9 @@
         </div>
         <!-- 下面内容盒子 -->
         <div class="user_c_modal_cotainer">
-          <p class="title">群成员：{{ groupData.memberCount }}人</p>
+          <p class="title">
+            {{ t('groupMember') }}：{{ groupData.memberCount }}人
+          </p>
           <!-- 头像列表 -->
           <div class="avatar_list">
             <MyAvatar :src="`ic_avatar_07`" :size="33.3" />
@@ -52,7 +54,7 @@
             </n-avatar>
           </div>
           <!--  -->
-          <span class="title">群ID</span>
+          <span class="title">{{ t('groupID') }}：</span>
           <p class="group_id">
             <n-tooltip trigger="hover">
               <template #trigger>
@@ -69,13 +71,12 @@
             </n-tooltip>
           </p>
           <n-button @click="sendAddOrSendM" class="add_f_btn" type="primary">{{
-            isInGroup() ? '发送消息' : '添加群聊'
+            isInGroup() ? t('sendMsg') : t('addGroup')
           }}</n-button>
         </div>
       </div>
 
       <!-- 发送群组申请 -->
-      <!-- e556230f35dee52f5d124980eb49c906 -->
       <SendApplyCard
         v-else
         :name="groupData.groupName"
@@ -101,6 +102,7 @@ import { SessionType } from '../../tools/im/constants/messageContentType';
 import { useOpenCveWindow } from '@/hooks/useOpenCveWindow';
 import { useCopy } from '@/hooks/useCopy';
 import { useRouter, useRoute } from 'vue-router';
+import { useI18n } from 'vue-i18n';
 import { useCveStore } from '@/stores/cve';
 
 // props
@@ -116,6 +118,7 @@ const props = defineProps<{
 const contactsStore = useContactsStore();
 const cveStore = useCveStore();
 const router = useRouter();
+const { t } = useI18n();
 const route = useRoute();
 const { openCveWindow } = useOpenCveWindow();
 const { copyFun } = useCopy();
@@ -165,7 +168,7 @@ const sendAddGroupFun = (msg: string) => {
   // 加入群聊
   im.joinGroup(param)
     .then((res) => {
-      message.success('发送申请成功');
+      message.success(t('sendSuc'));
       props.changeGroupCardStatus(false);
       cardTypeStatus.value = 'default';
     })
@@ -201,12 +204,12 @@ const sendAddOrSendM = () => {
     // 发送信息
     getOneCve(groupData.value.groupID, SessionType.GROUPCVE)
       .then((cve) => openCveWindow(cve))
-      .catch((err) => message.error('找不到会话！'));
+      .catch((err) => message.error(t('notFind') + t('conversation') + '!'));
   }
 
   props.changeGroupCardStatus(false);
-  props?.setInputLoading(false);
-  props.changeQuModal(false);
+  props.setInputLoading!(false);
+  props.changeQuModal!(false);
   if (route.path !== '/cve') return router.push('/cve');
 };
 
@@ -216,19 +219,19 @@ const initGroupInfo = () => {
   console.log(cveStore.groupIDCard);
   im.getGroupsInfo([cveStore.groupIDCard])
     .then((res) => {
-      props?.setInputLoading(false);
+      props?.setInputLoading!(false);
       const tmpArr = JSON.parse(res.data);
       console.log(tmpArr);
       if (tmpArr.length > 0) {
         groupData.value = tmpArr[0];
       } else {
-        message.info('用户搜索结果为空');
+        message.info(t('userSearchEmpty'));
       }
     })
     .catch((err) => {
-      message.error('操作失败，请稍后再试！');
+      message.error(t('actionErrorText'));
     });
-  props.clearModalData('group');
+  props.clearModalData!('group');
 };
 
 watch(

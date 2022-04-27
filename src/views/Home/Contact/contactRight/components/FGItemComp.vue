@@ -42,13 +42,13 @@
           class="apply_msg"
           v-if="contactsStore.conPage === 'nF'"
         >
-          请求信息：
+          {{t('reqMsg.reqInfo')}}：
           {{
             con.reqMsg
               ? con.reqMsg
               : contactsStore.conPage === 'nF' && type === 'from'
-              ? con.fromNickname + ` 请求添加你为朋友`
-              : con.toNickname + `请求添加你为朋友`
+              ? con.fromNickname + t('reqMsg.reqAddFriend')
+              : con.toNickname + t('reqMsg.reqAddFriend')
           }}
         </p>
         <p class="fg_user_info_userID">
@@ -88,16 +88,16 @@
 
         <!-- 群组验证消息 -->
         <p v-if="contactsStore.conPage === 'nG'">
-          <p>申请加入: <a>{{con.groupName}}</a></p>
-          <p>申请理由：{{con.reqMsg}}</p>
+          <p>{{$t('reqMsg.applyToJoin')}}: <a>{{con.groupName}}</a></p>
+          <p>{{$t('reqMsg.applyReason')}}: {{con.reqMsg}}</p>
         </p>
       </div>
     </div>
     <!-- 操作部分 - 仅未处理 handleResult === 0 -->
     <div class="action_c" v-if="initial === 'loading'">
-      <n-button type="primary" v-if="type === 'from'" @click="acceptFun"> 同意 </n-button
-      ><n-button type="error" ghost v-if="type === 'from'" @click="refuseFun"> 拒绝 </n-button>
-      <span v-else>待处理</span>
+      <n-button type="primary" v-if="type === 'from'" @click="acceptFun"> {{t('agree')}} </n-button
+      ><n-button type="error" ghost v-if="type === 'from'" @click="refuseFun"> {{t('refuse')}} </n-button>
+      <span v-else>{{t('pending')}}</span>
     </div>
     <!-- 已添加 -->
     <div
@@ -125,7 +125,7 @@
       </svg>
     </div>
     <!-- 拒绝 -->
-    <div class="refuse" v-if="initial === 'refuse'">已拒绝</div>
+    <div class="refuse" v-if="initial === 'refuse'">{{t('rejected')}}</div>
   </div>
 </template>
 
@@ -141,6 +141,7 @@ import { SessionType } from '@/tools/im/constants/messageContentType';
 import { useCopy } from '@/hooks/useCopy';
 import { im } from '@/tools';
 import type { AccessFriendParams, AccessGroupParams } from '@/tools/im/types';
+import { useI18n } from 'vue-i18n';
 import { useMessage } from 'naive-ui';
 
 const props = defineProps<{
@@ -151,6 +152,7 @@ const props = defineProps<{
 }>();
 
 const { copyFun } = useCopy();
+const {t} = useI18n()
 const message = useMessage()
 
 // 同意好友申请 | 同意入群申请
@@ -162,7 +164,7 @@ const acceptFun = () => {
       toUserID: props.con.fromUserID,
       handleMsg: ""
     }
-    im.acceptFriendApplication(options).then(res => message.success("添加朋友成功")).catch(err => message.error('添加失败'))
+    im.acceptFriendApplication(options).then(res => message.success(t('addFriendSuc'))).catch(err => message.error(t('addFriendFail')))
   }else {
     // group
     const options:AccessGroupParams = {
@@ -171,8 +173,8 @@ const acceptFun = () => {
       handleMsg:""
     }
     im.acceptGroupApplication(options)
-    .then(res => message.success(`你同意了${props.con.nickname}的入群申请`))
-    .catch(err => message.error('添加失败'))
+    .then(res => message.success(`${t('your')}${t('agree')}${props.con.nickname}${t('groupApplication')}`))
+    .catch(err => message.error(t('actionErrorText')))
   }
 }
 
@@ -186,7 +188,7 @@ const refuseFun = () => {
       
     }
     im.refuseFriendApplication(options).then()
-    .catch(err => message.error('操作失败，请稍后再试！'))
+    .catch(err => message.error(t('actionErrorText')))
   }else {
     // 2. 入群申请
     const options:AccessGroupParams = {
@@ -195,7 +197,7 @@ const refuseFun = () => {
       handleMsg:""
     }
     im.refuseGroupApplication(options).then()
-    .catch(err => message.error('操作失败，请稍后再试！'))
+    .catch(err => message.error(t('actionErrorText')))
   }
 }
 

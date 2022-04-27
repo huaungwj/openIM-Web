@@ -87,21 +87,21 @@
         </div>
         <hr />
 
-        <p class="title">个人名片</p>
+        <p class="title">{{ $t('selfCard') }}</p>
       </div>
       <!-- 地理位置类型消息 -->
       <div
         class="location_type"
         v-if="msg.contentType === messageTypes.LOCATIONMESSAGE"
       >
-        地理消息
+        {{ $t('location') + $t('message') }}
       </div>
       <!-- 自定义消息 -->
       <div
         class="custom_type"
         v-if="msg.contentType === messageTypes.CUSTOMMESSAGE"
       >
-        自定义消息
+        {{ $t('custom') + $t('message') }}
       </div>
 
       <!-- 已读回执类型消息 -->
@@ -118,7 +118,7 @@
       >
         <!-- 引用消息 -->
         <div class="quqte_content">
-          回复{{ msg.quoteElem.quoteMessage.senderNickname }}:
+          {{ $t('reply') + ' ：' + msg.quoteElem.quoteMessage.senderNickname }}:
           <p
             class="qut_text"
             v-if="
@@ -167,7 +167,7 @@
           msg.sendID === userStore.selfInfo.userID
         "
       >
-        {{ msg.isRead ? '已读' : '未读' }}
+        {{ msg.isRead ? $t('read') : $t('unRead') }}
       </div>
       <!-- 已删除，发送不成功显示 -->
       <div class="is_read_c" v-if="[3, 4].some((item) => item === msg.status)">
@@ -177,7 +177,7 @@
               <use xlink:href="#openIM-cuowutishi"></use>
             </svg>
           </template>
-          发送失败或者对方已把你拉黑
+          {{ $t('sendFail') }}
         </n-tooltip>
       </div>
     </div>
@@ -213,7 +213,7 @@ const isImage = ref<boolean>(false);
 const props = defineProps<{ msg: MessageItem; msgIsRead?: boolean }>();
 
 const parseEmojiFace = (mstr: string) => {
-  faceMap.map((f) => {
+  faceMap().map((f) => {
     const idx = mstr.indexOf(f.context);
 
     if (idx > -1) {
@@ -282,7 +282,7 @@ const parseUrl = (mstr: string) => {
 };
 
 // 对文本进行重排
-const parseTextFun = (content): string => {
+const parseTextFun = (content: string): string => {
   let atMsg = content;
   atMsg = parseEmojiFace(atMsg);
 
@@ -326,7 +326,7 @@ const clickMerge = () => {
 
 onMounted(() => {
   if (props.msg.videoElem?.videoUrl) {
-    let player = new Player({
+    new Player({
       id: props.msg.videoElem.snapshotUUID,
       url: props.msg.videoElem.videoUrl,
       controlPlugins: [volume, playbackRate, pip],

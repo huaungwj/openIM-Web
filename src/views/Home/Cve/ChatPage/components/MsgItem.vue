@@ -22,22 +22,23 @@
     <div class="n_msg_item" v-else>
       <!-- 转让群主 -->
       <div v-if="msg.contentType === tipsTypes.GROUPOWNERTRANSFERRED">
-        <a>{{ parseTransferGroupFun().oldOpUserName }} </a> 转让了群主给
+        <a>{{ parseTransferGroupFun().oldOpUserName }} </a>
+        {{ $t('cve.transferGroupText') }}
         <a> {{ parseTransferGroupFun().newOpUserName }} </a>
       </div>
       <!-- 退出群聊 -->
       <div v-if="msg.contentType === tipsTypes.MEMBERQUIT">
         <a>{{
           userStore.selfInfo.userID === msg.sendID
-            ? '你'
+            ? $t('your')
             : JSON.parse(msg.notificationElem.detail).quitUser.nickname
         }}</a>
-        退出了群聊
+        {{ $t('cve.exitGroupText') }}
       </div>
       <!-- 踢出群聊 -->
       <div v-if="msg.contentType === tipsTypes.MEMBERKICKED">
         <a>{{ parseMemberInv('kickedUserList').inviteOpUser }}</a>
-        踢出了
+        {{ $t('cve.kickGroupSucText') }}
         <a
           v-for="item in parseMemberInv('kickedUserList').inviteUsers"
           :key="item"
@@ -47,23 +48,23 @@
       <!-- 邀请入群 -->
       <div v-if="msg.contentType === tipsTypes.MEMBERINVITED">
         <a>{{ parseMemberInv('invitedUserList').inviteOpUser }}</a>
-        邀请了
+        {{ $t('cve.invitedText') }}
         <a
           v-for="item in parseMemberInv('invitedUserList').inviteUsers"
           :key="item"
           >{{ item }}&nbsp;&nbsp;</a
         >
-        入群
+        {{ $t('cve.groupEntry') }}
       </div>
       <!-- 创建了群聊 -->
       <div v-if="msg.contentType === tipsTypes.GROUPCREATED">
         <a>{{
           userStore.selfInfo.userID === msg.sendID
-            ? '你'
+            ? $t('your')
             : JSON.parse(JSON.parse(props.msg.content).jsonDetail)
                 .groupOwnerUser.nickname
         }}</a>
-        创建了群聊
+        {{ $t('cve.createdGroup') }}
       </div>
       <!-- 撤回消息 -->
       <div
@@ -71,7 +72,7 @@
         v-if="msg.contentType === tipsTypes.REVOKEMESSAGE"
       >
         <a>{{ msg.senderNickname }}</a>
-        撤回了一条消息
+        {{ $t('cve.revorkOnlyMsg') }}
       </div>
       <!-- 新成员加入 -->
       <div
@@ -81,7 +82,7 @@
         <a>{{
           JSON.parse(msg.notificationElem.detail).entrantUser.nickname
         }}</a>
-        加入了群聊
+        {{ $t('cve.joinedGroup') }}
       </div>
 
       <!-- 修改群信息 -->
@@ -91,7 +92,7 @@
       >
         <a> {{ JSON.parse(msg.notificationElem.detail).opUser.nickname }}</a>
 
-        修改群信息
+        {{ $t('cve.editGroupInfo') }}
       </div>
 
       <!-- 添加好友信息 -->
@@ -99,20 +100,21 @@
         class="chat_bg_tips"
         v-if="msg.contentType === tipsTypes.FRIENDADDED"
       >
-        你们已经是好友啦，开始聊天吧~
+        {{ $t('cve.aCall') }}
       </div>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { defineProps, onMounted, ref, watch, onBeforeUnmount } from 'vue';
+import { defineProps, onMounted, ref, watch } from 'vue';
 
 import MyAvatar from '@/components/myAvatar/MyAvatar.vue';
-import type { MessageItem } from '@/tools/im/types';
+import type { MessageItem, FriendItem } from '@/tools/im/types';
 import SwitchMsgType from '@/views/Home/Cve/ChatPage/components/SwitchMsgType.vue';
 import { useUserStore } from '@/stores/user';
 import { useCveStore } from '@/stores/cve';
+import { useI18n } from 'vue-i18n';
 import {
   tipsTypes,
   messageTypes,
@@ -123,6 +125,7 @@ import Bus from '@/tools/bus';
 const props = defineProps<{ msg: MessageItem; mutilSelect?: boolean }>();
 const cveStore = useCveStore();
 const userStore = useUserStore();
+const { t } = useI18n();
 const msgIsRead = ref<boolean>(props.msg.isRead);
 const mutilCheckSelect = ref<boolean>(false); //当前消息是否被选中
 const canSelectTypes = [
@@ -157,18 +160,18 @@ const parseMemberInv = (type: string) => {
   const inviteDetails = JSON.parse(props.msg.notificationElem.detail);
   const inviteOpUser = inviteDetails.opUser;
   const invitedUserList = inviteDetails[type] ?? [];
-  let inviteUsers: any[] = []; // 被邀请者
+  let inviteUsers: string[] = []; // 被邀请者
 
-  invitedUserList.forEach((user: any) => {
+  invitedUserList.forEach((user: FriendItem) => {
     inviteUsers.push(
-      userStore.selfInfo.userID === user.userID ? '你' : user.nickname
+      userStore.selfInfo.userID === user.userID ? t('your') : user.nickname
     );
   });
 
   return {
     inviteOpUser:
       userStore.selfInfo.userID === props.msg.sendID
-        ? '你'
+        ? t('your')
         : inviteOpUser.nickname,
 
     inviteUsers,
@@ -185,11 +188,13 @@ const parseTransferGroupFun = () => {
     oldUserID: transferOpUser.userID,
     oldOpUserName:
       transferOpUser.userID === userStore.selfInfo.userID
-        ? '你'
+        ? t('your')
         : transferOpUser.nickname,
     newUserID: newOwner.userID,
     newOpUserName:
-      newOwner.userID === userStore.selfInfo.userID ? '你' : newOwner.nickname,
+      newOwner.userID === userStore.selfInfo.userID
+        ? t('your')
+        : newOwner.nickname,
   };
 };
 

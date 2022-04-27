@@ -34,28 +34,26 @@
       </ul>
     </div>
   </div>
-  <Empty
-    v-else
-    imgSrc="/src/assets/images/empty5.png"
-    :width="270"
-    :height="250"
-  >
+  <Empty v-else :imgSrc="Empty5" :width="270" :height="250">
     <template #header>
-      <p>暂无数据</p>
+      <p>{{ $t('emptyData') }}</p>
     </template>
   </Empty>
 </template>
 
 <script setup lang="ts">
-import { defineProps } from 'vue';
+import { defineProps, onMounted, watch, nextTick } from 'vue';
 import SectionItemComp from '@/views/Home/Contact/contactRight/components/SectionItemComp.vue';
 import Empty from '@/components/Empty/Empty.vue';
+import Empty5 from '@/assets/images/empty5.png';
+import { useContactsStore } from '@/stores/contacts';
 import { useFriend } from '@/hooks/useFriend';
 
-const props = defineProps<{ goChatFun: () => void }>();
+defineProps<{ goChatFun: () => void }>();
 
 // use
 const { sections, consList, regionActive, initFriendList } = useFriend();
+const contactsStore = useContactsStore();
 // 点击锚点
 const clickAuthor = (id: string) => {
   const el = document.getElementById(id);
@@ -64,7 +62,15 @@ const clickAuthor = (id: string) => {
   regionActive.value = id;
 };
 
-initFriendList();
+onMounted(() => {
+  initFriendList(contactsStore.blackList);
+});
+
+watch([() => contactsStore.blackList, () => contactsStore.friendList], () => {
+  nextTick(() => {
+    initFriendList(contactsStore.blackList);
+  });
+});
 </script>
 
 <style>

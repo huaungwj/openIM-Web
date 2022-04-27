@@ -1,9 +1,11 @@
-const BASE_URL = 'http://36.133.145.175';
+// const BASE_URL = 'http://36.133.145.175';
+const BASE_URL = 'https://live.weikill.club';
 const TIME_OUT = 8000;
 // AXIOSURL
 const AXIOS_URL: string = BASE_URL + ':42233';
 // IM
-const IMURL = 'ws://36.133.145.175:30000';
+const IMURL = 'wss://live.weikill.club:30000';
+// const IMURL = 'ws://36.133.145.175:30000';
 //    获取cos临时密钥及调用管理员API地址
 const ADMINURL = BASE_URL + ':10000';
 

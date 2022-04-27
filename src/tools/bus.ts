@@ -1,4 +1,9 @@
 import { ref } from 'vue';
+import type { Ref } from 'vue';
+
+type eventItem = {
+  key: (data: any) => void[];
+};
 
 class Bus {
   constructor() {
@@ -7,6 +12,9 @@ class Bus {
       // 下面的都是自定义值
       (this.msg = ref('这是一条总线的信息'));
   }
+
+  public eventList: eventItem[];
+  public msg: Ref<string>;
 
   // 订阅
   $on(name: string, fn: (data: any) => void) {
@@ -24,7 +32,7 @@ class Bus {
   }
 
   // 取消订阅
-  $off(name) {
+  $off(name: string) {
     if (this.eventList[name]) {
       delete this.eventList[name];
     }

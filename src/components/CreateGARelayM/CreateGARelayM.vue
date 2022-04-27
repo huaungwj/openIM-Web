@@ -22,7 +22,7 @@
                 <n-input
                   v-model:value="searchInputValue"
                   size="small"
-                  placeholder="搜索"
+                  :placeholder="t('search')"
                 >
                   <template #prefix>
                     <svg class="icon" aria-hidden="true">
@@ -67,10 +67,12 @@
               <div class="top_c">
                 <span class="title">{{
                   commonStore.createGARelayMTpye === 'createGroup'
-                    ? '发起群聊'
-                    : '发送给'
+                    ? t('initGroupChat')
+                    : t('sendTo')
                 }}</span
-                ><span class="num">已选择{{ selectArr.length }}个朋友</span>
+                ><span class="num">{{
+                  t('selected') + selectArr.length + t('aFriend')
+                }}</span>
               </div>
               <!-- 朋友展示区 -->
               <n-scrollbar>
@@ -99,7 +101,7 @@
             <div class="c_g_modal_footer">
               <div v-if="commonStore.createGARelayMTpye === 'createGroup'">
                 <n-input
-                  placeholder="请输入群名称"
+                  :placeholder="t('pleaseGroupName')"
                   v-model:value="cGroupName"
                   autofocus
                 />
@@ -117,7 +119,7 @@
                         padding-left: 10px;
                         line-height: 34px;
                       "
-                      >点击上传</a
+                      >{{ t('click') + t('upload') }}</a
                     >
                   </n-upload>
                 </div>
@@ -133,10 +135,10 @@
               >
                 {{
                   commonStore.createGARelayMTpye === 'forwardMsg'
-                    ? '[逐条转发]'
-                    : '[合并转发]'
+                    ? `[${t('articleItem') + t('forward')}]`
+                    : `[${t('merge') + t('forward')}]`
                 }}
-                群聊的聊天记录
+                {{ t('groupChat') + t('chatRecord') }}
               </div>
               <div class="button_group">
                 <n-button
@@ -144,7 +146,7 @@
                   strong
                   secondary
                   @click="cancelModalFun"
-                  >取消</n-button
+                  >{{ t('cancel') }}</n-button
                 >
                 <n-button
                   style="width: 40%"
@@ -152,8 +154,8 @@
                   @click="switchActionFun"
                   >{{
                     commonStore.createGARelayMTpye === 'createGroup'
-                      ? '创建'
-                      : '发送'
+                      ? t('create')
+                      : t('send')
                   }}</n-button
                 >
               </div>
@@ -172,6 +174,7 @@ import { useFriend } from '@/hooks/useFriend';
 import FriendAGroupItem from '@/components/CreateGARelayM/components/FriendAGroupItem.vue';
 import { useContactsStore } from '@/stores/contacts';
 import { useMessage } from 'naive-ui';
+import { useI18n } from 'vue-i18n';
 import type {
   FriendItem,
   GroupInitInfo,
@@ -189,6 +192,7 @@ import { im } from '@/tools';
 import Bus from '@/tools/bus';
 import { messageTypes } from '@/tools/im/constants/messageContentType';
 import { useCveStore } from '@/stores/cve';
+import type { UploadInst } from 'naive-ui';
 
 type Cons = {
   data: FriendItem[];
@@ -198,17 +202,18 @@ type Cons = {
 // use
 const commonStore = useCommonStore();
 const contactsStore = useContactsStore();
+const { t } = useI18n();
 const cveStore = useCveStore();
 const message = useMessage();
 const { consList } = useFriend();
-const selectArr = ref<FriendItem[] | GroupItem[]>([]);
+const selectArr = ref<FriendItem[] & GroupItem[]>([]);
 const searchInputValue = ref<string>('');
 const leftFriContainer = ref<HTMLElement>(null as unknown as HTMLElement);
 const cGroupName = ref<string>('');
 const cGroupFaceURL = ref<string>(`ic_avatar_0${Math.ceil(Math.random() * 9)}`);
-const uploadGroupImageRef = ref<HTMLElement>(null as unknown as HTMLElement);
+const uploadGroupImageRef = ref<UploadInst | null>(null);
 const mutilMsgArr = ref<MessageItem[]>();
-const memberList = ref<FriendItem[] | GroupItem[] | Cons[]>();
+const memberList = ref<(FriendItem[] & GroupItem[]) & Cons[]>();
 const optionTitle = ref<string>();
 const optionSummaryList = ref<string[]>([]);
 
@@ -230,13 +235,13 @@ const initStatus = () => {
  * @param type add | remove
  * @param userID
  */
-const ChangeCheckedArr = (type: string, member: FriendItem | GroupItem) => {
+const ChangeCheckedArr = (type: string, member: FriendItem & GroupItem) => {
   // 朋友
   if (type === 'add') {
     selectArr.value.push(member);
   } else {
     // item.userID !== tmp[0].userID
-    selectArr.value = selectArr.value.filter((item: FriendItem | GroupItem) => {
+    selectArr.value = selectArr.value.filter((item: FriendItem & GroupItem) => {
       if (item.userID) {
         return item.userID !== member.userID;
       } else {
@@ -250,9 +255,11 @@ const ChangeCheckedArr = (type: string, member: FriendItem | GroupItem) => {
 
 // 创建群聊
 const createGroupFun = () => {
-  if (!cGroupName.value.trim()) return message.warning('请输入群名称再继续');
-  if (!cGroupFaceURL.value.trim()) return message.warning('请上传群头像再继续');
-  if (selectArr.value.length < 0) return message.warning('请选择朋友在继续');
+  if (!cGroupName.value.trim()) return message.warning(t('pleaseGroupName'));
+  if (!cGroupFaceURL.value.trim())
+    return message.warning(t('place') + t('upload') + t('cve.groupAvatar'));
+  if (selectArr.value.length < 0)
+    return message.warning(t('place') + t('select') + t('friend'));
   const groupBaseInfo: GroupInitInfo = {
     groupType: 0,
     groupName: cGroupName.value,
@@ -275,12 +282,12 @@ const createGroupFun = () => {
   // 创建群聊
   im.createGroup(options)
     .then(({ data }) => {
-      message.success('成功创建群聊！');
+      message.success(t('suc') + t('create') + t('groupChat'));
       // 关闭模态框
       commonStore.setcreateGARelayMTpye('cancel');
     })
     .catch((err) => {
-      message.error('创建群聊失败！');
+      message.error(t('create') + t('groupChat') + t('fail'));
     });
   initStatus();
 };
@@ -289,11 +296,13 @@ const createGroupFun = () => {
 const customUpload = async (data: UploadRequestOption) => {
   if (!data) return false;
   console.log(data);
-  if (data.file.file.size! > 2097152) {
+  if (data.file.file.size > 2097152) {
     // 清空，不清空会存在上传多个
-    uploadGroupImageRef.value.clear();
+    uploadGroupImageRef.value!.clear();
     return message.warning(
-      `当前文件大小为：${fileSizeTran(data.file.file.size)}头像文件不能大于2MB`
+      `${t('cur') + t('file') + t('size')}：${fileSizeTran(
+        data.file.file.size
+      )}${t('avatar') + t('file') + t('notGreater')}2MB`
     );
   }
   await getCosAuthorization();
@@ -301,7 +310,7 @@ const customUpload = async (data: UploadRequestOption) => {
     .then((res) => {
       console.log(res);
       cGroupFaceURL.value = res.url;
-      uploadGroupImageRef.value.clear();
+      uploadGroupImageRef.value!.clear();
     })
     .catch((err) => {
       console.log(err);
@@ -326,7 +335,7 @@ const switchActionFun = () => {
     // 合并转发
     case 'mergeForwardMsg':
       if (selectArr.value.length === 0 || selectArr.value.length > 1)
-        return message.error('仅限选择一位好友！');
+        return message.error(t('selectOnly'));
       Bus.$emit('SENDFORWARDMSG', {
         options: {
           title: optionTitle.value,
@@ -341,7 +350,7 @@ const switchActionFun = () => {
     // 逐条转发
     case 'forwardMsg':
       if (selectArr.value.length === 0 || selectArr.value.length > 1)
-        return message.error('仅限选择一位好友！');
+        return message.error(t('selectOnly'));
       mutilMsgArr.value?.forEach((item) => {
         Bus.$emit('SENDFORWARDMSG', {
           options: item,
@@ -353,7 +362,7 @@ const switchActionFun = () => {
       break;
     // 发送名片
     case 'sendCard':
-      console.log('执行了', selectArr.value);
+      // console.log('执行了', selectArr.value);
       selectArr.value?.forEach((item: FriendItem) => {
         Bus.$emit('SENDCARDMSG', item);
       });
@@ -362,16 +371,16 @@ const switchActionFun = () => {
 
     case 'addGroupMember': {
       if (selectArr.value.length === 0)
-        return message.error('请选择好友后进行拉取！');
-      console.log('添加新成员', selectArr.value);
+        return message.error(t('place') + t('select') + t('friend'));
+      // console.log('添加新成员', selectArr.value);
       const options: InviteGroupParams = {
         groupID: cveStore.curCve.groupID,
         reason: '',
         userIDList: selectArr.value.map((item: FriendItem) => item.userID),
       };
       im.inviteUserToGroup(options)
-        .then((res) => message.success('邀请成功！'))
-        .catch((err) => message.error('操作失败，请稍后再试！'));
+        .then((res) => message.success(t('sendSuc')))
+        .catch((err) => message.error(t('actionErrorText')));
       // 新成员添加
       contactsStore.setGroupMemberList([
         ...contactsStore.groupMemberList,

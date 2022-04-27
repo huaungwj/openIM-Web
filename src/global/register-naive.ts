@@ -32,6 +32,11 @@ import {
   NDrawer,
   NDrawerContent,
   NSwitch,
+  NPopselect,
+  NTabs,
+  NTabPane,
+  NRadio,
+  NRadioGroup,
 } from 'naive-ui';
 
 const naive = create({
@@ -68,6 +73,11 @@ const naive = create({
     NDrawer,
     NDrawerContent,
     NSwitch,
+    NPopselect,
+    NTabs,
+    NTabPane,
+    NRadio,
+    NRadioGroup,
   ],
 });
 export function registerNaive(app: any) {

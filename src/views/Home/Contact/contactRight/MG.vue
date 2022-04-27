@@ -33,12 +33,7 @@
       </main>
     </div>
   </div>
-  <Empty
-    v-else
-    imgSrc="/src/assets/images/empty5.png"
-    :width="270"
-    :height="250"
-  >
+  <Empty v-else :imgSrc="Empty5" :width="270" :height="250">
     <template #header>
       <p>暂无数据</p>
     </template>
@@ -52,6 +47,7 @@ import { pySegSort } from '@/tools/tools';
 import type { GroupItem } from '@/stores/types/contacts';
 import GroupItemComp from '@/views/Home/Contact/contactRight/components/GroupItemComp.vue';
 import Empty from '@/components/Empty/Empty.vue';
+import Empty5 from '@/assets/images/empty5.png';
 import type { SessionType } from '@/tools/im/constants/messageContentType';
 
 type groupListType = {
@@ -60,7 +56,7 @@ type groupListType = {
 };
 
 //props
-const props = defineProps<{
+defineProps<{
   goChatFun: (id: string, type: SessionType) => void;
 }>();
 

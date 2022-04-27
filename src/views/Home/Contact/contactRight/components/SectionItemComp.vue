@@ -11,16 +11,27 @@
           </svg>
           <n-popconfirm
             @positive-click="deleteFriendFun"
-            negative-text="我再想想~"
-            positive-text="删除"
+            :negative-text="t('cancelText')"
+            :positive-text="t('remove')"
           >
             <template #trigger>
               <svg class="icon" aria-hidden="true">
                 <use xlink:href="#openIM-shanchuhaoyou_huaban1"></use>
               </svg>
             </template>
-            {{ `确定要删除 '${item.nickname}' 好友吗？` }}
+            {{ $t('delFriendWarningText') }}
           </n-popconfirm>
+
+          <n-tag
+            class="black_tag"
+            v-if="ship === ShipType.Black"
+            type="error"
+            closable
+            @close="pullBlackList"
+            size="small"
+          >
+            {{ $t('blackListText') }}
+          </n-tag>
         </div>
       </div>
       <!-- 头像 -->
@@ -28,13 +39,13 @@
     </header>
     <!-- userInfo -->
     <div class="section_user_info_c">
-      <p class="title">用户信息</p>
+      <p class="title">{{ t('userInfo') }}</p>
       <p class="user_info_item">
-        <label from="nickname">昵称： </label>
+        <label from="nickname">{{ t('nickname') }}:</label>
         <span id="nickname">{{ item.nickname }}</span>
       </p>
       <p class="user_info_item">
-        <label from="remark">备注： </label>
+        <label from="remark">{{ t('remarks') }}: </label>
         <span id="remark" v-if="isShowRemarkIcon">{{ item.remark }}</span>
         <span v-if="isShowRemarkIcon" @click="clickRemarkIcon">
           <svg class="icon" style="cursor: pointer" aria-hidden="true">
@@ -47,21 +58,24 @@
           v-else
           class="remark_input"
           type="text"
-          placeholder="输入备注后按回车键保存"
+          :placeholder="t('placeInputRemark')"
           size="small"
+          @blur="saveRemark"
           @keydown.enter="saveRemark"
         />
       </p>
       <p class="user_info_item">
-        <label from="gender">性别： </label>
-        <span id="gender">{{ item.gender === 0 ? '男' : '女' }}</span>
+        <label from="gender">{{ t('gender') }}: </label>
+        <span id="gender">{{
+          item.gender === 0 ? t('male') : t('female')
+        }}</span>
       </p>
       <p class="user_info_item">
-        <label from="phone">电话： </label>
+        <label from="phone">{{ t('phoneNumber') }}: </label>
         <span id="phone">{{ item.userID }}</span>
       </p>
       <p class="user_info_item">
-        <label from="user_id">ID： </label>
+        <label from="user_id">{{ t('ID') }}: </label>
         <span id="user_id">{{ item.userID }}</span>
       </p>
 
@@ -79,19 +93,31 @@
 </template>
 
 <script setup lang="ts">
-import { defineProps, ref } from 'vue';
-import type { FriendItem } from '@/tools/im/types';
+import { defineProps, onMounted, ref, watch } from 'vue';
+import type { FriendItem, BlackItem } from '@/tools/im/types';
 import MyAvatar from '@/components/myAvatar/MyAvatar.vue';
 import { SessionType } from '@/tools/im/constants/messageContentType';
-import { useMessage } from 'naive-ui';
+import { useMessage, useDialog } from 'naive-ui';
+import { useContactsStore } from '@/stores/contacts';
+import { useI18n } from 'vue-i18n';
 import { im } from '@/tools';
 import type { RemarkFriendParams } from '@/tools/im/types';
 
+enum ShipType {
+  Nomal = 0,
+  Friend = 1,
+  Black = 2,
+}
+
 const props = defineProps<{ item: FriendItem; goChatFun: () => void }>();
 const message = useMessage();
+const dialog = useDialog();
+const contactsStore = useContactsStore();
+const { t } = useI18n();
 const isShowRemarkIcon = ref<boolean>(true);
 // 备注输入框
 const remarkValue = ref<string>('');
+const ship = ref<ShipType>();
 
 // click remark icon
 const clickRemarkIcon = () => {
@@ -102,14 +128,14 @@ const clickRemarkIcon = () => {
 // save remark
 const saveRemark = () => {
   console.log('执行了');
-  if (!remarkValue.value) return message.error('备注信息不能为空');
+  if (!remarkValue.value) return message.error(t('remarks') + t('verifyEmpty'));
   const options: RemarkFriendParams = {
     toUserID: props.item.userID,
     remark: remarkValue.value,
   };
   im.setFriendRemark(options)
-    .then((res) => message.success('修改备注成功'))
-    .catch((err) => message.error('操作失败，请稍后再试！'));
+    .then(() => message.success(t('modifyRemarkSuc')))
+    .catch(() => message.error(t('actionErrorText')));
   // 隐藏
   isShowRemarkIcon.value = true;
 };
@@ -118,9 +144,50 @@ const saveRemark = () => {
 const deleteFriendFun = () => {
   if (!props.item.userID) return;
   im.deleteFriend(props.item.userID)
-    .then((res) => message.success('好友关系解除成功'))
-    .catch((err) => message.error('操作失败，请稍后再试！'));
+    .then(() => message.success(t('relieveFriendSuc')))
+    .catch(() => message.error(t('actionErrorText')));
 };
+
+const initShip = () => {
+  let flag = 0;
+  if (
+    contactsStore.friendList.find(
+      (item: FriendItem) => props.item.userID === item.userID
+    )
+  ) {
+    flag = 1;
+  } else if (
+    contactsStore.blackList.find(
+      (item: BlackItem) => props.item.userID === item.userID
+    )
+  ) {
+    flag = 2;
+  }
+  ship.value = flag;
+};
+
+// 拉出黑名单
+const pullBlackList = () => {
+  dialog.warning({
+    title: t('warning'),
+    content: t('confirmRemoveBlackList'),
+    positiveText: t('ascertainText'),
+    negativeText: t('cancelText'),
+    onPositiveClick: () => {
+      im.removeBlack(props.item.userID).catch(() =>
+        message.error(t('removeBlackFail'))
+      );
+    },
+  });
+};
+
+onMounted(() => {
+  initShip();
+});
+
+watch([() => contactsStore.blackList, () => contactsStore.friendList], () => {
+  initShip();
+});
 </script>
 
 <style>
@@ -146,6 +213,10 @@ const deleteFriendFun = () => {
   font-size: 16px;
   font-weight: 500;
   padding-bottom: 15px;
+}
+.section_item_c > .section_i_c_h > .left_c .icon_c {
+  display: flex;
+  align-items: center;
 }
 .section_item_c > .section_i_c_h > .left_c .icon_c > .icon:first-child {
   margin-right: 10px;
@@ -175,19 +246,23 @@ const deleteFriendFun = () => {
 }
 .section_user_info_c > .user_info_item > label {
   display: inline-block;
-  width: 50px;
-  text-align: center;
+  width: 120px;
+  text-align: left;
 }
 
 .section_user_info_c > .to_chat {
   position: absolute;
   right: 0;
-  top: 40%;
+  top: 55%;
 }
 .section_user_info_c > .to_chat > .icon {
   width: 45px;
   height: 45px;
   cursor: pointer;
+}
+/* 黑名单标记 */
+.section_item_c .black_tag {
+  margin-left: 10px;
 }
 
 @media (prefers-color-scheme: dark) {

@@ -1,7 +1,11 @@
 <template>
   <div class="info_container" style="text-align: center">
     <!-- 头像 -->
-    <UplaodAvatar :getUplaodURL="getUplaodURL" :faceURL="userInfo.faceURL" />
+    <UplaodAvatar
+      :is-edit="false"
+      :getUplaodURL="getUplaodURL"
+      :faceURL="userInfo.faceURL"
+    />
 
     <!-- 输入名字 -->
     <n-form
@@ -57,7 +61,7 @@ export default defineComponent({
     UplaodAvatar,
   },
 
-  setup(props) {
+  setup() {
     // 表单 ref
     const infoFormRef = ref<FormInst | null>(null);
     const userInfo = ref({
@@ -85,19 +89,19 @@ export default defineComponent({
       values.userID = userStore.selfInfo.userID;
       // API 接口保存
       im.setSelfInfo(values)
-        .then((res) => {
+        .then(() => {
           userStore.setSelfInfo(values);
           // 跳转页面
           router.replace('/');
         })
-        .catch((err) => {
+        .catch(() => {
           message.error(i18n.global.t('login.contentRight.errMsgText'));
         });
     };
 
     /**
      * 提交表单 进入im
-     * @param
+     *
      */
     const handleSubmit = () => {
       infoFormRef.value?.validate((errors?: Array<FormValidationError>) => {

@@ -1,4 +1,5 @@
 import type { ConversationItem, MessageItem } from './im/types';
+import { useI18n } from 'vue-i18n';
 import {
   messageTypes,
   tipsTypes,
@@ -43,48 +44,50 @@ export const parseMessageType = (
 ): string => {
   const isSelf = (id: string) => id === curUid;
 
+  const { t } = useI18n();
+
   switch (pmsg.contentType) {
     case messageTypes.TEXTMESSAGE:
       return pmsg.senderNickname + ':  ' + pmsg.content;
     case messageTypes.ATTEXTMESSAGE:
       return pmsg.senderNickname + ':  ' + pmsg.atElem.text;
     case messageTypes.PICTUREMESSAGE:
-      return '[图片信息]';
+      return `[${t('pic') + t('message')}]`;
     case messageTypes.VIDEOMESSAGE:
-      return '[视频信息]';
+      return `[${t('video') + t('message')}]`;
     case messageTypes.VOICEMESSAGE:
-      return '[语音信息]';
+      return `[${t('voice') + t('message')}]`;
     case messageTypes.LOCATIONMESSAGE:
-      return '[地理信息]';
+      return `[${t('location') + t('message')}]`;
     case messageTypes.CARDMESSAGE:
-      return '[名片信息]';
+      return `[${t('businessCard') + t('message')}]`;
     case messageTypes.MERGERMESSAGE:
-      return '[合并信息]';
+      return `[${t('merge') + t('message')}]`;
     case messageTypes.FILEMESSAGE:
-      return '[文件信息]';
+      return `[${t('file') + t('message')}]`;
     case messageTypes.REVOKEMESSAGE:
-      return `${
-        isSelf(pmsg.sendID) ? '你' : pmsg.senderNickname
-      }${'撤回了一条消息'}`;
+      return `${isSelf(pmsg.sendID) ? t('your') : pmsg.senderNickname}${t(
+        'cve.revorkOnlyMsg'
+      )}`;
     case messageTypes.CUSTOMMESSAGE:
-      return '[自定义消息]';
+      return `[${t('custom') + t('message')}]`;
     case messageTypes.QUOTEMESSAGE:
-      return '[引用消息]';
+      return `[${t('quote') + t('message')}]`;
     case tipsTypes.FRIENDADDED:
-      return '你们已经是好友啦，开始聊天吧~';
+      return t('cve.aCall');
     case tipsTypes.MEMBERENTER: {
       const enterDetails = JSON.parse(pmsg.notificationElem.detail);
       const enterUser = enterDetails.entrantUser;
-      return `${
-        isSelf(enterUser.userID) ? '你' : enterUser.nickname
-      }${'加入了群聊'}`;
+      return `${isSelf(enterUser.userID) ? t('your') : enterUser.nickname}${t(
+        'cve.joinedGroup'
+      )}`;
     }
     case tipsTypes.GROUPCREATED: {
       const groupCreatedDetail = JSON.parse(pmsg.notificationElem.detail);
       const groupCreatedUser = groupCreatedDetail.opUser;
       return `${
-        isSelf(groupCreatedUser.userID) ? '你' : groupCreatedUser.nickname
-      }创建了群聊`;
+        isSelf(groupCreatedUser.userID) ? t('your') : groupCreatedUser.nickname
+      }${t('cve.createdGroup')}`;
     }
     case tipsTypes.MEMBERINVITED: {
       const inviteDetails = JSON.parse(pmsg.notificationElem.detail);
@@ -93,11 +96,11 @@ export const parseMessageType = (
       let inviteStr = '';
       invitedUserList.forEach(
         (user: any) =>
-          (inviteStr += (isSelf(user.userID) ? '你' : user.nickname) + ' ')
+          (inviteStr += (isSelf(user.userID) ? t('your') : user.nickname) + ' ')
       );
       return `${
-        isSelf(inviteOpUser.userID) ? '你' : inviteOpUser.nickname
-      }'邀请了'${inviteStr}入群`;
+        isSelf(inviteOpUser.userID) ? t('your') : inviteOpUser.nickname
+      }${t('cve.invitedText') + inviteStr + t('cve.groupEntry')}`;
     }
     case tipsTypes.MEMBERKICKED: {
       const kickDetails = JSON.parse(pmsg.notificationElem.detail);
@@ -106,18 +109,18 @@ export const parseMessageType = (
       let kickStr = '';
       kickdUserList.forEach(
         (user: any) =>
-          (kickStr += (isSelf(user.userID) ? '你' : user.nickname) + ' ')
+          (kickStr += (isSelf(user.userID) ? t('your') : user.nickname) + ' ')
       );
-      return `${
-        isSelf(kickOpUser.userID) ? '你' : kickOpUser.nickname
-      }踢出了${kickStr}`;
+      return `${isSelf(kickOpUser.userID) ? t('your') : kickOpUser.nickname}${
+        t('cve.kickGroupSucText') + kickStr
+      }`;
     }
 
     case tipsTypes.MEMBERQUIT: {
       const quitDetails = JSON.parse(pmsg.notificationElem.detail);
       const quitUser = quitDetails.quitUser;
-      return `${isSelf(quitUser.userID) ? '你' : quitUser.nickname}
-        '退出了群聊'
+      return `${isSelf(quitUser.userID) ? t('your') : quitUser.nickname}
+        t('cve.exitGroupText')
       `;
     }
 
@@ -125,8 +128,10 @@ export const parseMessageType = (
       const groupUpdateDetail = JSON.parse(pmsg.notificationElem.detail);
       const groupUpdateUser = groupUpdateDetail.opUser;
       return `${
-        isSelf(groupUpdateUser.userID) ? '你' : groupUpdateUser.nickname
-      }修改了群信息`;
+        isSelf(groupUpdateUser.userID)
+          ? t('your')
+          : groupUpdateUser.nickname + t('cve.editGroupInfo')
+      }`;
     }
 
     case tipsTypes.GROUPOWNERTRANSFERRED: {
@@ -135,8 +140,12 @@ export const parseMessageType = (
       const newOwner = transferDetails.newGroupOwner;
 
       return `${
-        isSelf(transferOpUser.userID) ? '你' : transferOpUser.nickname
-      } 转让了群主给 ${isSelf(newOwner.userID) ? '你' : newOwner.nickname}`;
+        isSelf(transferOpUser.userID) ? t('your') : transferOpUser.nickname
+      }  ${
+        t('cve.transferGroupText') + isSelf(newOwner.userID)
+          ? t('your')
+          : newOwner.nickname
+      }`;
     }
 
     default:
@@ -149,10 +158,11 @@ export const createNotification = (
   click?: (id: string, type: SessionType) => void,
   tag?: string
 ) => {
+  const { t } = useI18n();
   if (Notification && document.hidden) {
     const title =
       message.contentType === tipsTypes.FRIENDADDED
-        ? '新朋友'
+        ? t('newFriend')
         : message.senderNickname;
     const notification = new Notification(title, {
       dir: 'auto',

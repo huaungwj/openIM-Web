@@ -1,6 +1,6 @@
 import { ref, watch } from 'vue';
 import { useContactsStore } from '@/stores/contacts';
-import type { FriendItem } from '@/tools/im/types';
+import type { BlackItem, FriendItem } from '@/tools/im/types';
 import { pySegSort } from '@/tools/tools';
 
 type Cons = {
@@ -15,10 +15,10 @@ export function useFriend() {
   const contactsStore = useContactsStore();
 
   // 朋友列表
-  const initFriendList = () => {
+  const initFriendList = (blackList?: BlackItem[]) => {
     if (contactsStore.friendList.length > 0) {
       const sortData: Cons[] = pySegSort(
-        contactsStore.friendList,
+        contactsStore.friendList.concat(blackList ?? []),
         'nickname'
       ).segs;
       // console.log(sortData);

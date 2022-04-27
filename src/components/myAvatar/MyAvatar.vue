@@ -11,7 +11,7 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, reactive, ref } from 'vue';
+import { defineComponent, reactive } from 'vue';
 import ic_avatar_01 from '@/assets/images/ic_avatar_01.png';
 import ic_avatar_02 from '@/assets/images/ic_avatar_02.png';
 import ic_avatar_03 from '@/assets/images/ic_avatar_03.png';

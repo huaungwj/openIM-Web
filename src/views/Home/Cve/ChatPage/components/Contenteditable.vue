@@ -1,5 +1,3 @@
-<style scoped></style>
-
 <template>
   <component
     :is="tag"
@@ -53,12 +51,12 @@ export default defineComponent({
         element.value!.innerHTML = newcontent;
       }
     }
-    function update(event: any) {
+    function update(event: Event) {
       emit('update:modelValue', currentContent());
     }
-    function onPaste(event: any) {
+    function onPaste(event: ClipboardEvent) {
       event.preventDefault();
-      let text = (event.originalEvent || event).clipboardData.getData(
+      let text = (event.originalEvent! || event).clipboardData.getData(
         'text/plain'
       );
       if (props.noNL) {
@@ -68,47 +66,19 @@ export default defineComponent({
       }
       window.document.execCommand('insertText', false, text);
     }
-    function onKeypress(event: any) {
+    function onKeypress(event: KeyboardEvent) {
       if (event.key == 'Enter' && props.noNL) {
         event.preventDefault();
         emit('returned', currentContent());
       }
     }
-    // 解决自动加font标签的问题
-    // function amend() {
-    //   let d = document.querySelector('.editableDiv');
-    //   let dChild = Array.prototype.slice.call(d?.childNodes);
-    //   const filterd = dChild.filter((item) => {
-    //     return item?.tagName === 'FONT';
-    //   });
-    //   if (filterd.length > 0) {
-    //     const fChildNodes = filterd[0].childNodes;
-    //     updateContent(fChildNodes[0].textContent);
-    //     setFocus(d);
-    //     filterd[0].remove();
-    //   }
-    // }
 
-    // function setFocus(el) {
-    //   // el = el[0]; // jquery 对象转dom对象
-    //   el.focus();
-    //   var range = document.createRange();
-    //   range.selectNodeContents(el);
-    //   range.collapse(false);
-    //   var sel = window.getSelection();
-    //   //判断光标位置，如不需要可删除
-    //   if (sel.anchorOffset != 0) {
-    //     return;
-    //   }
-    //   sel.removeAllRanges();
-    //   sel.addRange(range);
-    // }
     onMounted(() => {
       updateContent(props.modelValue ?? '');
     });
     watch(
       () => props.modelValue,
-      (newval, oldval) => {
+      (newval) => {
         if (newval != currentContent()) {
           updateContent(newval ?? '');
         }
@@ -123,3 +93,5 @@ export default defineComponent({
   },
 });
 </script>
+
+<style scoped></style>

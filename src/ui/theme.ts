@@ -22,6 +22,9 @@ const lightThemeOverrides: GlobalThemeOverrides = {
   Drawer: {
     color: 'var(--color-background)',
   },
+  Upload: {
+    itemDisabledOpacity: '1',
+  },
 };
 const darkThemeOverrides: GlobalThemeOverrides = {
   common: {
@@ -40,6 +43,9 @@ const darkThemeOverrides: GlobalThemeOverrides = {
   },
   Drawer: {
     color: 'var(--color-background)',
+  },
+  Upload: {
+    itemDisabledOpacity: '1',
   },
 };
 

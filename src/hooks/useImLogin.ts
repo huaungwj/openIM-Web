@@ -1,4 +1,3 @@
-import { ref } from 'vue';
 import type { InitConfig } from '@/tools/im/types';
 import { IMURL } from '@/service/request/config';
 import { im } from '@/tools';

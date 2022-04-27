@@ -16,7 +16,7 @@
         </p>
         <!-- 创建人 -->
         <p class="create_user_id">
-          所有者ID：
+          {{ $t('owner') }}ID：
           <n-tooltip trigger="hover">
             <template #trigger>
               <svg
@@ -33,7 +33,7 @@
         </p>
         <!-- 群ID -->
         <p class="group_id">
-          群聊ID：
+          {{ $t('groupChat') }}ID：
           <n-tooltip trigger="hover">
             <template #trigger>
               <svg

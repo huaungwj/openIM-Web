@@ -1,9 +1,11 @@
 <template>
-  <div></div>
+  <div>
+    <UserSetting />
+  </div>
 </template>
 
 <script setup lang="ts">
-// 个人信息
+import UserSetting from './UserSetting/UserSetting.vue';
 </script>
 
 <style></style>

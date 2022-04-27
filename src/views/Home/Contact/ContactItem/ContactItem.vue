@@ -14,7 +14,7 @@
 </template>
 
 <script setup lang="ts">
-import { defineProps, onMounted, ref, watch } from 'vue';
+import { defineProps, ref, watch } from 'vue';
 import { useContactsStore } from '@/stores/contacts';
 import type {
   FriendApplicationItem,

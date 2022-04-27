@@ -1,9 +1,8 @@
-import { createRouter, createWebHistory } from 'vue-router';
-import HomeView from '@/views/HomeView.vue';
+import { createRouter, createWebHashHistory } from 'vue-router';
 import Home from '@/views/Home/Home.vue';
 
 const router = createRouter({
-  history: createWebHistory(import.meta.env.BASE_URL),
+  history: createWebHashHistory(import.meta.env.BASE_URL),
   routes: [
     {
       path: '/',
@@ -28,6 +27,13 @@ const router = createRouter({
             right: () => import('@/views/Home/Contact/ContactRight.vue'),
           },
         },
+        {
+          path: '/profile',
+          name: 'profile',
+          components: {
+            default: () => import('@/views/Home/Profile/Profile.vue'),
+          },
+        },
       ],
     },
 
@@ -39,10 +45,10 @@ const router = createRouter({
   ],
 });
 
-const allowPath = ['/', '/cve', '/contacts'];
+const allowPath = ['/', '/cve', '/contacts', '/profile'];
 
 router.beforeEach((to, from, next) => {
-  const isLogin = localStorage.getItem(`improfile`)!;
+  const isLogin = localStorage.getItem(`improfile`);
   if (to.path === '/login' && isLogin) {
     // 登陆了不允许再进去 登录页面
     next('/cve');

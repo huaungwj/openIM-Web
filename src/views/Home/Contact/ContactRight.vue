@@ -1,8 +1,8 @@
 <template>
   <div class="contact_r_c">
     <ContactTopBar />
-    <!-- 常用联系人 和 我的好友 -->
     <main class="contact_main">
+      <!-- 常用联系人 和 我的好友 -->
       <TCAMF
         v-if="contactsStore.conPage === 'tC' || contactsStore.conPage === 'mF'"
         :goChatFun="goChatFun"
@@ -25,15 +25,17 @@ import TCAMF from '@/views/Home/Contact/contactRight/TCAMF.vue';
 import MG from '@/views/Home/Contact/contactRight/MG.vue';
 import ContactTopBar from '@/views/Home/Contact/contactRight/components/ContactTopBar.vue';
 import { useMessage } from 'naive-ui';
-import { im, isSingleCve } from '@/tools';
+import { im } from '@/tools';
 import type { ConversationItem } from '@/tools/im/types';
 import { useOpenCveWindow } from '@/hooks/useOpenCveWindow';
 import { useCveStore } from '@/stores/cve';
 import type { SessionType } from '@/tools/im/constants/messageContentType';
+import { useI18n } from 'vue-i18n';
 import { useRouter } from 'vue-router';
 
 const contactsStore = useContactsStore();
 const cveStore = useCveStore();
+const { t } = useI18n();
 const { openCveWindow } = useOpenCveWindow();
 const message = useMessage();
 const router = useRouter();
@@ -43,11 +45,11 @@ const goChatFun = async (id: string, type: SessionType) => {
   const checkResult = await im.checkFriend([id ?? cveStore.curCve.userID]);
   console.log(JSON.parse(checkResult.data));
   if (JSON.parse(checkResult.data)[0].result !== 1)
-    return message.error('你和对方不是好友，无法发送消息');
+    return message.error(t('cve.notFriendFail'));
 
   getOneCve(id, type)
     .then((cve) => openCveWindow(cve))
-    .catch((err) => message.error('找不到会话！'));
+    .catch(() => message.error(t('notFind') + t('conversation')));
   router.push('/');
 };
 

@@ -11,7 +11,7 @@ export const SECRET = 'weiChat';
  * @param delay
  * @returns
  */
-export const debounce = (fn: () => void, delay: number) => {
+export const debounce = (fn: (data: any) => void, delay: number) => {
   let timer: number;
   return function () {
     if (timer) {
@@ -25,7 +25,11 @@ export const debounce = (fn: () => void, delay: number) => {
 };
 
 // 函数节流
-export const throttle = function (func: Function, wait: number, type: number) {
+export const throttle = function (
+  func: () => void,
+  wait: number,
+  type: number
+) {
   //函数节流 [func 函数 wait 延迟执行毫秒数 type 1 表时间戳版，2 表定时器版]
   let previous: number;
   let context;

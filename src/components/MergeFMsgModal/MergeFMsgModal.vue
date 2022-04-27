@@ -5,7 +5,7 @@
       class="custom-card"
       preset="card"
       :style="bodyStyle"
-      title="聊天记录"
+      :title="$t('chatRecord')"
       size="huge"
       :bordered="false"
     >

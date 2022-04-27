@@ -67,9 +67,14 @@
             >
               <n-select
                 v-model:value="formValue.areaCode"
-                :style="{ width: '33%', borderTopRightRadius: '0px' }"
+                :style="{
+                  width: '33%',
+                  borderTopRightRadius: '0px',
+                  marginRight: '2px',
+                }"
                 :options="AreaCodes"
               />
+
               <n-input
                 default-value=""
                 v-model:value="formValue.phone"
@@ -153,16 +158,12 @@
 
           <!-- 底部忘记密码部分 -->
           <div class="form_bottom" v-if="pageStatus === 'login'">
-            <span
-              class="pointer"
-              @click="changePageStatus('resetPwd', $event)"
-              >{{ $t('login.contentRight.forgetPwdText') }}</span
-            >
-            <span
-              class="pointer"
-              @click="changePageStatus('register', $event)"
-              >{{ $t('login.contentRight.registerNowText') }}</span
-            >
+            <span class="pointer" @click="changePageStatus('resetPwd')">{{
+              $t('login.contentRight.forgetPwdText')
+            }}</span>
+            <span class="pointer" @click="changePageStatus('register')">{{
+              $t('login.contentRight.registerNowText')
+            }}</span>
           </div>
         </div>
       </n-spin>
@@ -189,6 +190,8 @@ import { i18n } from '@/locales/index';
 import md5 from 'md5';
 import { MD5_KEY } from '@/tools/tools';
 import { useImLogin } from '@/hooks/useImLogin';
+import type { AxiosResponse } from 'axios';
+import { debounce } from '@/tools/tools';
 
 export default defineComponent({
   components: {
@@ -197,7 +200,7 @@ export default defineComponent({
     setInfo,
   },
 
-  setup(props, context) {
+  setup() {
     // router
     const router = useRouter();
     const formRef = ref<FormInst | null>(null);
@@ -230,7 +233,7 @@ export default defineComponent({
     // 登录 callback
     async function loginFun() {
       // 1. 登录 换取 token
-      const res: responseType<ILogin> = await APILogin({
+      const res: AxiosResponse<responseType> & responseType = await APILogin({
         phoneNumber: formValue.value.phone,
         password: md5(md5(formValue.value.password) + MD5_KEY),
       });
@@ -264,7 +267,7 @@ export default defineComponent({
       waitTimer.value = 59;
       // 1. 获取手机验证码
       isRegister.value = pageStatus.value === 'resetPwd' ? false : true;
-      const res: responseType = await APIGetCode({
+      const res: AxiosResponse<responseType> & responseType = await APIGetCode({
         phoneNumber: formValue.value.phone,
         usedFor: isRegister.value ? 1 : 2,
         operationID: uuid('uuid'),
@@ -291,6 +294,34 @@ export default defineComponent({
         }
       }, 1000);
     }
+
+    const handleSubmit = debounce((e: MouseEvent) => {
+      e.preventDefault();
+      // console.log(pageStatus);
+      // const cb: FormValidateCallback
+      formRef.value?.validate((errors?: Array<FormValidationError>) => {
+        console.log(errors);
+        if (!errors) {
+          // message.success('验证通过');
+          if (pageStatus.value === 'login') {
+            // 改变 pageStatus 的状态
+            pageStatus.value = 'success';
+            // 登录
+            loginFun();
+          } else if (
+            pageStatus.value === 'resetPwd' ||
+            pageStatus.value === 'register'
+          ) {
+            // 忘记密码 和 注册 去获取验证码
+            historyStatus.value.push(pageStatus.value); // 添加一条历史
+            forgetPwdAndRegFun();
+          }
+        } else {
+          // console.log(errors);
+          message.error(i18n.global.t('login.contentRight.verMsgText'));
+        }
+      });
+    }, 150);
 
     return {
       // 是否点击了注册
@@ -367,35 +398,9 @@ export default defineComponent({
         },
       },
       // submit callback
-      handleSubmit(e: MouseEvent) {
-        e.preventDefault();
-        // console.log(pageStatus);
-        // const cb: FormValidateCallback
-        formRef.value?.validate((errors?: Array<FormValidationError>) => {
-          console.log(errors);
-          if (!errors) {
-            // message.success('验证通过');
-            if (pageStatus.value === 'login') {
-              // 改变 pageStatus 的状态
-              pageStatus.value = 'success';
-              // 登录
-              loginFun();
-            } else if (
-              pageStatus.value === 'resetPwd' ||
-              pageStatus.value === 'register'
-            ) {
-              // 忘记密码 和 注册 去获取验证码
-              historyStatus.value.push(pageStatus.value); // 添加一条历史
-              forgetPwdAndRegFun();
-            }
-          } else {
-            // console.log(errors);
-            message.error(i18n.global.t('login.contentRight.verMsgText'));
-          }
-        });
-      },
+      handleSubmit,
       // 改变 pageStatus
-      changePageStatus(type: string, e: MouseEvent) {
+      changePageStatus(type: string) {
         // console.log(historyStatus.value);
         if (type === 'login') {
           // 如果是 login 则是返回第一页

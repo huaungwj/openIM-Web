@@ -27,7 +27,7 @@ import { defineProps } from 'vue';
 import type { MessageItem } from '@/tools/im/types';
 import { fileExtension, fileSizeTran } from '@/tools/tools';
 
-const props = defineProps<{ msg: MessageItem }>();
+defineProps<{ msg: MessageItem }>();
 
 const fileList = [
   'pdf',

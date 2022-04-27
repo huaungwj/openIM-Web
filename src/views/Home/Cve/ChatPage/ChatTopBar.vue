@@ -26,17 +26,19 @@
           </div>
           <div className="num">
             <span className="icon" />
-            <span className="online">{{ onlineNo }} 人在线</span>
+            <span className="online"
+              >{{ onlineNo }} {{ $t('people') + $t('online') }}</span
+            >
           </div>
         </div>
       </div>
     </div>
     <!-- 右边电话、视频、设置 -->
     <div class="chat_header_right">
-      <svg class="icon" aria-hidden="true">
+      <svg class="icon" aria-hidden="true" @click="noSupFun">
         <use xlink:href="#openIM-phone"></use>
       </svg>
-      <svg class="icon openIM-video" aria-hidden="true">
+      <svg class="icon openIM-video" aria-hidden="true" @click="noSupFun">
         <use xlink:href="#openIM-video"></use>
       </svg>
       <svg
@@ -63,6 +65,7 @@ import { useCveStore } from '@/stores/cve';
 import { useContactsStore } from '@/stores/contacts';
 import { useUserStore } from '@/stores/user';
 import { isSingleCve } from '@/tools';
+import { useMessage } from 'naive-ui';
 import type {
   ConversationItem,
   DetailType,
@@ -71,16 +74,19 @@ import type {
 import { getOnline } from '@/service/cve/cve';
 import CveSettingInfo from './components/CveSettingInfo.vue';
 import Bus from '@/tools/bus';
+import { useI18n } from 'vue-i18n';
 
 const cveStore = useCveStore();
 const contactsStore = useContactsStore();
+const message = useMessage();
 const userStore = useUserStore();
+const { t } = useI18n();
 // 上一个会话
 const lastCve = ref<ConversationItem>();
 // 群组在线的数量
 const onlineNo = ref<number>(0);
 // 单会话在线状态
-const onlineStatus = ref<string>('离线');
+const onlineStatus = ref<string>(t('offLine'));
 
 // 获取群组的在线数量
 const getGroupOnline = () => {
@@ -140,6 +146,10 @@ const initInfo = () => {
   }
 };
 
+const noSupFun = () => {
+  message.warning(t('notSupport'));
+};
+
 onMounted(() => {
   initInfo();
 });
@@ -159,17 +169,19 @@ watch(
 const switchOnline = (oType: string, details?: DetailType[]) => {
   switch (oType) {
     case 'offline':
-      onlineStatus.value = '离线';
+      onlineStatus.value = t('offLine');
       break;
-    case 'online':
-      let str: string = '';
+    case 'online': {
+      let str = '';
       details?.map((detail) => {
         if (detail.status === 'online') {
           str += `${detail.platform}/`;
         }
       });
-      onlineStatus.value = `${str.slice(0, -1)} 在线`;
+      onlineStatus.value = `${str.slice(0, -1)} ${t('online')}`;
       break;
+    }
+
     default:
       break;
   }

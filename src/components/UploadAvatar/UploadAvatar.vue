@@ -10,6 +10,7 @@
     list-type="image-card"
     :max="1"
     :on-remove="deleteAvatar"
+    :disabled="isEdit"
   >
     <my-avatar :src="props.faceURL" />
     <div
@@ -32,13 +33,16 @@ import type { UploadRequestOption } from 'rc-upload/lib/interface';
 import MyAvatar from '../myAvatar/MyAvatar.vue';
 import { fileSizeTran } from '../../tools/tools';
 import { getCosAuthorization, cosUpload } from '../../tools/cos';
+import { useI18n } from 'vue-i18n';
 
 const props = defineProps<{
   getUplaodURL: (url: string) => void;
   faceURL: string;
+  isEdit: boolean;
 }>();
 const uploadAvatarRef = ref<HTMLElement>(null as unknown as HTMLElement);
 const message = useMessage();
+const { t } = useI18n();
 
 /**
  * 自定义上传头像
@@ -51,7 +55,9 @@ const cusromUpload = async (data: UploadRequestOption) => {
   if (data.file.file.size! > 2097152) {
     uploadAvatarRef.value.clear();
     return message.warning(
-      `当前文件大小为：${fileSizeTran(data.file.file.size)}头像文件不能大于2MB`
+      `${t('cur') + t('file') + t('size')}：${fileSizeTran(
+        data.file.file.size
+      )}${t('avatar') + t('file') + t('notGreater')}2MB`
     );
   }
   await getCosAuthorization();

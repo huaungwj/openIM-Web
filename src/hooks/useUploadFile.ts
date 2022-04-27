@@ -2,7 +2,7 @@ import { getCosAuthorization, cosUpload } from '@/tools/cos';
 import type { UploadRequestOption, RcFile } from 'rc-upload/lib/interface';
 import { useMessage } from 'naive-ui';
 import { getPicInfo, getVideoInfo } from '@/tools/tools';
-import { im, isSingleCve } from '@/tools';
+import { im } from '@/tools';
 import {
   messageTypes,
   notOssMessageTypes,
@@ -10,7 +10,6 @@ import {
 import type { WsResponse } from '@/tools/im/types';
 import { uuid } from '@/tools/im';
 import { useCveStore } from '@/stores/cve';
-import { ref } from 'vue';
 
 type NMsgMap = {
   oid: string;

@@ -11,7 +11,7 @@
       v-if="['nF', 'nG'].some((item) => item === contactsStore.conPage)"
     >
       <n-select
-        placeholder="请选择"
+        :placeholder="$t('place') + $t('select')"
         v-model:value="optionValue"
         :options="selectOptionFun()"
       />
@@ -22,7 +22,7 @@
 <script lang="ts" setup>
 import { ref, watch } from 'vue';
 import { useContactsStore } from '@/stores/contacts';
-import { contactMenu } from '@/tools';
+import { useI18n } from 'vue-i18n';
 
 type selectOptionType = {
   label: string;
@@ -31,21 +31,31 @@ type selectOptionType = {
 };
 
 const contactsStore = useContactsStore();
+const { t } = useI18n();
 const optionValue = ref<number>(0);
+
+const contactMenu = [
+  { icon: 'drxx91', text: t('topContacts'), num: 10, key: 'tC' },
+  { icon: 'a-bianzu61', text: t('newFriend'), num: 10, key: 'nF' },
+  { icon: 'icon_1-09', text: t('newGroup'), num: 10, key: 'nG' },
+  { icon: 'lianxiren', text: t('myFriend'), num: 10, key: 'mF' },
+  { icon: 'a-bianzu38', text: t('myGroup'), num: 10, key: 'mG' },
+  // { icon: 'heimingdanguanli', text: '黑名单', num: 10, key: 'bL' },
+];
 
 const selectOptionFun = () => {
   let option: selectOptionType[] = [];
   contactsStore.conPage === 'nF'
     ? (option = [
-        { label: '新的好友', value: 0 },
-        { label: '我的申请', value: 1 },
+        { label: t('newFriend'), value: 0 },
+        { label: t('myApplication'), value: 1 },
       ])
     : (option = [
         {
-          label: '入群申请',
+          label: t('groupEntryApp'),
           value: 0,
         },
-        { label: '我的申请', value: 1 },
+        { label: t('myApplication'), value: 1 },
       ]);
 
   console.log(option);

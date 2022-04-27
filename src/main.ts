@@ -1,6 +1,6 @@
 import { createApp, ref } from 'vue';
 import { createPinia } from 'pinia';
-import { registerApp } from './global';
+import { registerApp } from './global/index';
 import App from './App.vue';
 import router from './router';
 import 'normalize.css/normalize.css';
@@ -11,6 +11,13 @@ import 'dayjs/locale/zh-cn';
 dayjs.locale('zh-cn');
 
 dayjs.extend(relativeTime);
+
+declare module '@vue/runtime-core' {
+  interface ComponentCustomProperties {
+    $day: (date: dayjs.ConfigType) => dayjs.Dayjs;
+    $isDark: any;
+  }
+}
 
 const isDark: any = ref<boolean>(
   window.matchMedia('(prefers-color-scheme: dark)').matches

@@ -5,7 +5,7 @@
       <svg class="icon" aria-hidden="true">
         <use xlink:href="#openIM-back"></use>
       </svg>
-      <span>好友验证</span>
+      <span>{{ $t('friend') + $t('verify') }}</span>
     </div>
     <!-- 卡片信息 -->
     <div class="user_c_modal_card_info user_c_modal_header_info">
@@ -22,12 +22,12 @@
       <n-input
         v-model:value="sendVarMsg"
         type="text"
-        placeholder="请输入验证信息"
+        :placeholder="$t('pleaseEnter') + $t('verify') + $t('message')"
       />
 
-      <n-button class="add_f_btn" @click="sendFun(sendVarMsg)" type="primary"
-        >发送</n-button
-      >
+      <n-button class="add_f_btn" @click="sendFun(sendVarMsg)" type="primary">{{
+        $t('send')
+      }}</n-button>
     </div>
   </div>
 </template>

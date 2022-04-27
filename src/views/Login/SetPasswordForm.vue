@@ -57,11 +57,12 @@ import { MD5_KEY } from '@/tools/tools';
 import { uuid } from '@/tools/im/util';
 import { i18n } from '@/locales/index';
 import { useImLogin } from '@/hooks/useImLogin';
+import type { AxiosResponse } from 'axios';
 
 export default defineComponent({
   props: ['changePageStatus', 'phone', 'isRegister'],
 
-  setup(props, context) {
+  setup(props) {
     const formRef = ref<FormInst | null>(null);
     const formValue = ref<resetPasswordFormType>({
       password: '',
@@ -73,13 +74,14 @@ export default defineComponent({
 
     // 重置密码
     async function resetPasswordFun() {
-      const res: responseType = await APIResetPassword({
-        phoneNumber: props.phone,
-        verificationCode: userStore.verificationCode,
-        newPassword: md5(md5(formValue.value.cPassword) + MD5_KEY),
-        platform: 5,
-        operationID: uuid('uuid'),
-      });
+      const res: AxiosResponse<responseType> & responseType =
+        await APIResetPassword({
+          phoneNumber: props.phone,
+          verificationCode: userStore.verificationCode,
+          newPassword: md5(md5(formValue.value.cPassword) + MD5_KEY),
+          platform: 5,
+          operationID: uuid('uuid'),
+        });
       if (res.errCode === 0) {
         // 修改成功
         message.info(i18n.global.t('login.contentRight.setPwdSuccMesText'));
@@ -94,13 +96,16 @@ export default defineComponent({
     // 注册
     async function registerFun() {
       // 1. 保存密码
-      const passwordRes: responseType = await APISetRegisterPwd({
-        phoneNumber: props.phone,
-        verificationCode: userStore.verificationCode,
-        password: md5(md5(formValue.value.cPassword) + MD5_KEY),
-        platform: 5,
-        operationID: uuid('uuid'),
-      });
+      // AxiosResponse
+
+      const passwordRes: AxiosResponse<responseType> & responseType =
+        await APISetRegisterPwd({
+          phoneNumber: props.phone,
+          verificationCode: userStore.verificationCode,
+          password: md5(md5(formValue.value.cPassword) + MD5_KEY),
+          platform: 5,
+          operationID: uuid('uuid'),
+        });
       if (passwordRes.errCode !== 0) {
         message.error(i18n.global.t('login.contentRight.errSetPwdRegMsgText'));
         return false;
@@ -113,7 +118,7 @@ export default defineComponent({
     }
 
     // 提交表单
-    async function handleSubmit(e) {
+    async function handleSubmit(e: Event) {
       e.preventDefault();
 
       formRef.value?.validate(async (errors) => {

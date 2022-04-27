@@ -4,7 +4,7 @@
     class="face_container"
   >
     <div
-      v-for="face in faceMap"
+      v-for="face in faceMap()"
       :key="face.context"
       @click="faceClick(face)"
       class="face_item"

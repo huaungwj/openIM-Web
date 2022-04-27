@@ -1,36 +1,37 @@
 <template>
-  <main class="chat_bg" ref="msgListRef">
-    <!-- 信息列表 -->
+  <n-spin :show="cveStore.chatPageInitLoading">
+    <main class="chat_bg" ref="msgListRef">
+      <!-- 信息列表 -->
+      <MsgItem
+        v-for="msg in cveStore.historyMsgList"
+        :key="msg.clientMsgID"
+        :msg="msg"
+        :mutilSelect="mutilSelect"
+        @contextmenu.prevent="openMsgMenu($event, msg)"
+      />
 
-    <MsgItem
-      v-for="msg in cveStore.historyMsgList"
-      :key="msg.clientMsgID"
-      :msg="msg"
-      :mutilSelect="mutilSelect"
-      @contextmenu.prevent="openMsgMenu($event, msg)"
-    />
+      <!-- 没有更多了 -->
+      <div class="index_con_nomore__Hfico" v-if="!cveStore.hasMore">
+        {{ $t('noMore') }}
+      </div>
 
-    <!-- 没有更多了 -->
-    <div class="index_con_nomore__Hfico" v-if="!cveStore.hasMore">
-      没有更多啦
-    </div>
+      <ContextMenu class="msg_menu" :offset="menuOffset">
+        <template v-slot:menuItem>
+          <li v-for="item in msgMenus" :key="item.icon" @click="item.method">
+            <div v-if="!item.hidden">
+              <svg class="icon" aria-hidden="true">
+                <use :xlink:href="`#${item.icon}`"></use>
+              </svg>
+              {{ item.title }}
+            </div>
+          </li>
+        </template>
+      </ContextMenu>
 
-    <ContextMenu class="msg_menu" :offset="menuOffset">
-      <template v-slot:menuItem>
-        <li v-for="item in msgMenus" :key="item.icon" @click="item.method">
-          <div v-if="!item.hidden">
-            <svg class="icon" aria-hidden="true">
-              <use :xlink:href="`#${item.icon}`"></use>
-            </svg>
-            {{ item.title }}
-          </div>
-        </li>
-      </template>
-    </ContextMenu>
-
-    <!-- 合并转发后消息预览模态框 -->
-    <MergeFMsgModal />
-  </main>
+      <!-- 合并转发后消息预览模态框 -->
+      <MergeFMsgModal />
+    </main>
+  </n-spin>
 </template>
 
 <script lang="ts" setup>
@@ -43,6 +44,7 @@ import { useCveStore } from '@/stores/cve';
 import { useUserStore } from '@/stores/user';
 import { useMessage, useDialog } from 'naive-ui';
 import { useMenu } from '@/hooks/useMenu';
+import { useI18n } from 'vue-i18n';
 import type {
   MessageItem,
   MergerMsgParams,
@@ -76,12 +78,13 @@ type SelectType = FriendItem | GroupMemberItem | GroupItem;
 const { openMenu } = useMenu();
 const { copyFun } = useCopy();
 const { sendMsg } = useUploadFile();
+const { t } = useI18n();
 const cveStore = useCveStore();
 const userStore = useUserStore();
 const commonStore = useCommonStore();
 const dialog = useDialog();
 const message = useMessage();
-const msgListRef = ref<Ref>();
+const msgListRef = ref<HTMLDivElement | null>(null);
 // 是否要进行选择
 const mutilSelect = ref<boolean>(false);
 const menuOffset = ref({
@@ -90,14 +93,14 @@ const menuOffset = ref({
   clientX: 0,
   clientY: 0,
 });
-const curClickMsg = ref<MessageItem>();
+const curClickMsg = ref<MessageItem>({});
 const canCpTypes = [messageTypes.TEXTMESSAGE, messageTypes.ATTEXTMESSAGE];
 const canDownloadTypes = [
   messageTypes.PICTUREMESSAGE,
   messageTypes.VIDEOMESSAGE,
   messageTypes.FILEMESSAGE,
 ];
-const canHiddenTypes = ['复制', '翻译', '回复'];
+const canHiddenTypes = [t('copy'), t('translate'), t('reply')];
 
 const forwardMsg = () => {
   commonStore.setcreateGARelayMTpye('forwardMsg');
@@ -106,9 +109,9 @@ const forwardMsg = () => {
 
 const copyTextFun = () => {
   copyFun(
-    curClickMsg.value!.contentType === messageTypes.ATTEXTMESSAGE
-      ? curClickMsg.value!.atElem.text
-      : curClickMsg.value!.content
+    curClickMsg.value.contentType === messageTypes.ATTEXTMESSAGE
+      ? curClickMsg.value.atElem.text
+      : curClickMsg.value.content
   );
 };
 
@@ -127,12 +130,12 @@ const revMsg = () => {
       // 待完成
       revokeMyMsgHandler(curClickMsg.value.clientMsgID);
     })
-    .catch((err) => message.error('撤回信息失败'));
+    .catch(() => message.error(t('cve.revokeFail')));
 };
 
 const revokeMyMsgHandler = (clientMsgID: string) => {
   const idx = cveStore.historyMsgList.findIndex(
-    (h) => h.clientMsgID === clientMsgID
+    (h: MessageItem) => h.clientMsgID === clientMsgID
   );
   cveStore.historyMsgList[idx].contentType = tipsTypes.REVOKEMESSAGE;
 };
@@ -140,10 +143,14 @@ const revokeMyMsgHandler = (clientMsgID: string) => {
 const delComfirm = (msg: MessageItem) => {
   // 打开对话框
   dialog.warning({
-    title: '警告',
-    content: `你确定要和删除 '${curClickMsg.value?.senderNickname}' 发的这条信息吗？`,
-    positiveText: '确定',
-    negativeText: '不确定',
+    title: t('warning'),
+    content: ` '${
+      t('confirmRevokeText1') +
+      curClickMsg.value?.senderNickname +
+      t('confirmRevokeText2')
+    }'`,
+    positiveText: t('ascertainText'),
+    negativeText: t('cancel'),
     onPositiveClick: () => {
       Bus.$emit('DELMSG', msg);
       return true;
@@ -156,16 +163,16 @@ const delComfirm = (msg: MessageItem) => {
 
 const delMsg = (msg: MessageItem) => {
   im.deleteMessageFromLocalStorage(JSON.stringify(msg))
-    .then((res) => {
+    .then(() => {
       const idx = cveStore.historyMsgList.findIndex(
-        (h) => h.clientMsgID === msg?.clientMsgID
+        (h: MessageItem) => h.clientMsgID === msg?.clientMsgID
       );
       let tmpList = [...cveStore.historyMsgList];
       tmpList.splice(idx, 1);
       cveStore.setHistoryMsgList(tmpList);
-      message.success('删除成功！');
+      message.success(t('remove') + t('suc'));
     })
-    .catch((err) => message.error('删除消息失败'));
+    .catch(() => message.error(t('remove') + t('fail')));
 };
 
 const downloadFile = () => {
@@ -185,7 +192,7 @@ const downloadFile = () => {
     default:
       break;
   }
-  message.success('下载中...请耐心等待');
+  message.success(t('downloading'));
   const idx = downloadUrl.lastIndexOf('/');
   const fileName = downloadUrl.slice(idx + 1);
   downloadFileUtil(downloadUrl, fileName);
@@ -194,37 +201,37 @@ const downloadFile = () => {
 // 右键列表
 const msgMenus = ref<msgMenusType[]>([
   {
-    title: '转发',
+    title: t('forward'),
     icon: 'openIM-31zhuanfa',
     method: forwardMsg,
     hidden: false,
   },
   {
-    title: '复制',
+    title: t('copy'),
     icon: 'openIM-wenbenkuang_fuzhi',
     method: copyTextFun,
     hidden: false,
   },
   {
-    title: '多选',
+    title: t('multiple'),
     icon: 'openIM-yunongtongduoxuanxuanzhong',
     method: mutilMsg,
     hidden: false,
   },
   {
-    title: '回复',
+    title: t('reply'),
     icon: 'openIM-message4',
     method: replayMsg,
     hidden: false,
   },
   {
-    title: '撤回',
+    title: t('revoke'),
     icon: 'openIM-withdraw',
     method: revMsg,
     hidden: false,
   },
   {
-    title: '删除',
+    title: t('remove'),
     icon: 'openIM-remove2',
     method: () => {
       delComfirm(curClickMsg.value);
@@ -232,7 +239,7 @@ const msgMenus = ref<msgMenusType[]>([
     hidden: false,
   },
   {
-    title: '下载',
+    title: t('download'),
     icon: 'openIM-xiazai',
     method: downloadFile,
     hidden: false,
@@ -258,14 +265,14 @@ const switchMenu = () => {
 
     // 图片、文件、视频类型可提供下载
     if (
-      menu.title === '下载' &&
+      menu.title === t('download') &&
       !canDownloadTypes.includes(curClickMsg.value?.contentType)
     ) {
       menu.hidden = true;
     }
 
     // 是本人发的可进行撤销
-    if (!isSelf(curClickMsg.value.sendID) && menu.title === '撤回') {
+    if (!isSelf(curClickMsg.value.sendID) && menu.title === t('revoke')) {
       menu.hidden = true;
     }
     return menu;
@@ -275,7 +282,7 @@ const switchMenu = () => {
 };
 
 // console.log();
-const openMsgMenu = (e, curMsg: MessageItem) => {
+const openMsgMenu = (e: PointerEvent, curMsg: MessageItem) => {
   if (specialMsg.includes(curMsg.contentType)) return false;
   curClickMsg.value = curMsg;
   switchMenu();

@@ -27,7 +27,7 @@
         </n-upload>
       </div>
       <!-- 信息搜索 -->
-      <div class="input_tools_sear_msg">
+      <div class="input_tools_sear_msg" @click="notSupFun">
         <svg class="icon iconfont" aria-hidden="true">
           <use xlink:href="#openIM-message"></use>
         </svg>
@@ -57,7 +57,7 @@
 
     <div class="reply" v-if="replyMsg">
       <div class="reply_text">
-        回复：<span>{{ replyMsg.senderNickname }}:</span>
+        {{ $t('reply') }}：<span>{{ replyMsg.senderNickname }}:</span>
         {{ parseMsg(replyMsg) }}
       </div>
       <svg class="icon" @click="replyMsg = undefined">
@@ -70,19 +70,19 @@
       <svg class="icon iconfont" aria-hidden="true">
         <use xlink:href="#openIM-31zhuanfa"></use>
       </svg>
-      逐条转发
+      {{ $t('articleItem') + $t('forward') }}
     </div>
     <div class="merge_forward" @click="forWardFun(true)">
       <svg class="icon iconfont" aria-hidden="true">
         <use xlink:href="#openIM-zhuanfa_dark"></use>
       </svg>
-      合并转发
+      {{ $t('merge') + $t('forward') }}
     </div>
     <div class="merge_del">
       <svg class="icon iconfont" aria-hidden="true" @click="mutilDelMsg">
         <use xlink:href="#openIM-remove2"></use>
       </svg>
-      删除
+      {{ $t('remove') }}
     </div>
     <div class="mutil_close" @click="closeMutil">
       <svg class="icon iconfont" aria-hidden="true">
@@ -105,6 +105,7 @@ import { useUploadFile } from '@/hooks/useUploadFile';
 import { useContactsStore } from '@/stores/contacts';
 import { useCommonStore } from '@/stores/common';
 import type { UploadRequestOption } from 'rc-upload/lib/interface';
+import { useI18n } from 'vue-i18n';
 import Bus from '@/tools/bus';
 import type {
   MessageItem,
@@ -129,13 +130,20 @@ type FaceEmojiType = {
 //use
 const cveStore = useCveStore();
 const contactsStore = useContactsStore();
+const { t } = useI18n();
 const message = useMessage();
 const commonStore = useCommonStore();
 const { sendMsg, sendCosMsg } = useUploadFile();
 // 聊天框内容
 const chatInputContext = ref<string>(``);
 // 艾特列表
-const atList = ref<{ id: string; name: string; tag: string }[]>();
+const atList = ref<{ id: string; name: string; tag: string }[]>([
+  {
+    id: '',
+    name: '',
+    tag: '',
+  },
+]);
 const replyMsg = ref<MessageItem | undefined>(undefined);
 // 是否多选转发
 const mutilSelect = ref<boolean>(false);
@@ -189,7 +197,7 @@ function renderEmojiContent() {
       },
 
       [
-        faceMap.map((face: FaceEmojiType) => {
+        faceMap().map((face: FaceEmojiType) => {
           return h(
             NPopover,
             {
@@ -241,9 +249,9 @@ const parseImg = (text: string) => {
 };
 
 const parseEmojiFace = (text: string) => {
-  const faceEls = [
-    ...document.getElementsByClassName('face_el'),
-  ] as HTMLImageElement[];
+  const faceEls = Array.prototype.slice.call(
+    document.getElementsByClassName('face_el')
+  );
   if (faceEls.length > 0) {
     faceEls.map((face) => {
       text = text.replaceAll(face.outerHTML, face.alt);
@@ -298,19 +306,19 @@ const parseMsg = (msg: MessageItem) => {
     case messageTypes.ATTEXTMESSAGE:
       return msg.atElem.text;
     case messageTypes.PICTUREMESSAGE:
-      return '[图片消息]';
+      return `[${t('pic') + t('message')}]`;
     case messageTypes.VIDEOMESSAGE:
-      return '[视频消息]';
+      return `[${t('video') + t('message')}]`;
     case messageTypes.VOICEMESSAGE:
-      return '[语音消息]';
+      return `[${t('voice') + t('message')}]`;
     case messageTypes.LOCATIONMESSAGE:
-      return '[位置信息]';
+      return `[${t('location') + t('message')}]`;
     case messageTypes.MERGERMESSAGE:
-      return '[合并消息]';
+      return `[${t('merge') + t('message')}]`;
     case messageTypes.FILEMESSAGE:
-      return '[文件消息]';
+      return `[${t('file') + t('message')}]`;
     case messageTypes.QUOTEMESSAGE:
-      return '[引用消息]';
+      return `[${t('quote') + t('message')}]`;
     default:
       break;
   }
@@ -390,8 +398,15 @@ const cusromSendFile = async (data: UploadRequestOption) => {
 };
 
 const contextChange = () => {
-  const atels = [...document.getElementsByClassName('at_el')];
-  let tmpAts: any = [];
+  type atMsgArrType = {
+    id: string;
+    name: string;
+    tag: string;
+  };
+  const atels = Array.prototype.slice.call(
+    document.getElementsByClassName('at_el')
+  );
+  let tmpAts: atMsgArrType[] = [];
   atels.map((at) =>
     tmpAts.push({
       id: at.attributes.getNamedItem('data_id')?.value,
@@ -414,7 +429,7 @@ const resetData = () => {
  */
 const forWardFun = (type: boolean) => {
   if (mutilMsgArr.value.length === 0 || mutilMsgArr.value.length > 5)
-    return message.warning('请输入1条并且不大于5条信息进行转发');
+    return message.warning(t('cve.placeOnlyLimitFiveMsg'));
   commonStore.setcreateGARelayMTpye(type ? 'mergeForwardMsg' : 'forwardMsg');
 
   const sortedMsg = mutilMsgArr.value.sort((a, b) => a.sendTime - b.sendTime);
@@ -422,9 +437,10 @@ const forWardFun = (type: boolean) => {
     // 合并转发配置项
     let title;
     if (isSingleCve(cveStore.curCve)) {
-      title = '与' + cveStore.curCve.showName + '的聊天记录';
+      title = t('and') + cveStore.curCve.showName + t('chatRecord');
     } else {
-      title = `群聊 ${cveStore.curCve.showName} 的聊天记录`;
+      title =
+        t('groupChat') + ` ${cveStore.curCve.showName} ` + t('chatRecord');
     }
 
     let tmm: string[] = [];
@@ -469,6 +485,10 @@ const sendCardMsg = async (friend: FriendItem) => {
   sendMsg(data, messageTypes.CARDMESSAGE).catch((err: Error) =>
     message.error(err.message)
   );
+};
+
+const notSupFun = () => {
+  message.warning(t('notSupport'));
 };
 
 watch(
