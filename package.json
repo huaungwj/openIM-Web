@@ -2,12 +2,17 @@
   "name": "weiji",
   "version": "0.0.0",
   "scripts": {
-    "dev": "vite",
     "build": " vite build",
+    "lint": "eslint . --ext .vue,.js,.jsx,.cjs,.mjs,.ts,.tsx,.cts,.mts --fix --ignore-path .gitignore",
+    "dev": "vite",
+    "electron:build": "vue-cli-service electron:build",
+    "electron:serve": "vue-cli-service electron:serve",
+    "postinstall": "electron-builder install-app-deps",
+    "postuninstall": "electron-builder install-app-deps",
     "preview": "vite preview --port 5050",
-    "typecheck": "vue-tsc --noEmit",
-    "lint": "eslint . --ext .vue,.js,.jsx,.cjs,.mjs,.ts,.tsx,.cts,.mts --fix --ignore-path .gitignore"
+    "typecheck": "vue-tsc --noEmit"
   },
+  "main": "background.js",
   "dependencies": {
     "@rollup/plugin-alias": "^3.1.9",
     "@types/md5": "^2.3.2",
@@ -33,12 +38,15 @@
     "@vue/eslint-config-prettier": "^7.0.0",
     "@vue/eslint-config-typescript": "^10.0.0",
     "@vue/tsconfig": "^0.1.3",
+    "electron": "^12.0.0",
+    "electron-devtools-installer": "^3.1.0",
     "eslint": "^8.5.0",
     "eslint-plugin-vue": "^8.2.0",
     "naive-ui": "^2.26.4",
     "prettier": "^2.5.1",
     "typescript": "~4.5.5",
     "vite": "^2.8.4",
+    "vue-cli-plugin-electron-builder": "~2.1.1",
     "vue-tsc": "^0.31.4"
   }
 }
