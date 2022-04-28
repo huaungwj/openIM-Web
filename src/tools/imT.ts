@@ -1,10 +1,12 @@
 import type { ConversationItem, MessageItem } from './im/types';
-import { useI18n } from 'vue-i18n';
+import { i18n } from '@/locales/index';
 import {
   messageTypes,
   tipsTypes,
   SessionType,
 } from '@/tools/im/constants/messageContentType';
+
+const t = i18n.global.t;
 
 export const cveSort = (cveList: ConversationItem[]) => {
   const arr: string[] = [];
@@ -43,8 +45,7 @@ export const parseMessageType = (
   curUid?: string
 ): string => {
   const isSelf = (id: string) => id === curUid;
-
-  const { t } = useI18n();
+  console.log('执行了2');
 
   switch (pmsg.contentType) {
     case messageTypes.TEXTMESSAGE:
@@ -158,11 +159,13 @@ export const createNotification = (
   click?: (id: string, type: SessionType) => void,
   tag?: string
 ) => {
-  const { t } = useI18n();
+  // const { t } = useI18n();
+  console.log(Notification, document.hidden);
   if (Notification && document.hidden) {
+    console.log('执行了');
     const title =
       message.contentType === tipsTypes.FRIENDADDED
-        ? t('newFriend')
+        ? '新朋友'
         : message.senderNickname;
     const notification = new Notification(title, {
       dir: 'auto',
@@ -172,6 +175,7 @@ export const createNotification = (
       body: parseMessageType(message),
       requireInteraction: true,
     });
+    console.log(notification);
     const id =
       message.sessionType === SessionType.SINGLECVE
         ? message.contentType === tipsTypes.FRIENDADDED

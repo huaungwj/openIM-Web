@@ -6,7 +6,7 @@
   >
     <n-layout-sider
       style="backgournd: 'none'"
-      :width="60"
+      :width="72"
       ref="siderRef"
       bordered
     >

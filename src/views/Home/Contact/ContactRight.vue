@@ -29,7 +29,7 @@ import { im } from '@/tools';
 import type { ConversationItem } from '@/tools/im/types';
 import { useOpenCveWindow } from '@/hooks/useOpenCveWindow';
 import { useCveStore } from '@/stores/cve';
-import type { SessionType } from '@/tools/im/constants/messageContentType';
+import { SessionType } from '@/tools/im/constants/messageContentType';
 import { useI18n } from 'vue-i18n';
 import { useRouter } from 'vue-router';
 
@@ -44,7 +44,7 @@ const goChatFun = async (id: string, type: SessionType) => {
   // 检查好友关系是否正常
   const checkResult = await im.checkFriend([id ?? cveStore.curCve.userID]);
   console.log(JSON.parse(checkResult.data));
-  if (JSON.parse(checkResult.data)[0].result !== 1)
+  if (JSON.parse(checkResult.data)[0].result !== 1 && type === SessionType.SINGLECVE)
     return message.error(t('cve.notFriendFail'));
 
   getOneCve(id, type)

@@ -80,6 +80,7 @@ const inCurCve = (newServerMsg: MessageItem): boolean => {
 const newMsgHandler = (data: WsResponse) => {
   const newServerMsg: MessageItem = JSON.parse(data.data);
   // 消息类型不是正在输入的类型 && 不是自己的消息 创建消息通知
+  console.log(newServerMsg);
   if (
     newServerMsg.contentType !== messageTypes.TYPINGMESSAGE &&
     newServerMsg.sendID !== userStore.selfInfo.userID

@@ -4,11 +4,8 @@
     <meta charset="UTF-8" />
     <link rel="icon" href="/favicon.ico" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Vite App</title>
-    <!-- <link
-      rel="stylesheet"
-      href="https://at.alicdn.com/t/font_3279245_v7eecy51im.css"
-    /> -->
+    <title>WeiChat</title>
+
     <script>
       document.oncontextmenu = () => false;
     </script>
@@ -21,10 +18,72 @@
         fill: currentColor;
         overflow: hidden;
       }
+      .left_sider_container,
+      .top_search_container,
+      .contact_top_c,
+      .chat_hearder_container,
+      .user_setting_c > .title {
+        -webkit-app-region: drag;
+      }
     </style>
   </head>
   <body>
+    <script>
+      /**
+       * https://tobiasahlin.com/spinkit
+       * https://connoratherton.com/loaders
+       * https://projects.lukehaas.me/css-loaders
+       * https://matejkustec.github.io/SpinThatShit
+       */
+      const className = `loaders-css__square-spin`;
+      const styleContent = `
+      @keyframes square-spin {
+        25% { transform: perspective(100px) rotateX(180deg) rotateY(0); }
+        50% { transform: perspective(100px) rotateX(180deg) rotateY(180deg); }
+        75% { transform: perspective(100px) rotateX(0) rotateY(180deg); }
+        100% { transform: perspective(100px) rotateX(0) rotateY(0); }
+      }
+      .${className} > div {
+        animation-fill-mode: both;
+        width: 50px;
+        height: 50px;
+        background: #fff;
+        animation: square-spin 3s 0s cubic-bezier(0.09, 0.57, 0.49, 0.9) infinite;
+      }
+      .app-loading-wrap {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: #282c34;
+        z-index: 100;
+      }
+          `;
+      const oStyle = document.createElement('style');
+      const oDiv = document.createElement('div');
+
+      oStyle.id = 'app-loading-style';
+      oStyle.innerHTML = styleContent;
+      oDiv.className = 'app-loading-wrap';
+      oDiv.innerHTML = `<div class="${className}"><div></div></div>`;
+
+      window.appendLoading = function () {
+        document.head.appendChild(oStyle);
+        document.body.appendChild(oDiv);
+      };
+
+      window.removeLoading = function () {
+        document.head.removeChild(oStyle);
+        document.body.removeChild(oDiv);
+      };
+      window.appendLoading();
+    </script>
     <div id="app"></div>
+
     <script src="https://at.alicdn.com/t/font_3279245_mcb08onqjl.js"></script>
     <script type="module" src="/src/main.ts"></script>
   </body>

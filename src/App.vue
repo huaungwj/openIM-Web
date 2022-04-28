@@ -4,8 +4,9 @@ import { RouterView } from 'vue-router';
 import { darkTheme } from 'naive-ui';
 import { lightThemeOverrides, darkThemeOverrides } from './ui/theme';
 
-// 是否是黑暗模式
+window.removeLoading();
 
+// 是否是黑暗模式
 export default defineComponent({
   setup() {
     return {
