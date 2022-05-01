@@ -75,6 +75,7 @@ export const useCveStore = defineStore({
           // 最近一次获取如果数量是0的话则没有了
           this.isPullMore = false;
           this.hasMore = false;
+          this.chatPageInitLoading = false;
           return;
         }
         if (

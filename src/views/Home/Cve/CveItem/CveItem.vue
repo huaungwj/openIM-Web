@@ -42,7 +42,7 @@
 </template>
 
 <script lang="ts" setup>
-import { defineProps, nextTick, watch } from 'vue';
+import { defineProps, nextTick, watch, onMounted, ref } from 'vue';
 import MyAvatar from '@/components/myAvatar/MyAvatar.vue';
 import type { ConversationItem, MessageItem } from '@/tools/im/types';
 import { OptType } from '@/tools/im/types';
@@ -53,6 +53,7 @@ import { useContactsStore } from '@/stores/contacts';
 import { useOpenCveWindow } from '@/hooks/useOpenCveWindow';
 import { useScroll } from '@/hooks/useScroll';
 import { isSingleCve } from '@/tools';
+import Bus from '@/tools/bus';
 
 const props = defineProps<{
   cve: ConversationItem;
@@ -64,6 +65,7 @@ const contactsStore = useContactsStore();
 const { openCveWindow } = useOpenCveWindow();
 const { scrollTo } = useScroll();
 const isRecv = (opt: OptType) => opt === OptType.Nomal;
+const chatRecordIsShow = ref<boolean>();
 
 // 消息类型处理
 const parseLatestMsg = (lmsg: string): string => {
@@ -98,7 +100,11 @@ const parseLastMessage = (recvMsgOpt) => {
 };
 
 watch([() => cveStore.historyMsgList], () => {
-  if (cveStore.isPullMore && cveStore.cveContentRef.scrollHeight !== 0) {
+  if (
+    cveStore.isPullMore &&
+    cveStore.cveContentRef.scrollHeight !== 0 &&
+    !chatRecordIsShow
+  ) {
     return nextTick(() => {
       cveStore.cveContentRef.scrollTop =
         cveStore.cveContentRef.scrollHeight - cveStore.cveCScHeight;
@@ -107,6 +113,12 @@ watch([() => cveStore.historyMsgList], () => {
   // 跳到底部
   nextTick(() => {
     scrollTo('bottom');
+  });
+});
+
+onMounted(() => {
+  Bus.$on('SHOWCHATRECORDMOL', (status: boolean) => {
+    chatRecordIsShow.value = status;
   });
 });
 </script>

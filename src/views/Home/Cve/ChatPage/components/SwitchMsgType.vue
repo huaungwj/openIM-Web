@@ -34,7 +34,7 @@
       </div>
       <!-- 视频消息 -->
       <div
-        :id="msg.videoElem.snapshotUUID"
+        :id="msg.videoElem.snapshotUUID + '|' + randomDate"
         v-if="msg.contentType === messageTypes.VIDEOMESSAGE"
       ></div>
       <!-- 文件消息 -->
@@ -204,13 +204,13 @@ import { useScroll } from '@/hooks/useScroll';
 import Bus from '@/tools/bus';
 import MyAvatar from '../../../../../components/myAvatar/MyAvatar.vue';
 
+const props = defineProps<{ msg: MessageItem; msgIsRead?: boolean }>();
 const cveStore = useCveStore();
 const contactsStore = useContactsStore();
 const userStore = useUserStore();
 const { scrollTo } = useScroll();
 const isImage = ref<boolean>(false);
-
-const props = defineProps<{ msg: MessageItem; msgIsRead?: boolean }>();
+const randomDate = new Date().getTime();
 
 const parseEmojiFace = (mstr: string) => {
   faceMap().map((f) => {
@@ -327,7 +327,7 @@ const clickMerge = () => {
 onMounted(() => {
   if (props.msg.videoElem?.videoUrl) {
     new Player({
-      id: props.msg.videoElem.snapshotUUID,
+      id: props.msg.videoElem.snapshotUUID + '|' + randomDate,
       url: props.msg.videoElem.videoUrl,
       controlPlugins: [volume, playbackRate, pip],
       pip: true,
