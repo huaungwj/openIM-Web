@@ -27,7 +27,10 @@
         </n-upload>
       </div>
       <!-- 信息搜索 -->
-      <div class="input_tools_sear_msg" @click="notSupFun">
+      <div
+        class="input_tools_sear_msg"
+        @click="Bus.$emit('SHOWCHATRECORDMOL', true)"
+      >
         <svg class="icon iconfont" aria-hidden="true">
           <use xlink:href="#openIM-message"></use>
         </svg>
@@ -487,6 +490,7 @@ const sendCardMsg = async (friend: FriendItem) => {
   );
 };
 
+// 暂不支持
 const notSupFun = () => {
   message.warning(t('notSupport'));
 };

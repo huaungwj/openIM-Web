@@ -24,7 +24,7 @@
 </template>
 
 <script lang="ts" setup>
-import { onMounted, onBeforeMount, ref } from 'vue';
+import { onMounted, ref } from 'vue';
 import MsgItem from '@/views/Home/Cve/ChatPage/components/MsgItem.vue';
 import Bus from '@/tools/bus';
 import type { MessageItem } from '@/tools/im/types';

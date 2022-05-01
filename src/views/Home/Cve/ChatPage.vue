@@ -25,6 +25,8 @@
         </p>
       </template>
     </Empty>
+
+    <ChatRecordMol />
   </div>
 </template>
 
@@ -33,6 +35,7 @@ import { onBeforeUnmount, ref } from 'vue';
 import ChatTopBar from '@/views/Home/Cve/ChatPage/ChatTopBar.vue';
 import CharContent from './ChatPage/CharContent.vue';
 import CharFooterBar from '@/views/Home/Cve/ChatPage/ChatFooterBar.vue';
+import ChatRecordMol from '@/components/ChatRecordMol/ChatRecordMol.vue';
 import { CbEvents, uuid } from '@/tools/im';
 import type {
   ConversationItem,
