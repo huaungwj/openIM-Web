@@ -219,14 +219,14 @@ const initGroupInfo = () => {
   console.log(cveStore.groupIDCard);
   im.getGroupsInfo([cveStore.groupIDCard])
     .then((res) => {
-      props?.setInputLoading!(false);
       const tmpArr = JSON.parse(res.data);
-      console.log(tmpArr);
-      if (tmpArr.length > 0) {
-        groupData.value = tmpArr[0];
-      } else {
+      props?.setInputLoading!(false);
+      if (tmpArr.length === 0) {
         message.info(t('userSearchEmpty'));
+        return props.changeGroupCardStatus(false);
       }
+
+      groupData.value = tmpArr[0];
     })
     .catch((err) => {
       message.error(t('actionErrorText'));

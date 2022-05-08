@@ -67,7 +67,11 @@ export default defineComponent({
       window.document.execCommand('insertText', false, text);
     }
     function onKeypress(event: KeyboardEvent) {
-      if (event.key == 'Enter' && props.noNL) {
+      if (event.shiftKey && event.key == 'Enter') {
+        console.log('换行啦');
+        return false;
+      } else if (event.key == 'Enter' && props.noNL) {
+        console.log('执行了');
         event.preventDefault();
         emit('returned', currentContent());
       }

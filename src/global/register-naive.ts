@@ -37,6 +37,7 @@ import {
   NTabPane,
   NRadio,
   NRadioGroup,
+  NProgress,
 } from 'naive-ui';
 
 const naive = create({
@@ -78,6 +79,7 @@ const naive = create({
     NTabPane,
     NRadio,
     NRadioGroup,
+    NProgress,
   ],
 });
 export function registerNaive(app: any) {

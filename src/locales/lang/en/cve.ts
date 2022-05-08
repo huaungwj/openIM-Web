@@ -44,4 +44,5 @@ export default {
   revorkOnlyMsg: 'A message was withdrawn',
   joinedGroup: 'Joined the group chat',
   editGroupInfo: 'Modified group information',
+  uploadListText: 'Upload list',
 };

@@ -55,6 +55,7 @@ import Empty1 from '@/assets/images/empty1.png';
 import { useOpenCveWindow } from '@/hooks/useOpenCveWindow';
 import type { RcFile } from 'rc-upload/lib/interface';
 import { useUploadFile } from '@/hooks/useUploadFile';
+import { fileSizeTran } from '../../../tools/tools';
 
 const cveStore = useCveStore();
 const userStore = useUserStore();
@@ -182,6 +183,15 @@ const dropFun = function (e: DragEvent) {
   const fileList = ['image', 'video'];
   // 获取type
   let type = oFile.type.split('/')[0];
+
+  if (oFile.size > 209715200) {
+    isDragetIng.value = false;
+    return message.warning(
+      `${t('cur') + t('file') + t('size')}：${fileSizeTran(oFile.size)}${
+        t('file') + t('notGreater')
+      }200MB`
+    );
+  }
   // 上传到cos
   sendCosMsg(oFile, fileList.some((item) => item === type) ? type : 'file');
   // 关闭蒙层

@@ -12,6 +12,7 @@ export default {
     setResetPwdTitleText: '请设置一个新的账号密码',
     setPwdTitleText: '请设置账户密码',
     setUserInfoTitleText: '欢迎使用 weiChat',
+    titleText: '登录中...请稍后',
     // ------------ 副标题 ------------
     setResetPwdsubTitleText: '登录密码用于登录weiChat账号',
     setPwdsubTitleText: '登录密码用于登录weiChat账号',

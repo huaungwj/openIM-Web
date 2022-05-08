@@ -13,6 +13,8 @@ export default {
     setResetPwdTitleText: 'Please set a new account password',
     setPwdTitleText: 'Please set the account password',
     setUserInfoTitleText: 'Welcome to weichat',
+    titleText: 'Logging in Please wait',
+
     // ------------ 副标题 ------------
     setResetPwdsubTitleText:
       'The login password is used to login to weichat account',

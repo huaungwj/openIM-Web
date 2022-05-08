@@ -20,7 +20,11 @@
       </n-dropdown>
       <!-- 发送文件、图片、视频 -->
       <div class="input_tools_files">
-        <n-upload :show-file-list="false" :custom-request="cusromSendFile">
+        <n-upload
+          :show-file-list="false"
+          ref="sendCosFileUploadRef"
+          :custom-request="cusromSendFile"
+        >
           <svg class="icon iconfont" aria-hidden="true">
             <use xlink:href="#openIM-file-open"></use>
           </svg>
@@ -47,13 +51,19 @@
     <vue-tribute :options="mentionOptions" style="outline: none">
       <contenteditable
         class="chat_input"
+        ref="editDiv"
         tag="div"
         :contenteditable="true"
         v-model="chatInputContext"
         :noHTML="false"
         :noNL="true"
-        @keydown.enter="
-          switchMessage(replyMsg ? 'quote' : atList.length > 0 ? 'at' : 'text')
+        @focus="editContentFocusFun"
+        @blur="editContentBlurFun"
+        @keydown="
+          switchMessage(
+            replyMsg ? 'quote' : atList.length > 0 ? 'at' : 'text',
+            $event
+          )
         "
       ></contenteditable>
     </vue-tribute>
@@ -96,11 +106,12 @@
 </template>
 
 <script setup lang="ts">
-import { h, ref, watch, reactive, onMounted } from 'vue';
+import { h, ref, watch, reactive, onMounted, nextTick } from 'vue';
 import contenteditable from '@/views/Home/Cve/ChatPage/components/Contenteditable.vue';
 import { VueTribute } from 'vue-tribute';
 import { faceMap } from '@/tools/face';
 import { NImage, useMessage, NScrollbar, NPopover } from 'naive-ui';
+import type { UploadInst } from 'naive-ui';
 import { im, isSingleCve } from '@/tools';
 import { messageTypes } from '@/tools/im/constants/messageContentType';
 import { useCveStore } from '@/stores/cve';
@@ -115,6 +126,8 @@ import type {
   GroupMemberItem,
   FriendItem,
 } from '@/tools/im/types';
+import { conforms } from 'lodash';
+import { fileSizeTran } from '../../../../tools/tools';
 
 /**
  * 添加群成员 | 转发消息 > 合并消息 - 单发消息 | 创建群聊
@@ -137,6 +150,7 @@ const { t } = useI18n();
 const message = useMessage();
 const commonStore = useCommonStore();
 const { sendMsg, sendCosMsg } = useUploadFile();
+const sendCosFileUploadRef = ref<UploadInst | null>(null);
 // 聊天框内容
 const chatInputContext = ref<string>(``);
 // 艾特列表
@@ -148,6 +162,7 @@ const atList = ref<{ id: string; name: string; tag: string }[]>([
   },
 ]);
 const replyMsg = ref<MessageItem | undefined>(undefined);
+const editDiv = ref<null>(null);
 // 是否多选转发
 const mutilSelect = ref<boolean>(false);
 // 选中的msg
@@ -155,9 +170,20 @@ const mutilMsgArr = ref<MessageItem[]>([]);
 
 function faceClick(face: FaceEmojiType, e: Event) {
   e.preventDefault();
+
   const faceEl = `<img class="face_el" alt="${face.context}" style="padding-right:2px" width="24px" src="${face.src}">`;
   // move2end(chatInputRef);
+  // editDiv.value.focus();
+
   chatInputContext.value = chatInputContext.value + faceEl;
+  nextTick(() => {
+    const range: Selection = window.getSelection();
+    console.log(range.getRangeAt(0));
+    editDiv.value.element!.focus();
+    //创建range
+    range.selectAllChildren(editDiv.value.element!); //range 选择obj下所有子内容
+    range.collapseToEnd(); //光标移至最后
+  });
 }
 
 const mentionOptions = reactive({
@@ -327,9 +353,25 @@ const parseMsg = (msg: MessageItem) => {
   }
 };
 
+const editContentFocusFun = () => {
+  // const range: Selection = window.getSelection();
+  // console.log(range.getRangeAt(0));
+  document.onselectionchange = function () {
+    // console.log(range.getRangeAt(0));
+  };
+};
+
+const editContentBlurFun = () => {
+  document.onselectionchange = null;
+};
+
 // 辨别消息的类型
-const switchMessage = (type: string) => {
+const switchMessage = (type: string, event: KeyboardEvent) => {
+  if (event.shiftKey && event.key == 'Enter') return;
+  if (event.key !== 'Enter') return;
+
   let text = chatInputContext.value;
+  text = text.trim();
   text = parseImg(parseEmojiFace(text));
   text = parseBr(text);
   // text = parseAt(text);
@@ -394,10 +436,21 @@ const cusromSendFile = async (data: UploadRequestOption) => {
   const fileList = ['image', 'video'];
   let type = data.file.type.split('/')[0];
 
+  if (data.file.file.size > 209715200) {
+    // 清空，不清空会存在上传多个
+    sendCosFileUploadRef.value?.clear();
+    return message.warning(
+      `${t('cur') + t('file') + t('size')}：${fileSizeTran(
+        data.file.file.size
+      )}${t('file') + t('notGreater')}200MB`
+    );
+  }
+
   sendCosMsg(
-    data.file?.file,
+    data.file.file,
     fileList.some((item) => item === type) ? type : 'file'
   );
+  sendCosFileUploadRef.value?.clear();
 };
 
 const contextChange = () => {
@@ -600,7 +653,7 @@ onMounted(() => {
 /* 输入框 */
 .chat_footer .chat_input {
   min-height: 34px;
-  max-height: 50%;
+  max-height: 13vh;
   font-size: 14px;
   line-height: 1.5715;
   outline: none;

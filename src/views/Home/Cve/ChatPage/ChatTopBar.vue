@@ -41,6 +41,15 @@
       <svg class="icon openIM-video" aria-hidden="true" @click="noSupFun">
         <use xlink:href="#openIM-video"></use>
       </svg>
+      <n-badge
+        :value="fileList.filter((item) => item.percent !== 1).length"
+        class="openIM-xiaoyuangonggao1"
+        @click="showDrawer('uploadList')"
+      >
+        <svg class="icon" aria-hidden="true">
+          <use xlink:href="#openIM-filelist"></use>
+        </svg>
+      </n-badge>
       <svg
         v-if="!isSingleCve(cveStore.curCve)"
         class="icon openIM-xiaoyuangonggao1"
@@ -76,6 +85,15 @@ import CveSettingInfo from './components/CveSettingInfo.vue';
 import Bus from '@/tools/bus';
 import { useI18n } from 'vue-i18n';
 
+type fileListType = {
+  id: string;
+  loaded: number;
+  speed: number;
+  total: number;
+  percent: number;
+  name: string;
+};
+
 const cveStore = useCveStore();
 const contactsStore = useContactsStore();
 const message = useMessage();
@@ -87,6 +105,7 @@ const lastCve = ref<ConversationItem>();
 const onlineNo = ref<number>(0);
 // 单会话在线状态
 const onlineStatus = ref<string>(t('offLine'));
+const fileList = ref<fileListType[]>([]);
 
 // 获取群组的在线数量
 const getGroupOnline = () => {
@@ -152,6 +171,20 @@ const noSupFun = () => {
 
 onMounted(() => {
   initInfo();
+  Bus.$on('CHANGEFILELIST', (file: fileListType) => {
+    const idx: number = fileList.value?.findIndex(
+      (item) => item.id === file.id
+    );
+    console.log(idx);
+
+    if (idx > -1) {
+      // 已有替换即可
+      fileList.value.splice(idx, 1, file);
+    } else {
+      fileList.value.push(file);
+    }
+    console.log(fileList.value);
+  });
 });
 
 watch(
@@ -233,6 +266,9 @@ const showDrawer = (status: string) => {
 
 /* 右部分 电话视频 */
 .chat_hearder_container > .chat_header_right {
+  padding-top: 3px;
+  display: flex;
+  align-items: flex-start;
   margin-right: 30px;
 }
 .chat_hearder_container > .chat_header_right > .icon:hover {
@@ -246,7 +282,9 @@ const showDrawer = (status: string) => {
 .chat_hearder_container > .chat_header_right > .openIM-video {
   margin: 0 35px;
 }
-.chat_hearder_container > .chat_header_right > .openIM-xiaoyuangonggao1 {
+.chat_hearder_container > .chat_header_right .openIM-xiaoyuangonggao1 {
+  cursor: pointer;
+  color: var(--color-heading);
   margin-right: 35px;
 }
 .setting_drawer {

@@ -42,4 +42,5 @@ export default {
   revorkOnlyMsg: '撤回了一条消息',
   joinedGroup: '加入了群聊',
   editGroupInfo: '修改了群信息',
+  uploadListText: '上传列表',
 };

@@ -279,7 +279,7 @@ const groupHandlerTemplate = (data: WsResponse, type: GruopHandlerType) => {
           const tempArr2 = [...contactsStore.groupMemberList];
           tempArr2.push(result);
           contactsStore.setGroupInfo(tmpArr[idx]);
-          contactsStore.etGroupMemberList(tempArr2);
+          contactsStore.setGroupMemberList(tempArr2);
         }
       }
       break;
@@ -345,7 +345,7 @@ const applicationHandlerTemplate = (
       tmpArr = [...contactsStore.sentGroupApplicationList];
       break;
     // eslint-disable-next-line no-duplicate-case
-    case 'fromUserID':
+    case 'userID':
       dispatchFn = contactsStore.setRecvGroupApplicationList;
       tmpArr = [...contactsStore.recvGroupApplicationList];
       break;

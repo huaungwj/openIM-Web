@@ -249,11 +249,11 @@ export default defineComponent({
         pageStatus.value = 'login';
         return false;
       } else if (res.errCode === 10003) {
-        message.error(i18n.global.t('login.contetnRight.errNotRegMsgText'));
+        message.error(i18n.global.t('login.contentRight.errNotRegMsgText'));
         pageStatus.value = 'login';
         return false;
       } else {
-        message.error(i18n.global.t('login.contetnRight.errUnknownMsgText'));
+        message.error(i18n.global.t('login.contentRight.errUnknownMsgText'));
         pageStatus.value = 'login';
         return false;
       }

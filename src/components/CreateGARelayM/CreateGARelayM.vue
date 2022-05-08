@@ -295,10 +295,9 @@ const createGroupFun = () => {
 // 自定义上传
 const customUpload = async (data: UploadRequestOption) => {
   if (!data) return false;
-  console.log(data);
   if (data.file.file.size > 2097152) {
     // 清空，不清空会存在上传多个
-    uploadGroupImageRef.value!.clear();
+    uploadGroupImageRef.value?.clear();
     return message.warning(
       `${t('cur') + t('file') + t('size')}：${fileSizeTran(
         data.file.file.size
@@ -310,7 +309,7 @@ const customUpload = async (data: UploadRequestOption) => {
     .then((res) => {
       console.log(res);
       cGroupFaceURL.value = res.url;
-      uploadGroupImageRef.value!.clear();
+      uploadGroupImageRef.value?.clear();
     })
     .catch((err) => {
       console.log(err);

@@ -184,6 +184,7 @@
         </n-button>
       </div>
     </n-drawer-content>
+    <!-- 群通知 -->
     <n-drawer-content
       :title="$t('cve.groupNotice')"
       v-if="drawerStatus === 'groupNotice'"
@@ -194,9 +195,65 @@
         </template>
       </Empty>
     </n-drawer-content>
+    <!-- 文件上传列表 -->
+    <n-drawer-content
+      :title="$t('cve.uploadListText')"
+      v-if="drawerStatus === 'uploadList'"
+    >
+      <div v-if="fileList.length > 0">
+        <div class="file_item" v-for="item in fileList" :key="item.id">
+          <!-- 文件图标 -->
+          <svg
+            class="icon file_icon"
+            style="width: 50px; height: 50px; padding-right: 10px"
+            aria-hidden="true"
+          >
+            <use
+              :xlink:href="`#openIM-${
+                fileListSuffix.some(
+                  (suffix) => suffix === fileExtension(item.name)
+                )
+                  ? fileExtension(item.name)
+                  : 'unknowfile'
+              }`"
+            ></use>
+          </svg>
 
+          <!-- 右边信息 -->
+          <div class="file_right_info">
+            <div
+              class="top"
+              style="
+                width: 200px;
+                overflow: hidden;
+                white-space: nowrap;
+                text-overflow: ellipsis;
+              "
+            >
+              <span>{{ item.name }}</span>
+            </div>
+            <n-tag type="warning" size="small" style="padding: 10px 0px">
+              {{ fileSizeTran(item.total) }}
+            </n-tag>
+            <n-progress
+              v-if="item.percent !== 1"
+              type="line"
+              status="success"
+              :percentage="Math.ceil((item.loaded / item.total) * 100)"
+              :indicator-placement="'inside'"
+              processing
+            />
+            <span v-else style="color: var(--im-theme-primary)">上传完成</span>
+          </div>
+        </div>
+      </div>
+      <Empty v-else :imgSrc="Empty5" :width="220" :height="230">
+        <template #header>
+          <p>{{ $t('emptyData') }}</p>
+        </template>
+      </Empty>
+    </n-drawer-content>
     <!-- 第二个模态框 - 群成员 -->
-
     <n-drawer
       class="setting_drawer"
       v-model:show="innerDrawerStatus"
@@ -346,6 +403,7 @@ import type {
 } from '@/tools/im/types';
 import { OptType } from '@/tools/im/types';
 import { useCopy } from '@/hooks/useCopy';
+import { fileExtension, fileSizeTran } from '@/tools/tools';
 
 enum ShipType {
   Nomal = 0,
@@ -362,6 +420,15 @@ type newGroupInfoType = {
 type GroupInfo = {
   groupID: string;
   groupInfo: GroupBaseInfo;
+};
+
+type fileListType = {
+  id: string;
+  loaded: number;
+  speed: number;
+  total: number;
+  percent: number;
+  name: string;
 };
 
 const drawerStatus = ref<string | boolean>('cancel');
@@ -386,10 +453,39 @@ const newGroupInfo = ref<newGroupInfoType>({
   groupName: '',
   introduction: '',
 });
+const fileList = ref<fileListType[]>([]);
 
 const cancelOutDrawer = () => {
   drawerStatus.value = 'cancel';
 };
+
+const fileListSuffix = [
+  'pdf',
+  'docx',
+  'txt',
+  'xmind',
+  'ics',
+  'svg',
+  'jpg',
+  'png',
+  'rar',
+  '7z',
+  'zip',
+  'mp3',
+  'gif',
+  'xls',
+  'md',
+  'srt',
+  'sql',
+  'html',
+  'js',
+  'ts',
+  'jsx',
+  'tsx',
+  'vue',
+  'py',
+  'mp4',
+];
 
 const showDeInfoFun = () => {
   if (isSingleCve(cveStore.curCve)) {
@@ -703,12 +799,27 @@ onMounted(() => {
   Bus.$on('SETDRAWERSTATUS', (status: string) => {
     drawerStatus.value = status;
   });
+  Bus.$on('CHANGEFILELIST', (file: fileListType) => {
+    const idx: number = fileList.value?.findIndex(
+      (item) => item.id === file.id
+    );
+    console.log(idx);
+
+    if (idx > -1) {
+      // 已有替换即可
+      fileList.value.splice(idx, 1, file);
+    } else {
+      fileList.value.push(file);
+    }
+    console.log(fileList.value);
+  });
 });
 </script>
 
 <style>
 .setting_drawer .drawer_item,
-.setting_drawer .group_list_item {
+.setting_drawer .group_list_item,
+.setting_drawer .file_item {
   position: relative;
   display: flex;
   align-items: center;
@@ -839,5 +950,10 @@ onMounted(() => {
 .setting_drawer .group_edit_item > .right_remark {
   display: flex;
   align-items: center;
+}
+
+/* 上传列表 */
+.setting_drawer .file_item {
+  display: flex;
 }
 </style>

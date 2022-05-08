@@ -45,7 +45,6 @@ export const parseMessageType = (
   curUid?: string
 ): string => {
   const isSelf = (id: string) => id === curUid;
-  console.log('执行了2');
 
   switch (pmsg.contentType) {
     case messageTypes.TEXTMESSAGE:
@@ -120,9 +119,11 @@ export const parseMessageType = (
     case tipsTypes.MEMBERQUIT: {
       const quitDetails = JSON.parse(pmsg.notificationElem.detail);
       const quitUser = quitDetails.quitUser;
-      return `${isSelf(quitUser.userID) ? t('your') : quitUser.nickname}
-        t('cve.exitGroupText')
-      `;
+      return (
+        `${isSelf(quitUser.userID) ? t('your') : quitUser.nickname}
+      
+      ` + t('cve.exitGroupText')
+      );
     }
 
     case tipsTypes.GROUPINFOUPDATED: {

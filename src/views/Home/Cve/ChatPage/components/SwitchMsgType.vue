@@ -377,7 +377,8 @@ onMounted(() => {
 .chat_msg_content .merger_type {
   border-radius: 5px;
   background-color: var(--im-theme-chatMsgBg);
-  padding: 5px 55px 10px 10px;
+  padding: 5px 20px 10px 10px;
+  min-height: 38px;
   display: flex;
   flex-direction: column;
 }
@@ -449,6 +450,7 @@ onMounted(() => {
 
 /* 消息文本 */
 .chat_msg_content .chat_msg_info .chat_msg_text {
+  max-width: 13vw;
   font-size: 14px;
 }
 

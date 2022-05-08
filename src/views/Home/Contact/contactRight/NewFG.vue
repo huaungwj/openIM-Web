@@ -97,6 +97,18 @@ onMounted(() => {
 });
 
 watch(
+  [
+    () => contactsStore.recvFriendApplicationList,
+    () => contactsStore.sentFriendApplicationList,
+    () => contactsStore.recvGroupApplicationList,
+    () => contactsStore.sentGroupApplicationList,
+  ],
+  () => {
+    sortData();
+  }
+);
+
+watch(
   () => contactsStore.newFGList,
   () => {
     sortData();

@@ -74,7 +74,7 @@
             </li>
             <!-- 性别 -->
             <li class="user_info_item name">
-              <span class="label">{{ t('nickname') }}：</span>
+              <span class="label">{{ t('gender') }}：</span>
               <span v-show="!editInfo.gender.isEdit">
                 <span class="label_value">{{
                   friendData?.gender === 1 ?? $t('male')
@@ -293,15 +293,17 @@ const initData = () => {
   // 1. 根据 朋友ID 搜索
   im.getUsersInfo([cveStore.friendIDCard])
     .then((res) => {
-      props.changeUserCardStatus(true);
       let tmpArr = JSON.parse(res.data);
-      if (tmpArr.length > 0) {
-        friendData.value = tmpArr[0].friendInfo
-          ? tmpArr[0].friendInfo
-          : tmpArr[0].publicInfo;
-      } else {
+      console.log(tmpArr.length);
+      if (tmpArr.length === 0) {
         message.info(t('userSearchEmpty'));
+        props.changeUserCardStatus(false);
       }
+      console.log('我执行了');
+      props.changeUserCardStatus(true);
+      friendData.value = tmpArr[0].friendInfo
+        ? tmpArr[0].friendInfo
+        : tmpArr[0].publicInfo;
     })
     .catch((err) => {
       console.log(err);

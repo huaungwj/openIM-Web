@@ -144,6 +144,9 @@ onMounted(() => {
 }
 .cve_info > .info_msg {
   color: var(--color-text);
+  max-height: 20px;
+  max-width: 16vw;
+  overflow: hidden;
 }
 
 .active_cve {

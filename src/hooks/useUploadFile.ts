@@ -3,6 +3,7 @@ import type { UploadRequestOption, RcFile } from 'rc-upload/lib/interface';
 import { useMessage } from 'naive-ui';
 import { getPicInfo, getVideoInfo } from '@/tools/tools';
 import { im } from '@/tools';
+import Bus from '@/tools/bus';
 import {
   messageTypes,
   notOssMessageTypes,
@@ -33,7 +34,14 @@ export const useUploadFile = () => {
   const sendCosMsg = async (uploadData: UploadRequestOption, type: string) => {
     console.log(type, uploadData);
     await getCosAuthorization();
-    cosUpload(uploadData)
+    cosUpload(uploadData, (fileInfo) => {
+      console.log(fileInfo);
+      Bus.$emit('CHANGEFILELIST', {
+        ...fileInfo,
+        name: uploadData.name,
+        id: uploadData.id,
+      });
+    })
       .then((res) => {
         switch (type) {
           case 'image':
