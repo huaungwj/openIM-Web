@@ -49,3 +49,5 @@ app.use(i18n);
 registerApp(app);
 
 app.mount('#app');
+
+console.log(app);
