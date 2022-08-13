@@ -77,3 +77,13 @@ npm run lint
 
 ### 在线运行
 [https://live.weikill.club](https://live.weikill.club)
+
+
+
+#### 说明
+
+> 如果对您有帮助，您可以点右上角 "Star" 支持一下 谢谢！ ^_^
+
+> 或者您可以 "follow" 一下，我会不断开源更多的有趣的项目
+
+> 如有问题请直接在 Issues 中提，或者您发现问题并有非常好的解决方案，欢迎 PR 👍
